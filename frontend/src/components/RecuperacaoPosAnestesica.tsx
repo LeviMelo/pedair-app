@@ -1,38 +1,15 @@
 // frontend/src/components/RecuperacaoPosAnestesica.tsx
 import React, { useState } from 'react';
 import SectionCard from './ui/SectionCard';
-import RadioButtonGroupField from './ui/RadioButtonGroupField'; // Use for exclusive choices
-import CheckboxGroupField from './ui/CheckboxGroupField';    // Use for multi-select choices
+import RadioButtonGroupField from './ui/RadioButtonGroupField';
+import CheckboxGroupField from './ui/CheckboxGroupField';
 
 // --- Options Data ---
 interface OptionInfo { value: string; label: string; }
 
-// Options for Recovery Time (Exclusive Choice)
-const tempoRecuperacaoOptions: OptionInfo[] = [
-    { value: 'ate_30', label: 'Até 30 minutos' },
-    { value: 'ate_45', label: 'Até 45 minutos' },
-    { value: 'entre_45_60', label: 'Entre 45-60 minutos' },
-    { value: 'mais_60', label: '> 60 minutos' },
-];
-
-// Options for Post-Anesthetic Intercurrences/Complaints
-// Split into exclusive (desaturation) and multi-select (others)
-const posDessaturacaoOptions: OptionInfo[] = [ // For Radio Buttons
-    { value: 'dessaturacao_85_92', label: 'Dessaturação (85-92%)'},
-    { value: 'dessaturacao_75_85', label: 'Dessaturação (75-85%)'},
-    { value: 'dessaturacao_lt_70', label: 'Dessaturação (<70%)'},
-];
-
-const outrasQueixasPosOptions: OptionInfo[] = [ // For Checkboxes
-    { value: 'broncoespasmo', label: 'Broncoespasmo'},
-    { value: 'laringoespasmo', label: 'Laringoespasmo'},
-    { value: 'sangramento', label: 'Sangramento'},
-    { value: 'tosse', label: 'Tosse'},
-    { value: 'dor', label: 'Dor'},
-    { value: 'vomitos', label: 'Vômitos'},
-    { value: 'prurido', label: 'Prurido'},
-    { value: 'sialorreia', label: 'Sialorreia'},
-];
+const tempoRecuperacaoOptions: OptionInfo[] = [ { value: 'ate_30', label: 'Até 30 minutos' }, { value: 'ate_45', label: 'Até 45 minutos' }, { value: 'entre_45_60', label: 'Entre 45-60 minutos' }, { value: 'mais_60', label: '> 60 minutos' }, ];
+const posDessaturacaoOptions: OptionInfo[] = [ { value: 'dessaturacao_85_92', label: 'Dessaturação (85-92%)'}, { value: 'dessaturacao_75_85', label: 'Dessaturação (75-85%)'}, { value: 'dessaturacao_lt_70', label: 'Dessaturação (<70%)'}, ];
+const outrasQueixasPosOptions: OptionInfo[] = [ { value: 'broncoespasmo', label: 'Broncoespasmo'}, { value: 'laringoespasmo', label: 'Laringoespasmo'}, { value: 'sangramento', label: 'Sangramento'}, { value: 'tosse', label: 'Tosse'}, { value: 'dor', label: 'Dor'}, { value: 'vomitos', label: 'Vômitos'}, { value: 'prurido', label: 'Prurido'}, { value: 'sialorreia', label: 'Sialorreia'}, ];
 
 // State types
 type SelectedOptions = string[];
@@ -45,51 +22,33 @@ const RecuperacaoPosAnestesica: React.FC = () => {
   const [outrasQueixasPos, setOutrasQueixasPos] = useState<SelectedOptions>([]);
 
   // --- Event Handlers ---
-  const handleTempoRecuperacaoChange = (value: string | number) => {
-    setTempoRecuperacao(value);
-  };
-
-  const handleDessaturacaoPosChange = (value: string | number) => {
-    setNivelDessaturacaoPos(value);
-  };
-
-  // Reusing generic handler logic from Intraoperatoria (could be extracted to a hook later)
-  const handleCheckboxChange = (
-    currentSelection: string[],
-    setter: React.Dispatch<React.SetStateAction<string[]>>,
-    value: string
-   ) => {
-    if (currentSelection.includes(value)) {
-      setter(currentSelection.filter(item => item !== value));
-    } else {
-      setter([...currentSelection, value]);
-    }
-  };
-
-  const handleOutrasQueixasPosChange = (value: string) => {
-    handleCheckboxChange(outrasQueixasPos, setOutrasQueixasPos, value);
-  };
+  const handleTempoRecuperacaoChange = (value: string | number) => setTempoRecuperacao(value);
+  const handleDessaturacaoPosChange = (value: string | number) => setNivelDessaturacaoPos(value);
+  const handleCheckboxChange = (sel: string[], setSel: React.Dispatch<React.SetStateAction<string[]>>, val: string) => { if (sel.includes(val)) { setSel(sel.filter(i => i !== val)); } else { setSel([...sel, val]); } };
+  const handleOutrasQueixasPosChange = (value: string) => handleCheckboxChange(outrasQueixasPos, setOutrasQueixasPos, value);
 
   // --- Rendering ---
   return (
     <SectionCard title="Recuperação Pós-Anestésica">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Two columns layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             {/* Intercorrências / Queixas Column */}
-            <fieldset className="border border-slate-200 p-4 rounded-md md:col-span-1">
-                <legend className="text-base font-semibold text-slate-800 px-2 mb-3">Intercorrências / Queixas</legend>
-                {/* Desaturation Radio Group */}
+            <fieldset className="border border-slate-200 p-4 rounded-md md:col-span-1 bg-white space-y-4"> {/* Added bg and spacing */}
+                <legend className="text-base font-semibold text-slate-800 px-2 -mb-2">Intercorrências / Queixas</legend> {/* Adjusted margin */}
+                {/* Desaturation Radio Group - now visually grouped */}
                 <RadioButtonGroupField
                     label="Nível de Dessaturação (se ocorrido)"
                     idPrefix="pos-dessat"
                     options={posDessaturacaoOptions}
                     selectedValue={nivelDessaturacaoPos}
                     onChange={handleDessaturacaoPosChange}
-                    className="mb-4" // Space below radio group
+                    className="pt-2" // Add padding top for spacing from legend
                 />
+                 {/* Divider or just space */}
+                 <hr className="border-slate-200" />
                 {/* Other Complaints Checkbox Group */}
                 <CheckboxGroupField
-                    label="Outras"
+                    label="Outras Ocorrências/Queixas"
                     idPrefix="pos-queixa"
                     options={outrasQueixasPosOptions}
                     selectedValues={outrasQueixasPos}
@@ -105,7 +64,8 @@ const RecuperacaoPosAnestesica: React.FC = () => {
                     options={tempoRecuperacaoOptions}
                     selectedValue={tempoRecuperacao}
                     onChange={handleTempoRecuperacaoChange}
-                    required // Assuming this is required information
+                    required
+                    className="border border-slate-200 p-4 rounded-md bg-white h-full" // Added style to match fieldset
                 />
              </div>
 
@@ -114,9 +74,9 @@ const RecuperacaoPosAnestesica: React.FC = () => {
       {/* Temporary state display */}
       <div className="mt-6 p-3 bg-slate-100 rounded text-xs overflow-x-auto">
         <strong className='block mb-1'>Dados do Estado (Temporário):</strong>
-        Tempo Recuperação: {JSON.stringify(tempoRecuperacao)} <br />
-        Dessaturação Pós: {JSON.stringify(nivelDessaturacaoPos)} <br />
-        Outras Queixas Pós: {JSON.stringify(outrasQueixasPos)}
+        Tempo Rec: {JSON.stringify(tempoRecuperacao)} |
+        Dessat Pós: {JSON.stringify(nivelDessaturacaoPos)} |
+        Outras Queixas: {JSON.stringify(outrasQueixasPos)}
       </div>
     </SectionCard>
   );

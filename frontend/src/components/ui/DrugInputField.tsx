@@ -1,79 +1,166 @@
 // frontend/src/components/ui/DrugInputField.tsx
-import React from 'react';
-import InputField from './InputField'; // Reuse InputField for the dose/rate entry
+import React, { useState, useEffect, useRef } from 'react';
+import InputField from './InputField';
+import StepperInput from './StepperInput'; // Ensure this path is correct
 
-// Props for the DrugInputField component
 interface DrugInputFieldProps {
-  drugName: string;       // Name of the drug (e.g., "Lidocaína")
-  drugId: string;         // Unique identifier for the drug (e.g., "lido")
-  unit: string;           // Unit of measurement (e.g., "mg", "mcg/kg/min")
-  isSelected: boolean;    // Is this drug currently selected/used?
-  value: string;          // The current dose/rate value entered (as string)
-  onSelectToggle: () => void; // Function to call when the checkbox is toggled
-  onValueChange: (event: React.ChangeEvent<HTMLInputElement>) => void; // Function to call when the dose/rate input changes
-  inputType?: 'text' | 'number'; // Input type for dose/rate
+  drugName: string;
+  drugId: string;
+  unit: string;
+  isSelected: boolean; // Controlled from parent: whether the drug *was used*
+  value: string; // Controlled from parent: the *saved* value
+  onSelectToggle: () => void;
+  onValueChange: (eventOrValue: React.ChangeEvent<HTMLInputElement> | string) => void; // Can accept event or direct string value
+  inputType?: 'text' | 'number' | 'stepper';
+  colorClass?: string;
 }
 
 const DrugInputField: React.FC<DrugInputFieldProps> = ({
   drugName,
   drugId,
   unit,
-  isSelected,
-  value,
+  isSelected, // Prop indicating if drug is selected (checked)
+  value,      // Prop holding the saved value from parent state
   onSelectToggle,
   onValueChange,
-  inputType = 'number', // Default to number input
+  inputType = 'number',
+  colorClass = 'bg-transparent',
 }) => {
-  const checkboxId = `select-${drugId}`; // Unique ID for the checkbox
-  const inputId = `value-${drugId}`;    // Unique ID for the input field
+  const [isEditing, setIsEditing] = useState(false); // Internal state: is the input currently active?
+  const inputRef = useRef<HTMLInputElement>(null); // Ref to focus input when editing starts
+
+  // Effect to start editing when the drug is selected AND has no value yet,
+  // or to stop editing if the drug is deselected externally.
+  useEffect(() => {
+    if (isSelected && !isEditing) {
+        // If selected but not editing (e.g., just checked), start editing
+        // Optionally, only start editing if value is empty: if (isSelected && !value && !isEditing)
+         setIsEditing(true);
+    } else if (!isSelected && isEditing) {
+        // If deselected externally while editing, stop editing
+         setIsEditing(false);
+    }
+  }, [isSelected]); // Rerun only when isSelected changes
+
+  // Effect to focus the input when editing begins
+   useEffect(() => {
+       if (isEditing && inputRef.current) {
+           inputRef.current.focus();
+           // For text/number inputs, select the content
+           if (inputType !== 'stepper') {
+                inputRef.current.select();
+           }
+       }
+   }, [isEditing, inputType]);
+
+  const checkboxId = `select-${drugId}`;
+  const inputId = `value-${drugId}`;
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onValueChange(event); // Pass the raw event up
+  };
+
+  const handleStepperChange = (newValue: number) => {
+    onValueChange(String(newValue)); // Pass the string value up
+  };
+
+  // Function to handle finishing editing (Enter or Blur)
+  const finishEditing = () => {
+      setIsEditing(false);
+      // Optionally: trigger a 'save' or validation action here if needed later
+  };
+
+   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+       if (event.key === 'Enter') {
+           event.preventDefault(); // Prevent form submission if applicable
+           finishEditing();
+       } else if (event.key === 'Escape') {
+           finishEditing(); // Allow escape to cancel/close edit
+           // Optionally revert value here if needed: onValueChange(initialValue)
+       }
+   };
+
+   const handleBlur = () => {
+       // Small delay allows click on stepper buttons without triggering blur first
+       setTimeout(() => {
+           // Check if focus is still within the component (e.g., on stepper buttons)
+           // This is complex, simpler approach is often just to finish editing on blur
+            finishEditing();
+       }, 100); // Adjust delay if needed
+   };
+
 
   return (
-    // Container for the entire drug row
-    // Apply conditional background and border based on selection state
-    <div className={`p-3 border rounded-md ${isSelected ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-200'} transition-colors duration-150`}>
-      <div className="flex items-center justify-between">
-        {/* Checkbox and Drug Name */}
-        <div className="flex items-center">
-          <input
-            id={checkboxId}
-            type="checkbox"
-            checked={isSelected}
-            onChange={onSelectToggle} // Toggle selection state
-            className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-3 flex-shrink-0" // Added flex-shrink-0
-          />
-          <label htmlFor={checkboxId} className="font-medium text-sm text-slate-800 cursor-pointer break-words"> {/* Added break-words */}
-            {drugName}
-          </label>
-        </div>
-        {/* Unit display (always visible for context) */}
-        <span className="text-xs text-slate-500 ml-2 flex-shrink-0">{unit}</span> {/* Added margin and flex-shrink */}
-      </div>
+    <div className={`border rounded-md ${isSelected ? 'bg-blue-50 border-blue-300 shadow-sm' : 'bg-white border-slate-200'} transition-all duration-150 overflow-hidden`}>
+       <div className="flex">
+            <div className={`w-1.5 flex-shrink-0 ${colorClass}`}></div>
+            <div className="p-3 flex-grow min-w-0"> {/* Added min-w-0 for flex constraints */}
+                 <div className="flex items-center justify-between mb-1">
+                     <div className="flex items-center mr-2 min-w-0"> {/* Added min-w-0 */}
+                         <input
+                             id={checkboxId} type="checkbox" checked={isSelected} onChange={onSelectToggle}
+                             className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 focus:ring-offset-0 mr-2 flex-shrink-0"
+                         />
+                         <label htmlFor={checkboxId} className="font-medium text-sm text-slate-800 cursor-pointer break-words truncate"> {/* Added truncate */}
+                             {drugName}
+                         </label>
+                     </div>
+                     {/* Display Value OR Unit when not editing */}
+                     <div className="text-xs text-slate-600 font-medium flex-shrink-0 ml-2">
+                        {isSelected && !isEditing && value ? (
+                            // Show value when selected, not editing, and value exists
+                            <span className='px-1.5 py-0.5 bg-slate-200 rounded'>{value} {unit}</span>
+                        ) : (
+                             // Otherwise show only the unit
+                            <span className='italic'>{unit}</span>
+                        )}
+                     </div>
+                 </div>
 
-      {/* Conditional Input Field */}
-      {isSelected && ( // Only render the input field if the drug is selected
-        <div className="mt-2 pl-7"> {/* Indent the input slightly (aligned with label text) */}
-          {/* Using InputField component, but could be a simple input too */}
-          <InputField
-            // Using a visually hidden label for accessibility is better than no label
-            label={`Valor para ${drugName}`} // Provide specific label
-            id={inputId}
-            type={inputType}
-            value={value}
-            onChange={onValueChange} // Update the specific drug's value state
-            placeholder={`Valor (${unit})`} // More specific placeholder
-            className="mb-0" // Remove default bottom margin from InputField
-            // Add aria-label or aria-labelledby if label is visually hidden
-            // aria-label={`Valor para ${drugName} em ${unit}`}
-            // Consider making label visually hidden instead:
-            // labelClassName="sr-only" // Tailwind class to visually hide
-          />
-           {/* Example of visually hidden label using Tailwind sr-only class */}
-           {/* <label htmlFor={inputId} className="sr-only">{`Valor para ${drugName} em ${unit}`}</label>
-           <input id={inputId} type={inputType} value={value} onChange={onValueChange} placeholder={`Valor (${unit})`} className="mt-1 block w-full px-3 py-1.5 bg-white border border-slate-300 rounded-md text-sm shadow-sm ... " /> */}
-        </div>
-      )}
+                 {/* Conditional Input Field / Stepper - Render based on isEditing */}
+                 {isSelected && isEditing && (
+                     <div className="mt-1 pl-6 animation-fade-in"> {/* Added fade-in animation (needs definition in index.css) */}
+                         {inputType === 'stepper' ? (
+                             <StepperInput
+                                 id={inputId} label={`Valor para ${drugName}`} labelClassName="sr-only"
+                                 value={parseInt(value || '0', 10)}
+                                 onChange={handleStepperChange}
+                                 min={0}
+                                 // Pass down keyboard/blur handlers to inner input
+                                 onInputKeyDown={handleKeyDown}
+                                 onInputBlur={handleBlur}
+                                 className="mb-0" // Remove margin from stepper container
+                             />
+                         ) : (
+                             <InputField
+                                 // Use ref here for focusing standard input
+                                 ref={inputRef as React.RefObject<HTMLInputElement>} // Cast ref type
+                                 label={`Valor para ${drugName}`} labelClassName="sr-only"
+                                 id={inputId} type={inputType === 'text' ? 'text' : 'number'}
+                                 value={value}
+                                 onChange={handleInputChange}
+                                 onKeyDown={handleKeyDown} // Attach keydown handler
+                                 onBlur={handleBlur}       // Attach blur handler
+                                 placeholder={`Valor (${unit})`}
+                                 className="mb-0" // Remove container margin
+                                 inputClassName="py-1 text-sm" // Adjust input padding/size
+                             />
+                         )}
+                     </div>
+                 )}
+            </div>
+       </div>
     </div>
   );
 };
 
 export default DrugInputField;
+
+// Helper type for ref casting, if needed elsewhere or causing issues
+// type InputRefType = React.RefObject<HTMLInputElement>;
+
+// Add simple fade-in animation to index.css if desired:
+/*
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+.animation-fade-in { animation: fadeIn 0.2s ease-out forwards; }
+*/
