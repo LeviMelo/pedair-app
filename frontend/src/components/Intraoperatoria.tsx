@@ -18,26 +18,14 @@ const adjuvantDrugsList: DrugInfo[] = [ { name: 'Clonidina', id: 'clon', unit: '
 const symptomaticDrugsList: DrugInfo[] = [ { name: 'Dipirona', id: 'dipi', unit: 'mg' }, { name: 'Ondansentrona', id: 'onda', unit: 'mg' }, { name: 'Salbutamol', id: 'salbu', unit: 'puffs', inputType: 'number' }, { name: 'Dexametasona', id: 'dexa', unit: 'mg' }, ];
 const oxigenioOptions: OptionInfo[] = [ { value: 'cateter_nasal', label: 'Cateter nasal'}, { value: 'sonda_aspiracao_periglotica', label: 'Sonda de aspiração periglótica'}, ];
 const ventilatorioOptions: OptionInfo[] = [ { value: 'mascara_laringea', label: 'Máscara laríngea'}, { value: 'tubo_orotraqueal', label: 'Tubo orotraqueal'}, ];
-
-// Split Intercorrências into exclusive (radio) and multi-select (checkbox)
-const dessaturacaoOptions: OptionInfo[] = [ // For Radio Buttons
-    { value: 'dessaturacao_85_92', label: 'Dessaturação (85-92%)'},
-    { value: 'dessaturacao_75_85', label: 'Dessaturação (75-85%)'},
-    { value: 'dessaturacao_lt_70', label: 'Dessaturação (<70%)'},
-];
-const outrasIntercorrenciasOptions: OptionInfo[] = [ // For Checkboxes
-    { value: 'broncoespasmo', label: 'Broncoespasmo'},
-    { value: 'laringoespasmo', label: 'Laringoespasmo'},
-    { value: 'sangramento', label: 'Sangramento'},
-    { value: 'reflexo_tosse_nao_abolido', label: 'Reflexo de tosse não abolido'},
-];
-
+const dessaturacaoOptions: OptionInfo[] = [ { value: 'dessaturacao_85_92', label: 'Dessaturação (85-92%)'}, { value: 'dessaturacao_75_85', label: 'Dessaturação (75-85%)'}, { value: 'dessaturacao_lt_70', label: 'Dessaturação (<70%)'}, ];
+const outrasIntercorrenciasOptions: OptionInfo[] = [ { value: 'broncoespasmo', label: 'Broncoespasmo'}, { value: 'laringoespasmo', label: 'Laringoespasmo'}, { value: 'sangramento', label: 'Sangramento'}, { value: 'reflexo_tosse_nao_abolido', label: 'Reflexo de tosse não abolido'}, ];
 
 // Interfaces for state
 interface DrugValues { [drugId: string]: string; }
 interface SelectedDrugs { [drugId: string]: boolean; }
-type SelectedOptions = string[]; // For CheckboxGroup state
-type SelectedRadio = string | number | null; // For RadioButtonGroup state
+type SelectedOptions = string[];
+type SelectedRadio = string | number | null;
 
 const Intraoperatoria: React.FC = () => {
   // --- State ---
@@ -53,15 +41,14 @@ const Intraoperatoria: React.FC = () => {
   const [symptomaticDrugValues, setSymptomaticDrugValues] = useState<DrugValues>({});
   const [suporteOxigenioSelecionado, setSuporteOxigenioSelecionado] = useState<SelectedOptions>([]);
   const [suporteVentilatorioSelecionado, setSuporteVentilatorioSelecionado] = useState<SelectedOptions>([]);
-  // State for Intercorrências
-  const [nivelDessaturacao, setNivelDessaturacao] = useState<SelectedRadio>(null); // For radio group
-  const [outrasIntercorrencias, setOutrasIntercorrencias] = useState<SelectedOptions>([]); // For checkboxes
+  const [nivelDessaturacao, setNivelDessaturacao] = useState<SelectedRadio>(null);
+  const [outrasIntercorrencias, setOutrasIntercorrencias] = useState<SelectedOptions>([]);
 
 
   // --- Event Handlers ---
   const handleProcedimentoChange = (event: React.ChangeEvent<HTMLSelectElement>) => setProcedimento(event.target.value);
   const handleTipoAnestesiaChange = (event: React.ChangeEvent<HTMLSelectElement>) => setTipoAnestesia(event.target.value);
-  // Generic Handlers (condensed)
+  // Generic Handlers
   const handleDrugSelectToggle = (id: string, sel: SelectedDrugs, setSel: React.Dispatch<React.SetStateAction<SelectedDrugs>>, setVal: React.Dispatch<React.SetStateAction<DrugValues>>) => { const isSel = !!sel[id]; setSel(p => ({ ...p, [id]: !isSel })); if (isSel) { setVal(p => { const n = {...p}; delete n[id]; return n; }); } };
   const handleDrugValueChange = (id: string, val: string, setVal: React.Dispatch<React.SetStateAction<DrugValues>>) => { setVal(p => ({ ...p, [id]: val })); };
   const handleCheckboxChange = (sel: string[], setSel: React.Dispatch<React.SetStateAction<string[]>>, val: string) => { if (sel.includes(val)) { setSel(sel.filter(i => i !== val)); } else { setSel([...sel, val]); } };
@@ -77,7 +64,7 @@ const Intraoperatoria: React.FC = () => {
   // Specific Checkbox/Radio Handlers
   const handleOxigenioChange = (val: string) => handleCheckboxChange(suporteOxigenioSelecionado, setSuporteOxigenioSelecionado, val);
   const handleVentilatorioChange = (val: string) => handleCheckboxChange(suporteVentilatorioSelecionado, setSuporteVentilatorioSelecionado, val);
-  const handleDessaturacaoChange = (val: string | number) => setNivelDessaturacao(val); // Radio just sets the value
+  const handleDessaturacaoChange = (val: string | number) => setNivelDessaturacao(val);
   const handleOutrasIntercorrenciasChange = (val: string) => handleCheckboxChange(outrasIntercorrencias, setOutrasIntercorrencias, val);
 
 
@@ -103,34 +90,32 @@ const Intraoperatoria: React.FC = () => {
       </div>
 
       {/* Support and Intercurrences Sections */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Changed to 2 columns */}
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Support Column */}
         <div className="space-y-4">
-            <CheckboxGroupField label="Suporte de Oxigênio" idPrefix="oxi" options={oxigenioOptions} selectedValues={suporteOxigenioSelecionado} onChange={handleOxigenioChange} columns={1}/> {/* Keep these simple */}
-            <CheckboxGroupField label="Suporte Ventilatório" idPrefix="vent" options={ventilatorioOptions} selectedValues={suporteVentilatorioSelecionado} onChange={handleVentilatorioChange} columns={1} />
+            {/* REMOVED columns prop */}
+            <CheckboxGroupField label="Suporte de Oxigênio" idPrefix="oxi" options={oxigenioOptions} selectedValues={suporteOxigenioSelecionado} onChange={handleOxigenioChange} />
+            <CheckboxGroupField label="Suporte Ventilatório" idPrefix="vent" options={ventilatorioOptions} selectedValues={suporteVentilatorioSelecionado} onChange={handleVentilatorioChange} />
         </div>
          {/* Intercurrences Column */}
          <fieldset className="border border-slate-200 p-4 rounded-md">
             <legend className="text-base font-semibold text-slate-800 px-2">Intercorrências</legend>
-            {/* Use RadioButtonGroup for Desaturation levels */}
+            {/* REMOVED columns prop */}
             <RadioButtonGroupField
-                label="Nível de Dessaturação (se ocorrido)" // Clarify label
+                label="Nível de Dessaturação (se ocorrido)"
                 idPrefix="dessat"
                 options={dessaturacaoOptions}
                 selectedValue={nivelDessaturacao}
                 onChange={handleDessaturacaoChange}
-                columns={1} // Keep radios vertical for clarity usually
-                // required={...} // Decide if *any* intercurrence makes this required
-                className="mb-4"
+                className="mb-4" // Keep margin between groups
             />
-             {/* Use CheckboxGroup for other intercurrences */}
+             {/* REMOVED columns prop */}
              <CheckboxGroupField
                 label="Outras Intercorrências"
                 idPrefix="inter"
                 options={outrasIntercorrenciasOptions}
                 selectedValues={outrasIntercorrencias}
                 onChange={handleOutrasIntercorrenciasChange}
-                columns={1} // Keep these vertical too, or make 2 if space allows
             />
          </fieldset>
       </div>
