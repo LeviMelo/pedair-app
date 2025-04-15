@@ -1,4 +1,3 @@
-import React from 'react';
 import PreAnestesia from './components/PreAnestesia';
 import Intraoperatoria from './components/Intraoperatoria';
 import RecuperacaoPosAnestesica from './components/RecuperacaoPosAnestesica';
