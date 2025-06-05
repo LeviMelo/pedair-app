@@ -1,146 +1,506 @@
-# PedAir Development Roadmap (Revised)
+# PedAir Development Roadmap - Complete Strategic Plan
 
-This document outlines the key development phases for the PedAir platform, aligned with the detailed project vision and updated requirements.
+This document outlines the comprehensive development roadmap for PedAir, a multi-project clinical research platform for pediatric thoracic surgery ERAS protocols. The roadmap prioritizes clinical UX requirements, data privacy compliance (LGPD), and the sophisticated multi-project architecture described in the project vision.
 
-## Phase 1: Core Backend Foundations & Security (Conceptual - Backend Team Focus)
+## Current Status & Foundation
 
-*   **1.1. Privacy Policies & Compliance Framework:**
-    *   Define project-level privacy profiles (LGPD: legitimate interest vs. consent, retention policies, data exclusion rules).
-    *   Establish protocols for cryptographic key management and rotation.
-*   **1.2. Pseudonymization Module:**
-    *   Implement HMAC-SHA256 for `patient_id` generation (salt, pepper).
-    *   Implement a secondary transient hash (`export_patient_id`) for data exports.
-    *   Securely manage all cryptographic secrets (environment variables).
-*   **1.3. Authentication & Authorization (RBAC Core):**
-    *   Integrate Google OAuth 2.0 for user authentication.
-    *   Design and implement database schema for `users`, `projects`, `roles`, and `user_roles` to support project-specific, customizable roles and permissions.
-    *   Develop core JWT-based authentication for API endpoints.
-    *   Implement backend logic for permission checking based on JWT claims and database roles.
-*   **1.4. Database Schema & Core APIs:**
-    *   Finalize and implement the database schema (PostgreSQL) for all core entities: `projects`, `forms` (including versioning), `form_submissions`, `patients`, `contact_log`, `access_logs`.
-    *   Develop initial CRUD APIs for managing `projects`, `forms` (schemas and versions), and basic `user` profile information.
+**✅ Completed (Frontend Foundations):**
+- React 19 + TypeScript + Vite + Tailwind CSS setup
+- Dynamic form rendering engine with JSON Schema support
+- Sophisticated widget system (InputField, SelectField, AutocompleteTagSelector, DrugSection, etc.)
+- Schema-driven form architecture (*.schema.json + *.uiSchema.json)
+- Layout with project-contextual sidebar navigation
+- Basic project selection and role-based UI visibility
+- Three legacy forms successfully converted to schema-driven system
 
-## Phase 1.5: Frontend Architectural Refactor - Project Context, RBAC Foundation & State Management
+**🔧 In Progress:**
+- Global state management architecture (Zustand stores)
+- Project-contextual navigation and permissions
+- Clinical UX refinements for touch interfaces
 
-*   **1.5.1. Global State Management with Zustand (Mocked Auth/Roles & Submission State):**
-    *   Install Zustand.
-    *   Implement Zustand stores to manage global application state:
-        *   `projectStore`: Manages the currently active/selected project ID, project details (mocked initially), and list of available projects.
-        *   `authStore`: Manages (mocked) authenticated user information, including their roles specific to the active project (e.g., `ProjectLead`, `Researcher`).
-        *   `submissionStore`: Manages the state of active/in-progress multi-form data submissions. This will include:
-            *   Current patient identification data (`patientInputData`).
-            *   The sequence of forms to be filled (`formsInSequence: FormDefinition[]`).
-            *   The data for each form in the sequence (`allFormsData: { [formKey: string]: any }`).
-            *   The index of the current form being filled in the sequence (`currentFormIndexInSequence`).
-            *   This store will be crucial for the "quit and resume" functionality.
-    *   Replace any existing React Context-based global state with Zustand.
-*   **1.5.2. Dashboard as Project Launchpad:**
-    *   Refactor `DashboardPage.tsx` to display a list of (mocked) projects.
-    *   Allow users to select a project, which updates the `ProjectContext`.
-*   **1.5.3. Conditional Navigation & UI Access (RBAC Foundations):**
-    *   Modify `Layout.tsx` (sidebar) so that navigation links to project-specific tools (Form Builder, Role Editor, Data Submission, Patient Search) are dynamically rendered or enabled/disabled based on:
-        *   An active project being selected via `ProjectContext`.
-        *   The (mocked) user's role within that project, as provided by `AuthContext`.
-    *   Implement basic route protection or conditional rendering within pages to restrict access if a project isn't selected or if the user lacks the necessary (mocked) role.
-*   **1.5.4. Project-Aware Page Adaptation (Initial):**
-    *   Begin adapting existing pages (`FormBuilderPage`, `RoleEditorPage`, etc.) to consume the `ProjectContext`. Their internal logic will start to depend on the selected project ID for fetching/displaying relevant data (though data will still be mocked or frontend-only for now).
+---
 
-## Phase 2: Frontend - Dynamic Forms & Clinical UX Refinement (Post-Architectural Refactor)
+## Phase 1: Backend Foundation & Security Infrastructure (8-10 weeks)
 
-*   **2.1. Sequential Multi-Form Submission UX with State Persistence:**
-    *   Refactor `DataSubmissionPage.tsx` to implement a sequential, multi-form workflow for patient data collection:
-        *   **Initial Step**: Capture patient identification data and (simulated) consent information.
-        *   **Form Sequence Management**: 
-            *   Define or fetch a sequence of forms (e.g., Pre-Op, Intra-Op, Post-Op) for the patient encounter (initially mocked).
-            *   Maintain the index of the currently active form in this sequence.
-        *   **Form Rendering**: Dynamically load and render the *entirety* of the current form in the sequence using `DynamicFormRenderer.tsx`.
-        *   **Navigation**: Implement "Next Form" and "Previous Form" (or similar) controls to navigate through the sequence.
-        *   **Data Persistence within Encounter**: 
-            *   As the user navigates between forms or completes a form, its data is saved into a central state object within `DataSubmissionPage.tsx` (e.g., `allFormsData`). 
-            *   This state (patient ID, all collected form data, current form index) will then be managed by the `submissionStore` (Zustand) to enable pausing and resuming the entire submission process for a patient.
-        *   **Submission Action**: Define how data for individual forms or the entire sequence is finalized/submitted (e.g., a "Complete Form & Proceed" button, and a final "Submit All Encounter Data" action after the last form).
-    *   Ensure `DynamicFormRenderer.tsx` continues to render individual forms completely, without internal stepping.
-*   **2.2. Form Versioning Awareness (Frontend):**
-    *   Enable `DataSubmissionPage.tsx` to display the version of the selected form (loaded based on `ProjectContext`).
-    *   Future: Allow selection from available form versions if multiple active versions exist for a form definition within the project.
-*   **2.3. Basic Consent UI Placeholders & Integration Points:**
-    *   Integrate placeholder UI elements (e.g., checkbox areas, informational text) on `DataSubmissionPage.tsx` (for form-specific and recontact consent) and relevant project settings/creation pages (for project-level consent), ensuring these are sensitive to `ProjectContext`.
-*   **2.4. Initial Page Enhancements & Alignment (Project-Contextual):**
-    *   `DashboardPage.tsx`: After project selection, this page might display project-specific summaries or quick links relevant to the active project and user role. The "Create New Project" button functionality needs consideration for where it lives if the dashboard now lists existing projects.
-    *   `PatientSearchPage.tsx`: Ensure search operations are scoped to the selected `ProjectContext`.
-    *   `Layout.tsx`: Confirm sidebar navigation, page titles, and overall structure are coherent with the project-contextual workflow.
+### 1.1 Database Architecture & Core Models (2 weeks)
+**Priority: Critical - Foundation for all subsequent development**
 
-## Phase 3: Frontend - Form & Role Management (MVP - Project Contextual)
+- **Database Setup (PostgreSQL on Supabase/Render)**
+  - Set up production-ready PostgreSQL instance
+  - Configure connection pooling and basic security
+  
+- **Core Schema Implementation**
+  ```sql
+  -- Critical tables with proper indexing and constraints
+  users (id, google_sub, email_encrypted, name, created_at, approved)
+  projects (id, name, description, privacy_profile_jsonb, created_by, created_at)
+  forms (id, project_id, name, schema_jsonb, ui_schema_jsonb, version, status)
+  form_submissions (id, project_id, form_id, patient_id_hash, form_data_jsonb, version, submitted_by, submitted_at)
+  patients (patient_id_hash, project_id, consent_data_jsonb, created_at)
+  roles (id, project_id, name, permissions_jsonb, created_by)
+  user_roles (user_id, role_id, project_id, assigned_at, assigned_by)
+  contact_log (id, patient_id_hash, contact_data_encrypted, consent_type, created_at)
+  access_logs (id, user_id, project_id, action, target_id, timestamp, ip_addr, old_data, new_data)
+  ```
 
-*   **3.1. Form Builder (MVP 1 - Project-Scoped Schemas):**
-    *   Develop the initial UI in `FormBuilderPage.tsx` for creating and editing form JSON Schemas and UI Schemas *for the selected project*.
-    *   Allow configuration of UI widgets through the UI Schema editor.
-    *   Implement UI to manage basic form metadata (title, description) and versioning *within the active project context*.
-*   **3.2. Role Editor (MVP 1 - Project-Scoped Roles & Permissions):**
-    *   Develop the initial UI in `RoleEditorPage.tsx` for managing roles and permissions *specific to the selected project*.
-        *   Creating, viewing, and listing project-specific roles.
-        *   Assigning a predefined set of high-level permissions to these roles.
-        *   Basic user invitation (placeholder) and assignment to roles *within the active project*.
-*   **3.3. Data Submission Flow Refinement (API-Driven Form List):**
-    *   Enhance `DataSubmissionPage.tsx` to allow users to select from a list of available forms (and their versions) for the *active project*, fetched from an API endpoint (initially mocked, then real).
+- **Flask Application Structure**
+  - Organize into Blueprints: auth, projects, forms, submissions, users, audit
+  - Configure Flask-SQLAlchemy with Alembic migrations
+  - Set up environment-based configuration management
 
-## Phase 4: Backend - API Expansion & Core Logic Implementation (Supporting Project Context)
+### 1.2 Pseudonymization & Privacy Core (2 weeks)  
+**Priority: Critical - Core to LGPD compliance**
 
-*   **4.1. Form & Role Management APIs (Project-Scoped):**
-    *   Develop comprehensive backend APIs to fully support the Form Builder MVP (CRUD for schemas, uiSchemas, form versions, metadata, all scoped by `project_id`).
-    *   Implement APIs for the Role Editor MVP (CRUD for project-specific roles, permissions, user-role assignments, all scoped by `project_id`).
-*   **4.2. Data Submission & Pseudonymization APIs (Project-Scoped):**
-    *   Implement the backend endpoint for form submissions, including `project_id` in requests, `patient_id` generation (HMAC logic using `project_id`), validation against schema version, and storage of `form_data` linked to `project_id`, form version, and `patient_id`.
-    *   Develop the API for pseudonymized patient search, requiring `project_id` as a parameter.
-*   **4.3. Consent Management Backend Logic (Project-Scoped):**
-    *   Implement backend logic and API endpoints for recording, retrieving, and verifying multi-layer consent status, ensuring all consent data is linked to a `project_id`.
-*   **4.4. Encrypted Contact Storage & Notification Service Stubs (Project-Scoped):**
-    *   Ensure `contact_log` table and encryption logic handle contacts in a project-specific manner if required by privacy policies.
-    *   Develop API stubs for managing notification rules (potentially project-specific) and triggering placeholder notifications.
-*   **4.5. Core Auditing Implementation (Project-Scoped):**
-    *   Ensure critical backend actions logged to `access_logs` include `project_id`.
+- **Cryptographic Module Implementation**
+  ```python
+  # Core pseudonymization functions
+  def generate_patient_id(dob, gender, initials, project_id, salt, pepper) -> str
+  def generate_export_id(patient_id, export_salt) -> str
+  def encrypt_contact_info(contact_data, encryption_key) -> bytes
+  def decrypt_contact_info(encrypted_data, encryption_key) -> str
+  ```
 
-## Phase 5: Frontend - Advanced Features & Full Clinical UX Integration (Project Contextual)
+- **Key Management System**
+  - Secure storage of salt, pepper, encryption keys in environment variables
+  - Key rotation mechanism design (for future implementation)
+  - Backup and recovery procedures for cryptographic materials
 
-*   **5.1. Form Builder (MVP 2 - Enhanced UI, Project-Scoped):**
-    *   Implement a visual drag-and-drop interface in `FormBuilderPage.tsx` for forms within the selected `ProjectContext`.
-    *   Develop UI for defining conditional logic within forms.
-*   **5.2. Role Editor (Advanced Permissions & Project Member Management):**
-    *   Enhance the UI to support assignment of fine-grained permissions within the selected `ProjectContext`.
-    *   Implement full user invitation and member management workflows for the active project.
-*   **5.3. Full Page Implementations & API Integration (Project-Scoped):**
-    *   `DashboardPage.tsx`: Fully implement project creation flow. Dynamic project listing (from API) based on user's access. Display of project-specific metrics for the selected project.
-    *   `PatientSearchPage.tsx`: Integrate with backend API for project-scoped pseudonymized search.
-    *   `NotificationSchedulerPage.tsx`: Develop UI for defining, viewing, and managing notification rules, ensuring they are project-contextual if necessary.
-    *   `DataSubmissionPage.tsx`: Full integration with backend for dynamic form loading (based on selected project), submission with consent data, and handling of form versions.
-*   **5.4. Comprehensive Consent Management UI (Project-Contextual):**
-    *   Implement user-facing UIs for viewing and managing consent preferences, respecting the active `ProjectContext`.
-*   **5.5. UI/UX Refinement & Iteration:**
-    *   Iterate on the step-by-step form filling UX.
-    *   Refine overall application aesthetics, responsiveness, and accessibility.
+- **Privacy Profile System**
+  - JSONB-based privacy configurations per project
+  - Data retention policies and automatic cleanup jobs
+  - Consent management framework (project, form, recontact levels)
 
-## Phase 6: Backend - Full Service Integration, Scalability & Reporting (Project Contextual)
+### 1.3 Authentication & Authorization (RBAC) (2 weeks)
+**Priority: Critical - Required for multi-project security**
 
-*   **6.1. Full Notification Service Integration (Project-Scoped Logic):**
-    *   Integrate with chosen email/messaging services, ensuring notification logic respects project-specific configurations if any.
-*   **6.2. Advanced Auditing & Basic Reporting (Project-Scoped Access):**
-    *   Develop a secure UI for authorized users to view `access_logs` relevant to projects they have permission to audit.
-    *   Implement backend capabilities for generating project-scoped data export reports.
-*   **6.3. Performance Optimization & Scalability Preparations:**
-    *   Optimize database queries and API response times, considering multi-project data segmentation.
+- **Google OAuth 2.0 Integration**
+  - Configure Authlib for Google OAuth
+  - Implement token validation and user creation/retrieval
+  - Handle edge cases (account linking, email changes)
 
-## Phase 7: Comprehensive Testing, Deployment & Long-Term Evolution
+- **JWT-Based Session Management**
+  - Issue project-contextual JWTs with role claims
+  - Implement token refresh mechanism
+  - Configure secure token storage and transmission
 
-*   **7.1. End-to-End Testing & Quality Assurance:**
-    *   Conduct thorough testing of all user flows, including project selection, role-based access scenarios within projects, and project-scoped data operations.
-*   **7.2. Security Audits & Penetration Testing:**
-    *   Perform security reviews.
-*   **7.3. Production Deployment & Monitoring:**
-    *   Prepare and execute deployment.
-    *   Set up monitoring, logging, and alerting.
-*   **7.4. User Feedback, Iterative Refinement & Long-Term Vision:**
-    *   Gather feedback.
-    *   Plan for subsequent iterations.
-    *   Begin exploration for long-term vision features.
+- **RBAC Permission System**
+  ```python
+  # Granular permissions system
+  PERMISSIONS = [
+      'can_view_submissions', 'can_edit_submissions', 'can_delete_submissions',
+      'can_create_forms', 'can_edit_forms', 'can_publish_forms',
+      'can_manage_users', 'can_assign_roles', 'can_view_audit_logs',
+      'can_export_data', 'can_search_patients', 'can_send_notifications',
+      'can_manage_project_settings', 'can_delete_project'
+  ]
+  ```
 
-This roadmap provides a more granular approach to developing PedAir, prioritizing foundational backend work, the critical clinical UX refactor for forms, and then iteratively building out the more complex management UIs and backend services. 
+- **Authorization Middleware**
+  - Decorator-based permission checking
+  - Project-contextual authorization (user must have role in specific project)
+  - Audit logging for all permission checks
+
+### 1.4 Core API Endpoints (2 weeks)
+**Priority: High - Enables frontend integration**
+
+- **Project Management APIs**
+  ```
+  POST /api/projects - Create new project
+  GET /api/projects - List user's projects
+  GET /api/projects/{id} - Get project details
+  PUT /api/projects/{id} - Update project settings
+  DELETE /api/projects/{id} - Delete project (with safeguards)
+  ```
+
+- **User & Role Management APIs**
+  ```
+  GET /api/projects/{id}/members - List project members
+  POST /api/projects/{id}/members/invite - Invite new member
+  PUT /api/projects/{id}/members/{user_id}/roles - Update member roles
+  GET /api/projects/{id}/roles - List project roles
+  POST /api/projects/{id}/roles - Create new role
+  PUT /api/projects/{id}/roles/{role_id} - Update role permissions
+  ```
+
+- **Form Management APIs**
+  ```
+  GET /api/projects/{id}/forms - List project forms
+  POST /api/projects/{id}/forms - Create new form
+  GET /api/projects/{id}/forms/{form_id} - Get form schema
+  PUT /api/projects/{id}/forms/{form_id} - Update form
+  POST /api/projects/{id}/forms/{form_id}/versions - Create new version
+  ```
+
+---
+
+## Phase 2: Frontend State Management & Clinical UX Foundation (4-6 weeks)
+
+### 2.1 Zustand State Architecture (1 week)
+**Priority: Critical - Enables complex state management**
+
+- **Core Store Implementation**
+  ```typescript
+  // authStore.ts - Authentication and user context
+  interface AuthState {
+    isAuthenticated: boolean
+    user: User | null
+    activeProjectRoles: string[]
+    login: (token: string) => void
+    logout: () => void
+    setProjectRoles: (roles: string[]) => void
+  }
+
+  // projectStore.ts - Project context and selection
+  interface ProjectState {
+    availableProjects: Project[]
+    activeProjectId: string | null
+    activeProjectDetails: Project | null
+    setActiveProject: (projectId: string) => void
+    fetchAvailableProjects: () => Promise<void>
+  }
+
+  // submissionStore.ts - Multi-form data collection
+  interface SubmissionState {
+    patientData: PatientInputData | null
+    formsInSequence: FormDefinition[]
+    allFormsData: Record<string, any>
+    currentFormIndex: number
+    encounterStatus: 'idle' | 'active' | 'paused' | 'completed'
+    startNewEncounter: (patient: PatientInputData, forms: FormDefinition[]) => void
+    updateFormData: (formKey: string, data: any) => void
+    navigateToForm: (index: number) => void
+    pauseEncounter: () => void
+    resumeEncounter: () => void
+    submitEncounter: () => Promise<void>
+  }
+  ```
+
+- **Persistence & Hydration**
+  - LocalStorage integration for draft submissions
+  - Automatic state restoration on page reload
+  - Conflict resolution for concurrent sessions
+
+### 2.2 Sequential Multi-Form Clinical UX (2 weeks)
+**Priority: Critical - Core clinical workflow**
+
+- **Enhanced DataSubmissionPage.tsx**
+  - Patient identification workflow with pseudonymization preview
+  - Multi-layered consent collection (project, form, recontact)
+  - Form sequence navigation with progress indicators
+  - Touch-optimized interface for tablets/smartphones
+
+- **Clinical UX Principles Implementation**
+  ```typescript
+  // Large touch targets (minimum 44px)
+  // Immediate validation feedback
+  // Swipe gestures for form navigation
+  // Offline-capable data entry with sync
+  // Voice input preparation (future)
+  ```
+
+- **Form State Persistence**
+  - Auto-save every 30 seconds during data entry
+  - Recovery from unexpected disconnections
+  - "Resume where you left off" functionality
+  - Data integrity checks before submission
+
+### 2.3 Project-Contextual Navigation Enhancement (1 week)
+**Priority: High - Improves user experience**
+
+- **Enhanced Layout.tsx**
+  - Project-specific breadcrumb navigation
+  - Context-sensitive header actions
+  - Role-based feature visibility
+  - Mobile-responsive sidebar with touch gestures
+
+- **Page-Level Project Integration**
+  - All pages consume project context
+  - Permission-based component rendering
+  - Project-scoped data loading
+  - Error handling for insufficient permissions
+
+### 2.4 Form Builder Foundation (1-2 weeks)
+**Priority: Medium - Enables form customization**
+
+- **Basic Form Builder UI**
+  - JSON Schema editor with visual preview
+  - Widget mapping interface (schema field → UI component)
+  - Form metadata management (title, description, version)
+  - Schema validation with real-time error display
+
+- **Advanced Widget Configuration**
+  - AutocompleteTagSelector data source configuration
+  - DrugSection customization options
+  - Conditional field logic setup
+  - Custom validation rules editor
+
+---
+
+## Phase 3: Data Submission & Patient Management (4-5 weeks)
+
+### 3.1 Backend Form Submission System (2 weeks)
+**Priority: Critical - Core data collection functionality**
+
+- **Form Submission APIs**
+  ```python
+  POST /api/projects/{id}/submissions
+  GET /api/projects/{id}/submissions
+  GET /api/projects/{id}/submissions/{submission_id}
+  PUT /api/projects/{id}/submissions/{submission_id}
+  DELETE /api/projects/{id}/submissions/{submission_id}
+  ```
+
+- **Patient Pseudonymization Implementation**
+  - Real-time patient_id generation from input data
+  - Duplicate patient detection and linking
+  - Patient consent status tracking
+  - Contact information encryption and storage
+
+- **Form Version Management**
+  - Schema compatibility checking
+  - Migration scripts for version updates
+  - Legacy submission support
+  - Version-specific validation
+
+### 3.2 Patient Search & Data Retrieval (1 week)
+**Priority: High - Essential for clinical workflow**
+
+- **Pseudonymized Search API**
+  ```python
+  GET /api/projects/{id}/patients/search?initials=JS&gender=M&dob=2017-02-04
+  # Returns: List of submissions for calculated patient_id
+  ```
+
+- **Patient Search UI**
+  - Intuitive search interface with autocomplete
+  - Search result display with submission timeline
+  - Permission-based data access controls
+  - Export functionality for authorized users
+
+### 3.3 Enhanced Data Submission Frontend (1-2 weeks)
+**Priority: High - Clinical user experience**
+
+- **Complete Multi-Form Workflow**
+  - Seamless form-to-form transitions
+  - Progress tracking and completion status
+  - Error handling and validation feedback
+  - Bulk submission capabilities
+
+- **Mobile-Optimized Interface**
+  - Touch-friendly form controls
+  - Gesture-based navigation
+  - Offline data entry with sync
+  - Adaptive layouts for various screen sizes
+
+---
+
+## Phase 4: Advanced Project Management & Collaboration (3-4 weeks)
+
+### 4.1 Role Editor & Member Management (2 weeks)
+**Priority: High - Essential for multi-user projects**
+
+- **Advanced Role Editor UI**
+  - Granular permission assignment interface
+  - Role templates for common use cases
+  - Permission inheritance and conflicts resolution
+  - Bulk role assignments
+
+- **Member Management System**
+  - User invitation workflow with email integration
+  - Member onboarding and role assignment
+  - Access level modifications and audit trail
+  - Member removal and data access revocation
+
+### 4.2 Project Settings & Privacy Configuration (1 week)
+**Priority: High - LGPD compliance interface**
+
+- **Privacy Policy Configuration UI**
+  - Data retention period settings
+  - Consent requirement customization
+  - Export policies and restrictions
+  - Contact data handling preferences
+
+- **Project Lifecycle Management**
+  - Project archiving and data retention
+  - Bulk data export for project closure
+  - Legal compliance reporting
+  - Data anonymization workflows
+
+### 4.3 Audit & Compliance Features (1 week)
+**Priority: Medium - Governance and transparency**
+
+- **Audit Log Interface**
+  - Searchable and filterable access logs
+  - User activity timelines
+  - Data modification history
+  - Export compliance reports
+
+- **Compliance Dashboard**
+  - LGPD compliance status indicators
+  - Data retention policy enforcement
+  - Consent status monitoring
+  - Security incident tracking
+
+---
+
+## Phase 5: Notifications & Communication (3-4 weeks)
+
+### 5.1 Notification System Backend (2 weeks)
+**Priority: Medium - Patient engagement and follow-up**
+
+- **Email Service Integration**
+  - Configure SendGrid/Mailgun integration
+  - Template-based email composition
+  - Encrypted contact data handling
+  - Delivery status tracking and retry logic
+
+- **Notification Scheduling System**
+  ```python
+  # Flexible scheduling rules
+  POST /api/projects/{id}/notification-rules
+  {
+    "trigger": "days_after_submission",
+    "form_id": "intra_operative",
+    "delay_days": 30,
+    "template": "followup_30_days",
+    "consent_required": "recontact"
+  }
+  ```
+
+### 5.2 Notification Management UI (1 week)
+**Priority: Medium - User control over communications**
+
+- **Notification Rule Configuration**
+  - Visual rule builder interface
+  - Template editor with variable substitution
+  - Schedule preview and testing
+  - Bulk notification management
+
+### 5.3 Patient Communication Portal (1 week)
+**Priority: Low - Future patient engagement**
+
+- **Token-Based Access System**
+  - Secure tokenized links for patients
+  - No-login form completion
+  - Progress tracking for multi-part surveys
+  - Consent management for patients/guardians
+
+---
+
+## Phase 6: Advanced Features & Optimization (4-5 weeks)
+
+### 6.1 Advanced Form Builder (2 weeks)
+**Priority: Medium - Enhanced form creation capabilities**
+
+- **Drag-and-Drop Interface**
+  - Visual form designer with widget palette
+  - Real-time preview with actual data
+  - Advanced conditional logic builder
+  - Form template library and sharing
+
+### 6.2 Data Export & Analytics Preparation (1 week)
+**Priority: Medium - Research data utilization**
+
+- **Secure Data Export System**
+  - Multiple export formats (CSV, JSON, SPSS)
+  - Export-specific pseudonymization
+  - Audit trail for all exports
+  - Scheduled automated exports
+
+### 6.3 Performance Optimization & Scalability (1-2 weeks)
+**Priority: Medium - Production readiness**
+
+- **Backend Optimization**
+  - Database query optimization and indexing
+  - API response caching strategies
+  - Connection pooling and resource management
+  - Load testing and performance monitoring
+
+- **Frontend Optimization**
+  - Code splitting and lazy loading
+  - Form caching and offline capabilities
+  - Progressive Web App features
+  - Mobile performance optimization
+
+---
+
+## Phase 7: Production Deployment & Quality Assurance (3-4 weeks)
+
+### 7.1 Security Audit & Penetration Testing (2 weeks)
+**Priority: Critical - Production security**
+
+- **Comprehensive Security Review**
+  - Authentication and authorization testing
+  - Data encryption validation
+  - API security assessment
+  - Frontend security hardening
+
+### 7.2 End-to-End Testing & User Acceptance (1 week)
+**Priority: Critical - Quality assurance**
+
+- **Complete User Journey Testing**
+  - Project creation to data export workflows
+  - Multi-user collaboration scenarios
+  - Mobile device compatibility testing
+  - Performance under load testing
+
+### 7.3 Production Deployment & Monitoring (1 week)
+**Priority: Critical - Go-live preparation**
+
+- **Production Infrastructure**
+  - Render.com deployment configuration
+  - Database backup and recovery procedures
+  - SSL/TLS certificate management
+  - Environment variable security
+
+- **Monitoring & Alerting**
+  - Application performance monitoring
+  - Error tracking and alerting
+  - User analytics and usage patterns
+  - Security incident detection
+
+---
+
+## Future Vision & Long-Term Roadmap (Post-MVP)
+
+### Advanced Clinical Integration
+- **Voice Input Integration**: Speech-to-text for hands-free data entry
+- **Barcode/QR Code Scanning**: Equipment and medication tracking
+- **Integration with Hospital Systems**: HL7 FHIR compatibility
+- **Real-time Collaboration**: Multi-user simultaneous data entry
+
+### Enhanced Analytics & Research Tools
+- **Statistical Analysis Integration**: R/Python notebook integration
+- **Machine Learning Pipelines**: Automated pattern recognition
+- **Predictive Modeling**: Risk stratification tools
+- **Research Collaboration**: Multi-site study coordination
+
+### Regulatory & Compliance Evolution
+- **FDA 21 CFR Part 11 Compliance**: Electronic records and signatures
+- **International Standards**: ISO 27001, HIPAA compliance options
+- **Regulatory Reporting**: Automated adverse event reporting
+- **Data Governance**: Advanced data lineage and provenance
+
+---
+
+## Success Metrics & Key Performance Indicators
+
+### Technical KPIs
+- **Page Load Time**: < 2 seconds for form loading
+- **Mobile Responsiveness**: 100% touch interface compatibility
+- **Uptime**: 99.9% availability target
+- **Data Security**: Zero data breaches or unauthorized access
+
+### User Experience KPIs
+- **Form Completion Rate**: > 95% for started forms
+- **User Adoption**: Time to productivity < 30 minutes for new users
+- **Mobile Usage**: > 60% of data entry via mobile devices
+- **Error Rate**: < 1% data validation errors
+
+### Research Impact KPIs
+- **Data Quality**: > 98% complete data fields
+- **Multi-site Adoption**: Support for > 10 concurrent projects
+- **Compliance**: 100% LGPD compliance audit success
+- **Research Output**: Enable > 5 peer-reviewed publications per year
+
+This comprehensive roadmap balances immediate clinical needs with long-term research platform goals, ensuring PedAir becomes a robust, secure, and user-friendly platform for pediatric surgical research while maintaining strict compliance with Brazilian data protection regulations. 
