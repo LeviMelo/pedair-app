@@ -185,8 +185,7 @@
   }
   
   .card-header {
-    @apply pb-3 mb-4 border-b-2 border-gradient-to-r from-slate-300 to-slate-400 
-           dark:border-gradient-to-r dark:from-slate-700 dark:to-slate-600;
+    @apply pb-3 mb-4 border-b-2 border-slate-300 dark:border-slate-700;
   }
   
   .card-title {
