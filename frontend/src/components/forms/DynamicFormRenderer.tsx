@@ -4,6 +4,9 @@ import CheckboxGroupField from '../ui/CheckboxGroupField';
 import InputField from '../ui/InputField';
 import SelectField from '../ui/SelectField';
 import AutocompleteTagSelectorWidget, { SelectedItemType } from '../widgets/AutocompleteTagSelectorWidget';
+import DrugSectionWidget, { DrugSectionValue } from '../widgets/DrugSectionWidget';
+// Import the data source for IntraOp options
+import { intraOpDataSources, OptionInfo as IntraOpOptionInfo } from '../../data/intraoperatoriaOptions';
 // We will import schema types and UI components later
 
 // Define expected prop types (will expand later)
@@ -49,6 +52,21 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
       required: isRequired,
     };
 
+    if (widgetName === 'DrugSectionWidget') {
+      const currentDrugSectionValue = formData[propertyName] || { selectedDrugs: {}, drugValues: {} };
+      return (
+        <DrugSectionWidget
+          id={propertyName}
+          value={currentDrugSectionValue as DrugSectionValue}
+          onChange={(newValue: DrugSectionValue) =>
+            onFormDataChange({ ...formData, [propertyName]: newValue })
+          }
+          uiOptions={fieldUiOptions}
+          required={isRequired}
+        />
+      );
+    }
+
     if (widgetName === 'AutocompleteTagSelectorWidget') {
       return (
         <AutocompleteTagSelectorWidget
@@ -84,7 +102,9 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
 
     if (widgetName === 'SelectFieldWidget') {
       let selectOptions: WidgetOption[] = [];
-      if (propertySchema.enum && propertySchema.enumNames) {
+      if (fieldUiOptions.optionsSourceKey && intraOpDataSources[fieldUiOptions.optionsSourceKey as keyof typeof intraOpDataSources]) {
+        selectOptions = (intraOpDataSources[fieldUiOptions.optionsSourceKey as keyof typeof intraOpDataSources] as IntraOpOptionInfo[]).map(opt => ({...opt}));
+      } else if (propertySchema.enum && propertySchema.enumNames) {
         selectOptions = propertySchema.enum.map((enumValue: string | number, index: number) => ({
           value: enumValue,
           label: propertySchema.enumNames[index] || String(enumValue),
@@ -103,7 +123,9 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
 
     if (widgetName === 'RadioButtonGroupField') {
       let radioOptions: WidgetOption[] | undefined = undefined;
-      if (propertySchema.enum && propertySchema.enumNames) {
+      if (fieldUiOptions.optionsSourceKey && intraOpDataSources[fieldUiOptions.optionsSourceKey as keyof typeof intraOpDataSources]) {
+        radioOptions = (intraOpDataSources[fieldUiOptions.optionsSourceKey as keyof typeof intraOpDataSources] as IntraOpOptionInfo[]).map(opt => ({...opt}));
+      } else if (propertySchema.enum && propertySchema.enumNames) {
         radioOptions = propertySchema.enum.map((enumValue: string | number, index: number) => ({
           value: enumValue,
           label: propertySchema.enumNames[index] || String(enumValue),
@@ -125,7 +147,9 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
 
     if (widgetName === 'CheckboxGroupField') {
       let checkboxOptions: CheckboxWidgetOption[] | undefined = undefined;
-      if (propertySchema.items?.enum && propertySchema.items?.enumNames) {
+      if (fieldUiOptions.optionsSourceKey && intraOpDataSources[fieldUiOptions.optionsSourceKey as keyof typeof intraOpDataSources]) {
+        checkboxOptions = (intraOpDataSources[fieldUiOptions.optionsSourceKey as keyof typeof intraOpDataSources] as IntraOpOptionInfo[]).map(opt => ({ value: String(opt.value), label: opt.label }));
+      } else if (propertySchema.items?.enum && propertySchema.items?.enumNames) {
         checkboxOptions = propertySchema.items.enum.map((enumValue: any, index: number) => ({
           value: String(enumValue),
           label: propertySchema.items.enumNames[index] || String(enumValue),

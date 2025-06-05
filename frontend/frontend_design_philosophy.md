@@ -32,6 +32,7 @@ The PedAir interface aims for a **clinical-scientific aesthetic** that instills 
 ## 3. Interaction & User Experience
 
 *   **Responsiveness:** Fully responsive design that adapts seamlessly to various screen sizes, from mobile to desktop.
+*   **Touch-Friendly Interactions & Diverse Input Modalities:** Prioritize designing for touch interfaces, especially for tablets and phones. Explore and implement varied input controls (e.g., sliders, steppers, interactive time pickers) to minimize reliance on keyboard entry and enhance usability in clinical settings.
 *   **Feedback:** Clear visual feedback for user actions (e.g., hover states, active states, loading indicators, success/error messages).
 *   **Intuitive Navigation:** Simple, predictable, and efficient navigation patterns.
 *   **Accessibility (WCAG AA Compliance):**

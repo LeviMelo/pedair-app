@@ -1,36 +1,53 @@
-import PreAnestesia from './components/PreAnestesia';
-import Intraoperatoria from './components/Intraoperatoria';
-import RecuperacaoPosAnestesica from './components/RecuperacaoPosAnestesica';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Layout from './components/layout/Layout';
+import DashboardPage from './pages/DashboardPage';
+import FormBuilderPage from './pages/FormBuilderPage';
+import RoleEditorPage from './pages/RoleEditorPage';
+import DataSubmissionPage from './pages/DataSubmissionPage';
+import PatientSearchPage from './pages/PatientSearchPage';
+import NotificationSchedulerPage from './pages/NotificationSchedulerPage';
+import SettingsPage from './pages/SettingsPage';
+import NotFoundPage from './pages/NotFoundPage';
+
+// Test pages (can be kept for development or removed later)
+import TestRecuperacaoFormPage from './pages/TestRecuperacaoFormPage';
+import TestPreAnestesiaFormPage from './pages/TestPreAnestesiaFormPage';
+import TestIntraoperatoriaFormPage from './pages/TestIntraoperatoriaFormPage';
+
+import './index.css'; // Ensure global styles are loaded
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-8"> {/* Outer container */}
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-center text-blue-700">
-          PedAir - Registro Perioperatório Pediátrico
-        </h1>
-        {/* Poderíamos adicionar um logo ou subtítulo aqui */}
-      </header>
-
-      <main className="max-w-4xl mx-auto"> {/* Main content area */}
-        <PreAnestesia />
-        <Intraoperatoria />
-        <RecuperacaoPosAnestesica />
-
-        <div className="mt-8 text-center">
-          <button
-            type="button"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow transition-colors duration-150"
-          >
-            Salvar Registro (Simulado)
-          </button>
-        </div>
-      </main>
-
-      <footer className="mt-12 text-center text-sm text-slate-500">
-        <p>© {new Date().getFullYear()} PedAir. Desenvolvido como projeto de aprendizado.</p>
-      </footer>
-    </div>
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<DashboardPage />} />
+        <Route path="forms" element={<DataSubmissionPage />} />
+        <Route path="builder" element={<FormBuilderPage />} />
+        <Route path="roles" element={<RoleEditorPage />} />
+        <Route path="search" element={<PatientSearchPage />} />
+        <Route path="scheduler" element={<NotificationSchedulerPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+        
+        {/* Routes for existing test form pages - can be integrated or kept separate */}
+        <Route path="test/recuperacao" element={<TestRecuperacaoFormPage />} />
+        <Route path="test/preanestesia" element={<TestPreAnestesiaFormPage />} />
+        <Route path="test/intraoperatoria" element={<TestIntraoperatoriaFormPage />} />
+      </Route>
+      
+      {/* Route for pages without the main layout, e.g., login, or a standalone NotFoundPage */}
+      {/* For now, NotFoundPage will also use the Layout, but this can be changed. */}
+      {/* To have NotFoundPage outside Layout, define a separate <Route path="*" element={<NotFoundPage />} /> outside the Layout route. */}
+      {/* However, for a consistent experience, often 404 pages are also within the main layout. */}
+      {/* If you want a full screen 404 without sidebar: */}
+      {/* <Route path="*" element={<NotFoundPage />} /> */}
+      {/* For now, let's make it part of the layout for simplicity, or a specific route if needed. */}
+      {/* For a true catch-all, it should be outside and last. Let's use a specific path for now if needed or rely on nested. */}
+      {/* A common pattern is to have the catch-all * within the Layout to show 404 within the app structure */}
+      <Route path="/" element={<Layout />}> {/* Re-opening Layout for the wildcard to be inside it */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
   );
 }
 

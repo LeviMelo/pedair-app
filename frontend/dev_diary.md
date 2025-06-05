@@ -121,4 +121,24 @@ This document tracks major development milestones, decisions, challenges, bugs, 
 *   **Status:** `DynamicFormRenderer` is now equipped to handle complex custom widgets like `AutocompleteTagSelectorWidget`.
 *   **Next Steps:** User to test the `PreAnestesia` form rendering (especially the Diagnósticos, Comorbidades, Queixas fields) using a test page (`TestPreAnestesiaFormPage.tsx`).
 
+---
+
+**YYYY-MM-DD: All Core Forms Dynamically Rendered & Tested**
+
+*   **Task:** Created `frontend/src/data/intraoperatoriaOptions.ts` for Intraoperatória form option lists.
+*   **Task:** Created `frontend/src/schemas/intraoperatoria.schema.json` and `frontend/src/schemas/intraoperatoria.uiSchema.json`.
+*   **Task:** Updated `DynamicFormRenderer.tsx` to support `optionsSourceKey` in `uiSchema` for sourcing options from `intraOpDataSources`.
+*   **Task:** Implemented `frontend/src/components/widgets/DrugSectionWidget.tsx` for rendering complex drug input sections, utilizing `DrugInputField`.
+*   **Task:** Integrated `DrugSectionWidget` into `DynamicFormRenderer.tsx`.
+*   **Task:** Created `frontend/src/pages/TestIntraoperatoriaFormPage.tsx` for testing the Intraoperatória form.
+*   **Task:** Updated `frontend/src/App.tsx` to render `TestIntraoperatoriaFormPage.tsx` for easy testing of the most complex dynamic form.
+*   **Achievement:** Successfully tested and confirmed that all three initial forms (`RecuperacaoPosAnestesica`, `PreAnestesia`, `Intraoperatoria`) are now dynamically rendered using their respective JSON schemas, UI schemas, and the `DynamicFormRenderer` with its associated widgets. The core dynamic form rendering mechanism is validated.
+*   **Status:** The foundational work for schema-driven form rendering on the frontend is complete for the existing forms.
+*   **Next Steps (High-Level):**
+    1.  Begin work on the overall UI/UX refactor as per `frontend_design_philosophy.md` and `project_description.md` (e.g., main layout, navigation, dashboard).
+    2.  Plan and develop the UI for the "Form Builder" (allowing users to create/edit JSON Schemas).
+    3.  Commence backend development (Flask, SQLAlchemy, PostgreSQL, authentication, API endpoints for schemas and submissions).
+    4.  Integrate frontend form submissions with the backend.
+    5.  Address other features outlined in `project_phases.md` and `project_description.md` (pseudonymization, notifications, RBAC, etc.).
+
 --- 

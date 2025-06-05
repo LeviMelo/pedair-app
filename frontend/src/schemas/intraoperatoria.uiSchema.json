@@ -1,0 +1,66 @@
+{
+  "procedimento": {
+    "ui:widget": "SelectFieldWidget",
+    "ui:options": {
+      "placeholder": "Selecione..."
+    }
+  },
+  "tipoAnestesia": {
+    "ui:widget": "SelectFieldWidget",
+    "ui:options": {
+      "placeholder": "Selecione..."
+    }
+  },
+  "farmacosInducao": {
+    "ui:widget": "DrugSectionWidget",
+    "ui:options": {
+      "drugListKey": "inductionDrugsList",
+      "sectionTitle": "Fármacos para Indução" 
+    }
+  },
+  "farmacosManutencao": {
+    "ui:widget": "DrugSectionWidget",
+    "ui:options": {
+      "drugListKey": "maintenanceDrugsList",
+      "sectionTitle": "Fármacos para Manutenção"
+    }
+  },
+  "farmacosAdjuvantes": {
+    "ui:widget": "DrugSectionWidget",
+    "ui:options": {
+      "drugListKey": "adjuvantDrugsList",
+      "sectionTitle": "Fármacos Adjuvantes"
+    }
+  },
+  "sintomaticos": {
+    "ui:widget": "DrugSectionWidget",
+    "ui:options": {
+      "drugListKey": "symptomaticDrugsList",
+      "sectionTitle": "Sintomáticos"
+    }
+  },
+  "suporteOxigenioSelecionado": {
+    "ui:widget": "CheckboxGroupField",
+    "ui:options": { 
+      "optionsSourceKey": "oxigenioOptions" 
+    }
+  },
+  "suporteVentilatorioSelecionado": {
+    "ui:widget": "CheckboxGroupField",
+    "ui:options": { 
+      "optionsSourceKey": "ventilatorioOptions" 
+    }
+  },
+  "nivelDessaturacao": {
+    "ui:widget": "RadioButtonGroupField",
+    "ui:options": { 
+      "optionsSourceKey": "dessaturacaoOptions" 
+    }
+  },
+  "outrasIntercorrencias": {
+    "ui:widget": "CheckboxGroupField",
+    "ui:options": { 
+      "optionsSourceKey": "outrasIntercorrenciasOptions" 
+    }
+  }
+} 

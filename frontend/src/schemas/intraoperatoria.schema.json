@@ -1,0 +1,124 @@
+{
+  "title": "Intraoperatória",
+  "description": "Schema for the Intraoperative form details.",
+  "type": "object",
+  "properties": {
+    "procedimento": {
+      "type": ["string", "null"],
+      "title": "Procedimento",
+      "enum": [null, "broncoscopia_flexivel", "broncoscopia_rigida", "traqueoscopia", "dilatacao_traqueal", "traqueoplastia"],
+      "enumNames": ["Selecione...", "Broncoscopia flexível", "Broncoscopia rígida", "Traqueoscopia", "Dilatação Traqueal", "Traqueoplastia"]
+    },
+    "tipoAnestesia": {
+      "type": ["string", "null"],
+      "title": "Anestesia",
+      "enum": [null, "geral", "sedacao_profunda"],
+      "enumNames": ["Selecione...", "Geral", "Sedação Profunda"]
+    },
+    "farmacosInducao": {
+      "type": "object",
+      "title": "Fármacos para Indução",
+      "properties": {
+        "selectedDrugs": {
+          "type": "object",
+          "description": "Tracks which induction drugs are selected.",
+          "additionalProperties": { "type": "boolean" }
+        },
+        "drugValues": {
+          "type": "object",
+          "description": "Stores values for selected induction drugs.",
+          "additionalProperties": { "type": ["string", "number", "null"] }
+        }
+      },
+      "default": { "selectedDrugs": {}, "drugValues": {} }
+    },
+    "farmacosManutencao": {
+      "type": "object",
+      "title": "Fármacos para Manutenção",
+      "properties": {
+        "selectedDrugs": {
+          "type": "object",
+          "additionalProperties": { "type": "boolean" }
+        },
+        "drugValues": {
+          "type": "object",
+          "additionalProperties": { "type": ["string", "number", "null"] }
+        }
+      },
+      "default": { "selectedDrugs": {}, "drugValues": {} }
+    },
+    "farmacosAdjuvantes": {
+      "type": "object",
+      "title": "Fármacos Adjuvantes",
+      "properties": {
+        "selectedDrugs": {
+          "type": "object",
+          "additionalProperties": { "type": "boolean" }
+        },
+        "drugValues": {
+          "type": "object",
+          "additionalProperties": { "type": ["string", "number", "null"] }
+        }
+      },
+      "default": { "selectedDrugs": {}, "drugValues": {} }
+    },
+    "sintomaticos": {
+      "type": "object",
+      "title": "Sintomáticos",
+      "properties": {
+        "selectedDrugs": {
+          "type": "object",
+          "additionalProperties": { "type": "boolean" }
+        },
+        "drugValues": {
+          "type": "object",
+          "additionalProperties": { "type": ["string", "number", "null"] }
+        }
+      },
+      "default": { "selectedDrugs": {}, "drugValues": {} }
+    },
+    "suporteOxigenioSelecionado": {
+      "type": "array",
+      "title": "Suporte de Oxigênio",
+      "items": {
+        "type": "string",
+        "enum": ["cateter_nasal", "sonda_aspiracao_periglotica"],
+        "enumNames": ["Cateter nasal", "Sonda de aspiração periglótica"]
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "suporteVentilatorioSelecionado": {
+      "type": "array",
+      "title": "Suporte Ventilatório",
+      "items": {
+        "type": "string",
+        "enum": ["mascara_laringea", "tubo_orotraqueal"],
+        "enumNames": ["Máscara laríngea", "Tubo orotraqueal"]
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "nivelDessaturacao": {
+      "type": ["string", "null"],
+      "title": "Nível de Dessaturação (se ocorrido)",
+      "enum": [null, "dessaturacao_85_92", "dessaturacao_75_85", "dessaturacao_lt_70"],
+      "enumNames": ["Nenhum", "Dessaturação (85-92%)", "Dessaturação (75-85%)", "Dessaturação (<70%)"]
+    },
+    "outrasIntercorrencias": {
+      "type": "array",
+      "title": "Outras Intercorrências",
+      "items": {
+        "type": "string",
+        "enum": ["broncoespasmo", "laringoespasmo", "sangramento", "reflexo_tosse_nao_abolido"],
+        "enumNames": ["Broncoespasmo", "Laringoespasmo", "Sangramento", "Reflexo de tosse não abolido"]
+      },
+      "uniqueItems": true,
+      "default": []
+    }
+  },
+  "required": [
+    "procedimento",
+    "tipoAnestesia"
+  ]
+} 
