@@ -83,8 +83,8 @@ const DashboardPage: React.FC = () => {
                   <div 
                     key={project.id} 
                     className={`p-4 rounded-xl transition-all duration-300 cursor-pointer border dark:border-slate-700 
-                                bg-gradient-to-r from-white via-slate-50/50 to-white dark:from-slate-800 dark:via-slate-750/50 dark:to-slate-800 
-                                hover:shadow-lg hover:scale-[1.02] dark:hover:bg-slate-750 
+                                bg-gradient-to-r from-white via-slate-50/50 to-white dark:from-slate-800 dark:via-slate-700/50 dark:to-slate-800 
+                                hover:shadow-lg hover:scale-[1.02] dark:hover:bg-slate-700 
                                 ${isProjectActive 
                                   ? 'ring-2 ring-blue-500 dark:ring-blue-400 shadow-lg shadow-blue-500/25 dark:shadow-blue-400/20' 
                                   : 'border-slate-200 dark:border-slate-700 hover:border-blue-400/50 dark:hover:border-blue-500/50'}

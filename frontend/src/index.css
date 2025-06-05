@@ -3,115 +3,209 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* CSS Custom Properties for Theme Colors */
+  :root {
+    --color-primary-500: 59 130 246;
+    --color-primary-600: 37 99 235;
+    --color-secondary-500: 16 185 129;
+    --color-accent-500: 249 115 22;
+    
+    /* Background Gradients */
+    --bg-page-light: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 25%, #f3e8ff 75%, #f8fafc 100%);
+    --bg-page-dark: linear-gradient(135deg, #0f172a 0%, #1e1b4b 25%, #581c87 75%, #0f172a 100%);
+  }
+  
+  /* Enhanced body background */
+  body {
+    background: var(--bg-page-light);
+  }
+  
+  body.dark {
+    background: var(--bg-page-dark);
+  }
+}
+
 @layer components {
   /* --- Base Button Styles --- */
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm 
-           transition-colors duration-150 ease-in-out 
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg shadow-sm 
+           transition-all duration-200 ease-in-out 
            focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 
-           disabled:opacity-60 disabled:cursor-not-allowed;
+           disabled:opacity-60 disabled:cursor-not-allowed
+           hover:scale-105 active:scale-95;
   }
 
-  /* --- Button Variants --- */
+  /* --- Enhanced Button Variants --- */
   .btn-primary {
-    @apply btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white focus:ring-blue-500 dark:from-blue-500 dark:to-blue-600 dark:hover:from-blue-400 dark:hover:to-blue-500 dark:focus:ring-blue-400 shadow-lg shadow-blue-500/25 dark:shadow-blue-400/20;
+    @apply btn bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 
+           hover:from-blue-700 hover:via-indigo-700 hover:to-blue-800 
+           text-white focus:ring-blue-500 
+           dark:from-blue-500 dark:via-indigo-500 dark:to-blue-600 
+           dark:hover:from-blue-400 dark:hover:via-indigo-400 dark:hover:to-blue-500 
+           dark:focus:ring-blue-400 
+           shadow-lg shadow-blue-500/30 dark:shadow-blue-400/25
+           backdrop-blur-sm;
   }
+  
   .btn-secondary {
-    @apply btn bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white focus:ring-slate-500 dark:from-slate-500 dark:to-slate-600 dark:hover:from-slate-400 dark:hover:to-slate-500 dark:focus:ring-slate-600 shadow-lg shadow-slate-500/25 dark:shadow-slate-400/20;
+    @apply btn bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 
+           hover:from-slate-700 hover:via-slate-800 hover:to-slate-900 
+           text-white focus:ring-slate-500 
+           dark:from-slate-500 dark:via-slate-600 dark:to-slate-700 
+           dark:hover:from-slate-400 dark:hover:via-slate-500 dark:hover:to-slate-600 
+           dark:focus:ring-slate-600 
+           shadow-lg shadow-slate-500/30 dark:shadow-slate-400/25;
   }
+  
   .btn-success {
-    @apply btn bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white focus:ring-emerald-500 dark:from-emerald-500 dark:to-green-500 dark:hover:from-emerald-400 dark:hover:to-green-400 dark:focus:ring-emerald-400 shadow-lg shadow-emerald-500/25 dark:shadow-emerald-400/20;
+    @apply btn bg-gradient-to-r from-emerald-600 via-teal-600 to-green-600 
+           hover:from-emerald-700 hover:via-teal-700 hover:to-green-700 
+           text-white focus:ring-emerald-500 
+           dark:from-emerald-500 dark:via-teal-500 dark:to-green-500 
+           dark:hover:from-emerald-400 dark:hover:via-teal-400 dark:hover:to-green-400 
+           dark:focus:ring-emerald-400 
+           shadow-lg shadow-emerald-500/30 dark:shadow-emerald-400/25;
   }
+  
   .btn-danger {
-    @apply btn bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white focus:ring-red-500 dark:from-red-500 dark:to-rose-500 dark:hover:from-red-400 dark:hover:to-rose-400 dark:focus:ring-red-400 shadow-lg shadow-red-500/25 dark:shadow-red-400/20;
+    @apply btn bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 
+           hover:from-red-700 hover:via-rose-700 hover:to-pink-700 
+           text-white focus:ring-red-500 
+           dark:from-red-500 dark:via-rose-500 dark:to-pink-500 
+           dark:hover:from-red-400 dark:hover:via-rose-400 dark:hover:to-pink-400 
+           dark:focus:ring-red-400 
+           shadow-lg shadow-red-500/30 dark:shadow-red-400/25;
   }
+  
   .btn-warning {
-    @apply btn bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white focus:ring-amber-500 dark:from-amber-400 dark:to-orange-400 dark:focus:ring-amber-400 shadow-lg shadow-amber-500/25 dark:shadow-amber-400/20;
+    @apply btn bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 
+           hover:from-amber-600 hover:via-orange-600 hover:to-yellow-600 
+           text-white focus:ring-amber-500 
+           dark:from-amber-400 dark:via-orange-400 dark:to-yellow-400 
+           dark:focus:ring-amber-400 
+           shadow-lg shadow-amber-500/30 dark:shadow-amber-400/25;
   }
+  
   .btn-outline-primary {
-    @apply btn border border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-500/10 focus:ring-blue-500;
+    @apply btn border-2 border-blue-600 text-blue-600 
+           hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 
+           dark:border-blue-500 dark:text-blue-400 
+           dark:hover:bg-gradient-to-r dark:hover:from-blue-500/10 dark:hover:to-blue-600/10 
+           focus:ring-blue-500 backdrop-blur-sm;
   }
+  
   .btn-outline-slate {
-    @apply btn border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-500 dark:text-slate-300 dark:hover:bg-slate-700/50 focus:ring-slate-400;
+    @apply btn border-2 border-slate-300 text-slate-700 
+           hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-100 
+           dark:border-slate-500 dark:text-slate-300 
+           dark:hover:bg-gradient-to-r dark:hover:from-slate-700/50 dark:hover:to-slate-600/50 
+           focus:ring-slate-400;
   }
+  
   .btn-ghost {
-    @apply btn bg-transparent hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300 focus:ring-slate-400 shadow-none;
+    @apply btn bg-transparent 
+           hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-200 
+           dark:hover:bg-gradient-to-r dark:hover:from-slate-700/50 dark:hover:to-slate-600/50 
+           text-slate-700 dark:text-slate-300 focus:ring-slate-400 shadow-none;
   }
+  
   .btn-link {
-    @apply btn bg-transparent hover:underline text-blue-600 dark:text-blue-400 shadow-none px-1 py-0.5;
+    @apply btn bg-transparent hover:underline text-blue-600 dark:text-blue-400 
+           shadow-none px-1 py-0.5 hover:scale-100;
   }
 
   /* --- Button Sizes --- */
   .btn-sm {
-    @apply px-3 py-1.5 text-xs;
+    @apply px-3 py-1.5 text-xs rounded-md;
   }
   .btn-lg {
-    @apply px-6 py-3 text-base;
+    @apply px-6 py-3 text-base rounded-xl;
   }
   .btn-icon {
-    @apply p-2 rounded-full; /* For icon-only buttons, often combined with .btn-ghost */
+    @apply p-2 rounded-full;
   }
 
-  /* --- Base Input Styles --- */
+  /* --- Enhanced Input Styles --- */
   .input-base {
-    @apply block w-full px-3 py-2 border rounded-md text-sm shadow-sm 
-           bg-white dark:bg-slate-700/50 
+    @apply block w-full px-3 py-2 border-2 rounded-lg text-sm shadow-sm 
+           bg-gradient-to-r from-white to-slate-50/80 
+           dark:bg-gradient-to-r dark:from-slate-700/80 dark:to-slate-600/80 
            border-slate-300 dark:border-slate-600 
            text-slate-900 dark:text-slate-100 
            placeholder-slate-400 dark:placeholder-slate-500 
-           focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
-           dark:focus:border-blue-500 dark:focus:ring-blue-500 
-           disabled:bg-slate-50 dark:disabled:bg-slate-600/50 
+           focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+           dark:focus:border-blue-400 dark:focus:ring-blue-400/30 
+           disabled:bg-slate-100 dark:disabled:bg-slate-700/50 
            disabled:text-slate-500 dark:disabled:text-slate-400 
            disabled:border-slate-200 dark:disabled:border-slate-700 
-           disabled:shadow-none;
+           disabled:shadow-none
+           transition-all duration-200 backdrop-blur-sm;
   }
+  
   .textarea-base {
-    @apply input-base min-h-[80px]; /* Inherit from input-base and add specific textarea styles */
+    @apply input-base min-h-[80px];
   }
 
-  /* --- Form Field Wrapper (Label + Input) --- */
+  /* --- Form Field Wrapper --- */
   .form-field {
     @apply mb-4;
   }
+  
   .form-label {
-    @apply block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1;
+    @apply block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2;
   }
+  
   .form-description {
     @apply text-sm text-slate-600 dark:text-slate-400 mb-6;
   }
 
-  /* --- Enhanced Card Styles --- */
+  /* --- Enhanced Card System --- */
   .card-base {
-    @apply bg-white dark:bg-slate-800 rounded-lg shadow-md dark:shadow-[0_0_15px_rgba(255,255,255,0.05)]
-           border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm;
-  }
-  .card-enhanced {
-    @apply bg-gradient-to-br from-white via-slate-50/80 to-white 
-           dark:from-slate-800 dark:via-slate-750/80 dark:to-slate-800
-           border border-slate-200/60 dark:border-slate-700/60
-           shadow-lg shadow-slate-200/50 dark:shadow-slate-900/20 rounded-xl;
-  }
-  .card-colorful {
-    @apply card-base relative overflow-hidden;
-  }
-  .card-header {
-    @apply pb-2 mb-4 border-b border-slate-300 dark:border-slate-700;
-  }
-  .card-title {
-     @apply text-xl font-semibold text-slate-800 dark:text-slate-100;
-  }
-  .card-body {
-    @apply p-4 sm:p-6; /* Default padding, can be overridden */
-  }
-  .card-footer {
-    @apply pt-4 mt-4 border-t border-slate-200 dark:border-slate-700;
+    @apply bg-gradient-to-br from-white via-slate-50/60 to-white 
+           dark:bg-gradient-to-br dark:from-slate-800 dark:via-slate-700/80 dark:to-slate-800
+           rounded-xl shadow-lg dark:shadow-xl
+           border border-slate-200/60 dark:border-slate-700/60 
+           backdrop-blur-sm
+           transition-all duration-300;
   }
   
-  /* --- Page/Layout Specific --- */
+  .card-enhanced {
+    @apply bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 
+           dark:from-slate-800 dark:via-slate-700/80 dark:to-slate-800
+           border border-slate-200/60 dark:border-slate-700/60
+           shadow-xl shadow-slate-200/60 dark:shadow-slate-900/30 
+           rounded-xl backdrop-blur-md
+           hover:shadow-2xl hover:scale-[1.01] transition-all duration-300;
+  }
+  
+  .card-colorful {
+    @apply card-base relative overflow-hidden
+           hover:shadow-xl hover:scale-[1.01] transition-all duration-300;
+  }
+  
+  .card-header {
+    @apply pb-3 mb-4 border-b-2 border-gradient-to-r from-slate-300 to-slate-400 
+           dark:border-gradient-to-r dark:from-slate-700 dark:to-slate-600;
+  }
+  
+  .card-title {
+    @apply text-xl font-bold text-slate-800 dark:text-slate-100;
+  }
+  
+  .card-body {
+    @apply p-4 sm:p-6;
+  }
+  
+  .card-footer {
+    @apply pt-4 mt-4 border-t-2 border-slate-200 dark:border-slate-700;
+  }
+  
+  /* --- Page Layout Specific --- */
   .page-header {
     @apply text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100;
   }
+  
   .page-subheader {
     @apply text-slate-600 dark:text-slate-400 text-sm mt-1;
   }
@@ -120,44 +214,70 @@
   .gradient-primary {
     @apply bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600;
   }
-  .gradient-success {
+  
+  .gradient-secondary {
     @apply bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500;
   }
-  .gradient-warning {
-    @apply bg-gradient-to-r from-amber-500 via-orange-500 to-red-500;
+  
+  .gradient-accent {
+    @apply bg-gradient-to-r from-orange-500 via-red-500 to-pink-500;
   }
+  
   .text-gradient {
     @apply bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent;
   }
+  
   .text-gradient-warm {
     @apply bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent;
   }
+  
   .text-gradient-cool {
     @apply bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 bg-clip-text text-transparent;
   }
+  
   .icon-colorful {
     @apply text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500;
   }
+
+  /* --- Interactive Elements --- */
+  .interactive-hover {
+    @apply hover:scale-105 hover:shadow-lg transition-all duration-200 cursor-pointer;
+  }
+  
+  .glass-effect {
+    @apply backdrop-blur-md bg-white/70 dark:bg-slate-800/70 border border-white/20 dark:border-slate-700/30;
+  }
 }
 
-/* Colorful card overlay */
+/* Enhanced Colorful Card Overlays */
 .card-colorful::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 50%, rgba(16, 185, 129, 0.05) 100%);
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.08) 0%, 
+    rgba(147, 51, 234, 0.06) 25%, 
+    rgba(16, 185, 129, 0.08) 50%,
+    rgba(249, 115, 22, 0.06) 75%,
+    rgba(59, 130, 246, 0.08) 100%);
   pointer-events: none;
+  border-radius: inherit;
 }
 
 .dark .card-colorful::before {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 51, 234, 0.08) 50%, rgba(16, 185, 129, 0.08) 100%);
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.12) 0%, 
+    rgba(147, 51, 234, 0.10) 25%, 
+    rgba(16, 185, 129, 0.12) 50%,
+    rgba(249, 115, 22, 0.10) 75%,
+    rgba(59, 130, 246, 0.12) 100%);
 }
 
-/* Add this for the fade-in effect */
+/* Enhanced Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-5px);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
@@ -165,20 +285,90 @@
   }
 }
 
-.animation-fade-in {
-  animation: fadeIn 0.2s ease-out forwards;
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-/* Pulsing gradient animation for special elements */
 @keyframes pulseGlow {
   0%, 100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
     opacity: 0.8;
+    transform: scale(1.02);
   }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animation-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animation-slide-in {
+  animation: slideInFromLeft 0.4s ease-out forwards;
 }
 
 .animate-pulse-glow {
   animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+}
+
+/* Utility classes for enhanced interactivity */
+.hover-lift {
+  @apply hover:scale-105 hover:shadow-xl transition-all duration-300;
+}
+
+.focus-ring-brand {
+  @apply focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 dark:focus:ring-blue-400/30 dark:focus:border-blue-400;
+}
+
+/* Context menu enhancements */
+.context-action-btn {
+  @apply relative overflow-hidden;
+}
+
+.context-action-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.context-action-btn:hover::after {
+  transform: translateX(100%);
+}
+
+/* Responsive design utilities */
+@media (prefers-reduced-motion: reduce) {
+  .animation-fade-in,
+  .animation-slide-in,
+  .animate-pulse-glow,
+  .animate-gradient,
+  .hover-lift {
+    animation: none;
+    transition: none;
+  }
+  
+  .hover-lift:hover {
+    transform: none;
+  }
 }

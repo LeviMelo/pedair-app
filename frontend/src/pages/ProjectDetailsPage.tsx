@@ -94,7 +94,7 @@ const ProjectDetailsPage: React.FC = () => {
         className="relative card-base p-6 sm:p-8 rounded-xl shadow-lg 
                    border border-slate-200 dark:border-slate-700/80 overflow-hidden
                    bg-gradient-to-br from-slate-50 via-white to-slate-50 
-                   dark:from-slate-800 dark:via-slate-850 dark:to-slate-800 
+                   dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 
                    dark:shadow-[0_0_25px_rgba(var(--color-primary-500),0.15)]"
       >
         {/* Optional decorative blurs, can be fine-tuned or removed */}
@@ -146,7 +146,7 @@ const ProjectDetailsPage: React.FC = () => {
                 <div 
                   key={member.userId} 
                   className={`p-4 rounded-md border dark:border-slate-700 flex items-start space-x-4 
-                              bg-white dark:bg-slate-800/60 hover:shadow-sm dark:hover:bg-slate-750/70 
+                              bg-white dark:bg-slate-800/60 hover:shadow-sm dark:hover:bg-slate-700/70 
                               border-slate-200 dark:border-slate-700`}
                 >
                   <img 

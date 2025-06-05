@@ -66,7 +66,7 @@ const DrugInputField: React.FC<DrugInputFieldProps> = ({
   };
 
   return (
-    <div className={`drug-input-field p-2 rounded-md border ${isSelected ? 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-750' : 'border-transparent'} ${colorClass} transition-all duration-150`}>
+    <div className={`drug-input-field p-2 rounded-md border ${isSelected ? 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700' : 'border-transparent'} ${colorClass} transition-all duration-150`}>
       <div className="flex items-center mb-1">
         <input
           type="checkbox"

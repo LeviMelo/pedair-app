@@ -19,7 +19,7 @@ const DashboardGreetingCard: React.FC<DashboardGreetingCardProps> = ({
       className="relative card-base p-6 sm:p-8 rounded-xl shadow-xl 
                  border border-slate-200 dark:border-slate-700/80 overflow-hidden
                  bg-gradient-to-br from-slate-100 via-white to-slate-100 
-                 dark:from-slate-800 dark:via-slate-850 dark:to-slate-800 
+                 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 
                  dark:shadow-[0_0_30px_rgba(var(--color-primary-500),0.2)] 
                  dark:sm:shadow-[0_0_40px_rgba(var(--color-primary-400),0.25)]"
     >
@@ -48,7 +48,7 @@ const DashboardGreetingCard: React.FC<DashboardGreetingCardProps> = ({
         </div>
       </div>
 
-      <div className="relative z-10 mt-8 p-6 bg-white/60 dark:bg-slate-750/50 backdrop-blur-md rounded-lg shadow-inner border border-slate-200 dark:border-slate-700/60">
+      <div className="relative z-10 mt-8 p-6 bg-white/60 dark:bg-slate-700/50 backdrop-blur-md rounded-lg shadow-inner border border-slate-200 dark:border-slate-700/60">
         <div className="flex items-center">
           <PiIdentificationCardDuotone className="text-5xl text-blue-500 dark:text-blue-400 mr-5 shrink-0" />
           <div className="flex-1 min-w-0"> {/* Added min-w-0 for potential truncation */}
