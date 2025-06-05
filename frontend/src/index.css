@@ -356,6 +356,16 @@
   transform: translateX(100%);
 }
 
+/* Scrollbar utilities for mobile-first design */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
 /* Responsive design utilities */
 @media (prefers-reduced-motion: reduce) {
   .animation-fade-in,
@@ -370,4 +380,14 @@
   .hover-lift:hover {
     transform: none;
   }
+}
+
+/* Scrollbar utilities for mobile-first design */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
 }

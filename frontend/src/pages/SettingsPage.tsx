@@ -12,8 +12,8 @@ const SettingsPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* User Profile Card */}
         <section className="card-colorful p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-semibold text-gradient-cool flex items-center mb-4 relative z-10">
-            <PiUserDuotone className="mr-3 text-2xl text-blue-500 dark:text-blue-400" /> User Profile
+          <h2 className="text-xl font-semibold text-blue-600 dark:text-blue-400 flex items-center mb-4 relative z-10">
+            <PiUserDuotone className="mr-3 text-2xl text-blue-600 dark:text-blue-400" /> User Profile
           </h2>
           <div className="space-y-3 relative z-10">
             <p className="text-slate-600 dark:text-slate-300">Edit your profile information, contact details, and professional credentials.</p>
@@ -36,8 +36,8 @@ const SettingsPage: React.FC = () => {
 
         {/* Preferences Card */}
         <section className="card-colorful p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-semibold text-gradient-warm flex items-center mb-4 relative z-10">
-            <PiPaletteDuotone className="mr-3 text-2xl text-purple-500 dark:text-purple-400" /> Appearance
+          <h2 className="text-xl font-semibold text-purple-600 dark:text-purple-400 flex items-center mb-4 relative z-10">
+            <PiPaletteDuotone className="mr-3 text-2xl text-purple-600 dark:text-purple-400" /> Appearance
           </h2>
           <div className="space-y-3 relative z-10">
             <p className="text-slate-600 dark:text-slate-300">Customize your interface appearance and theme settings.</p>
@@ -59,8 +59,8 @@ const SettingsPage: React.FC = () => {
 
         {/* Notifications Card */}
         <section className="card-colorful p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-semibold text-gradient flex items-center mb-4 relative z-10">
-            <PiBellDuotone className="mr-3 text-2xl text-emerald-500 dark:text-emerald-400" /> Notifications
+          <h2 className="text-xl font-semibold text-emerald-600 dark:text-emerald-400 flex items-center mb-4 relative z-10">
+            <PiBellDuotone className="mr-3 text-2xl text-emerald-600 dark:text-emerald-400" /> Notifications
           </h2>
           <div className="space-y-3 relative z-10">
             <p className="text-slate-600 dark:text-slate-300">Configure when and how you receive notifications from CREST.</p>
@@ -85,8 +85,8 @@ const SettingsPage: React.FC = () => {
 
         {/* System Information Card */}
         <section className="card-colorful p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-semibold text-gradient-cool flex items-center mb-4 relative z-10">
-            <PiGearDuotone className="mr-3 text-2xl text-slate-500 dark:text-slate-400" /> System Information
+          <h2 className="text-xl font-semibold text-slate-600 dark:text-slate-400 flex items-center mb-4 relative z-10">
+            <PiGearDuotone className="mr-3 text-2xl text-slate-600 dark:text-slate-400" /> System Information
           </h2>
           <div className="space-y-3 relative z-10">
             <p className="text-slate-600 dark:text-slate-300">Information about your CREST installation and current session.</p>

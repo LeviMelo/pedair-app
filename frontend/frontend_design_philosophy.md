@@ -44,6 +44,32 @@ CREST (Clinical REsearch Study Tool) emphasizes vibrant, colorful aesthetics wit
 - Secondary: #cbd5e1 (Slate 300) - Supporting content
 - Tertiary: #94a3b8 (Slate 400) - Meta information
 
+## UI/UX Consistency Rules
+
+### Icon-Text Color Harmony
+- **Rule**: Icons accompanying text/headers MUST have the same color as the text
+- **Rationale**: Mismatched colors confuse UI hierarchy and obliterate visual cohesion
+- **Implementation**: Use matching color classes for both icon and text elements
+- **Example**: If text is `text-purple-600`, icon should be `text-purple-600`
+
+### Active State Indication
+- **Sidebar Navigation**: Current active page must be clearly indicated
+- **Visual Treatment**: Active items receive enhanced styling (color, glow/shadow, size)
+- **Light Mode**: Active items use colored background with subtle shadow
+- **Dark Mode**: Active items use colored background with glow effects
+- **Scale**: Active items are slightly larger (1.02-1.05x transform)
+
+### Header Design Principles
+- **Alignment**: Header content must align vertically with sidebar elements
+- **Mobile-First Actions**: Header buttons should be minimal, discrete, horizontally scrollable
+- **Context Awareness**: Header should reflect the current active sidebar section
+- **Responsive Behavior**: Buttons stack horizontally on mobile, expand on desktop
+
+### Project Context Design
+- **Active Project Display**: Must be interactive for project switching
+- **Visual Hierarchy**: Clear indication of current project with ability to change
+- **Context Preservation**: Project switching should maintain current page context when possible
+
 ## Component System
 
 ### Buttons

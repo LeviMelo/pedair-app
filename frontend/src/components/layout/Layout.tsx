@@ -73,7 +73,7 @@ const Layout: React.FC = () => {
     const savedMode = localStorage.getItem('darkMode');
     return savedMode ? JSON.parse(savedMode) : window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
-  const [showProjectSelector] = useState(false);
+  const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
@@ -420,9 +420,42 @@ const Layout: React.FC = () => {
 
         {/* Enhanced Active Project Display */}
         {activeProjectDetails && (
-          <div className="px-4 py-3 mx-3 mt-4 rounded-xl bg-gradient-to-r from-blue-50/60 via-indigo-50/40 to-purple-50/60 dark:from-blue-900/20 dark:via-indigo-900/15 dark:to-purple-900/20 border border-blue-200/50 dark:border-blue-800/30">
-            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Active Project</p>
-            <p className="text-sm font-bold text-gradient truncate mt-0.5">{activeProjectDetails.name}</p>
+          <div className="px-4 py-3 mx-3 mt-4">
+            <div className="relative group">
+              <button
+                onClick={() => setShowProjectSelector(!showProjectSelector)}
+                className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-blue-50/60 via-indigo-50/40 to-purple-50/60 dark:from-blue-900/20 dark:via-indigo-900/15 dark:to-purple-900/20 border border-blue-200/50 dark:border-blue-800/30 hover:shadow-lg transition-all duration-200 hover:scale-[1.02] text-left"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Active Project</p>
+                    <p className="text-sm font-bold text-gradient truncate mt-0.5">{activeProjectDetails.name}</p>
+                  </div>
+                  <PiCaretDownDuotone className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform ${showProjectSelector ? 'rotate-180' : ''}`} />
+                </div>
+              </button>
+              
+              {/* Project Selector Dropdown */}
+              {showProjectSelector && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto">
+                  {availableProjects.map((project) => (
+                    <button
+                      key={project.id}
+                      onClick={() => {
+                        handleProjectSelect(project.id);
+                        setShowProjectSelector(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${
+                        project.id === activeProjectId ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500' : ''
+                      }`}
+                    >
+                      <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{project.name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{project.description}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -430,16 +463,27 @@ const Layout: React.FC = () => {
         <nav className="flex-1 px-3 py-4 space-y-2">
           {/* Main Navigation */}
           <div className="space-y-1">
-            {mainNavItems.map((item) => (
-              <Link
-                key={item.id}
-                to={item.path}
-                className="group flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-[1.02] text-slate-700 dark:text-slate-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 hover:shadow-md"
-              >
-                <item.icon className="mr-3 flex-shrink-0 transition-colors w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-                {item.label}
-              </Link>
-            ))}
+            {mainNavItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.id}
+                  to={item.path}
+                  className={`group flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'scale-105 bg-gradient-to-r from-blue-500/20 via-indigo-500/15 to-purple-500/20 dark:from-blue-400/25 dark:via-indigo-400/20 dark:to-purple-400/25 text-blue-700 dark:text-blue-300 shadow-lg dark:shadow-blue-400/20 border border-blue-200/50 dark:border-blue-700/50'
+                      : 'hover:scale-[1.02] text-slate-700 dark:text-slate-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 hover:shadow-md'
+                  }`}
+                >
+                  <item.icon className={`mr-3 flex-shrink-0 transition-colors w-5 h-5 ${
+                    isActive
+                      ? 'text-blue-700 dark:text-blue-300'
+                      : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                  }`} />
+                  {item.label}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Project Navigation */}
@@ -449,26 +493,33 @@ const Layout: React.FC = () => {
                 <h3 className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Project Tools</h3>
               </div>
               <div className="space-y-1">
-                {projectContextMenuItems.map((item) => (
-                  <Link
-                    key={item.id}
-                    to={item.path}
-                    className={`group flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-[1.02] ${
-                      item.disabled
-                        ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-50'
-                        : 'text-slate-700 dark:text-slate-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/20 dark:hover:to-pink-900/20 hover:shadow-md'
-                    }`}
-                    title={item.tooltip}
-                    onClick={item.disabled ? (e) => e.preventDefault() : undefined}
-                  >
-                    <item.icon className={`mr-3 flex-shrink-0 transition-colors w-5 h-5 ${
-                      item.disabled
-                        ? 'text-slate-400 dark:text-slate-600'
-                        : 'text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400'
-                    }`} />
-                    {item.label}
-                  </Link>
-                ))}
+                {projectContextMenuItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.id}
+                      to={item.path}
+                      className={`group flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        item.disabled
+                          ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-50'
+                          : isActive
+                          ? 'scale-105 bg-gradient-to-r from-purple-500/20 via-pink-500/15 to-orange-500/20 dark:from-purple-400/25 dark:via-pink-400/20 dark:to-orange-400/25 text-purple-700 dark:text-purple-300 shadow-lg dark:shadow-purple-400/20 border border-purple-200/50 dark:border-purple-700/50'
+                          : 'hover:scale-[1.02] text-slate-700 dark:text-slate-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/20 dark:hover:to-pink-900/20 hover:shadow-md'
+                      }`}
+                      title={item.tooltip}
+                      onClick={item.disabled ? (e) => e.preventDefault() : undefined}
+                    >
+                      <item.icon className={`mr-3 flex-shrink-0 transition-colors w-5 h-5 ${
+                        item.disabled
+                          ? 'text-slate-400 dark:text-slate-600'
+                          : isActive
+                          ? 'text-purple-700 dark:text-purple-300'
+                          : 'text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400'
+                      }`} />
+                      {item.label}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -479,22 +530,31 @@ const Layout: React.FC = () => {
       <div className="lg:pl-64">
         {/* Enhanced Header */}
         <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b-2 border-slate-200/60 dark:border-slate-700/60 shadow-lg">
-          <div className="flex items-center justify-between px-4 sm:px-6 py-4">
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-800/30 hover:shadow-md transition-all duration-200"
-            >
-              <PiMenuIcon className="w-6 h-6 text-slate-600 dark:text-slate-400" />
-            </button>
-
-            {/* Context Actions for Current Page */}
-            <div className="flex items-center space-x-2">
-              {renderHeaderActions()}
+          <div className="flex items-center justify-between px-6 py-4">
+            {/* Left Section: Mobile menu button + Page title */}
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="lg:hidden p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-800/30 hover:shadow-md transition-all duration-200"
+              >
+                <PiMenuIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              </button>
+              
+              {/* Page Title - matches sidebar alignment */}
+              <div className="hidden sm:block">
+                <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{pageTitle}</h1>
+              </div>
             </div>
 
-            {/* Enhanced Right side controls */}
-            <div className="flex items-center space-x-3">
+            {/* Center Section: Context Actions - Mobile-First Horizontal Scroll */}
+            <div className="flex-1 max-w-2xl mx-4">
+              <div className="flex items-center space-x-2 overflow-x-auto scrollbar-hide pb-1">
+                {renderHeaderActions()}
+              </div>
+            </div>
+
+            {/* Right Section: User controls */}
+            <div className="flex items-center space-x-2">
               {/* Enhanced Theme toggle */}
               <button
                 onClick={toggleDarkMode}
