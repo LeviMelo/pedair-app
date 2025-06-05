@@ -83,8 +83,28 @@ const FormBuilderPage: React.FC = () => {
   };
 
   return (
-    <div className="p-0 flex flex-col h-[calc(100vh-var(--header-height,4rem)-var(--page-padding,3rem))] max-h-[calc(100vh-var(--header-height,4rem)-var(--page-padding,3rem))] bg-gradient-to-br from-slate-50 via-blue-50/20 to-purple-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
-      <h1 className="text-2xl font-semibold text-gradient mb-3 px-1">Form Builder (MVP 1)</h1>
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 dark:from-slate-900 dark:via-purple-950/20 dark:to-slate-900">
+      {/* Enhanced Colorful Page Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-white via-purple-50/50 to-indigo-50/30 dark:from-slate-800 dark:via-slate-700/80 dark:to-slate-800 border-b-2 border-purple-200/60 dark:border-purple-800/30 shadow-xl mb-6">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-indigo-500/5 to-blue-500/10 dark:from-purple-500/5 dark:via-indigo-500/3 dark:to-blue-500/5"></div>
+        <div className="absolute -top-1/2 -right-1/4 w-1/2 h-full bg-gradient-to-l from-white/20 to-transparent dark:from-slate-700/20 rounded-full transform rotate-12"></div>
+        <div className="relative z-10 px-4 sm:px-6 py-6 sm:py-8">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 shadow-lg">
+              <div className="w-6 h-6 text-white">⚡</div>
+            </div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 bg-clip-text text-transparent">
+              Form Builder
+            </h1>
+          </div>
+          <p className="text-slate-600 dark:text-slate-300 text-lg">
+            Design and customize clinical research forms for your project
+          </p>
+        </div>
+      </div>
+      
+      <div className="p-0 flex flex-col h-[calc(100vh-var(--header-height,4rem)-var(--page-padding,3rem)-8rem)] max-h-[calc(100vh-var(--header-height,4rem)-var(--page-padding,3rem)-8rem)]">
+        <div className="px-4 sm:px-6">
       <FormBuilderToolbar 
         onNewForm={handleNewForm}
         onLoadForm={handleLoadForm}

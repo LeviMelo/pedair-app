@@ -641,7 +641,27 @@ const DataSubmissionPage: React.FC = () => {
 
   // Main Render Logic
   return (
-    <div className="p-4 sm:p-6 space-y-4">
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/20 dark:from-slate-900 dark:via-emerald-950/20 dark:to-slate-900">
+      {/* Enhanced Colorful Page Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-white via-emerald-50/50 to-teal-50/30 dark:from-slate-800 dark:via-slate-700/80 dark:to-slate-800 border-b-2 border-emerald-200/60 dark:border-emerald-800/30 shadow-xl mb-6">
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-cyan-500/10 dark:from-emerald-500/5 dark:via-teal-500/3 dark:to-cyan-500/5"></div>
+        <div className="absolute -top-1/2 -right-1/4 w-1/2 h-full bg-gradient-to-l from-white/20 to-transparent dark:from-slate-700/20 rounded-full transform rotate-12"></div>
+        <div className="relative z-10 px-4 sm:px-6 py-6 sm:py-8">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg">
+              <FaFileMedical className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+              Data Submission
+            </h1>
+          </div>
+          <p className="text-slate-600 dark:text-slate-300 text-lg">
+            Collect and submit clinical research data for your active project
+          </p>
+        </div>
+      </div>
+      
+      <div className="p-4 sm:p-6 space-y-4">
       { (currentProcessStep === 'initialPatientInput' || 
          currentProcessStep === 'fillingFormInSequence' || 
          currentProcessStep === 'reviewAndSubmit' ||

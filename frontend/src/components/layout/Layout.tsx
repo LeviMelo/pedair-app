@@ -379,6 +379,21 @@ const Layout: React.FC = () => {
     ));
   };
 
+  // Auto-initialize mock data for development
+  useEffect(() => {
+    if (!isAuthenticated) {
+      console.log('Auto-logging in mock user for development...');
+      mockLogin('userLead123');
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated && availableProjects.length > 0 && !activeProjectId) {
+      console.log('Auto-selecting first project for development...');
+      setActiveProject(availableProjects[0].id);
+    }
+  }, [isAuthenticated, availableProjects, activeProjectId, setActiveProject]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-purple-50/40 dark:from-slate-900 dark:via-indigo-950/50 dark:to-slate-900">
       {/* Enhanced Sidebar */}
@@ -412,35 +427,52 @@ const Layout: React.FC = () => {
         )}
 
         {/* Enhanced Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {mainNavItems.map((item) => (
-            <Link
-              key={item.id}
-              to={item.path}
-              className="group flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-[1.02] text-slate-700 dark:text-slate-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 hover:shadow-md"
-            >
-              <item.icon className="mr-3 flex-shrink-0 transition-colors w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <nav className="flex-1 px-3 py-4 space-y-2">
+          {/* Main Navigation */}
+          <div className="space-y-1">
+            {mainNavItems.map((item) => (
+              <Link
+                key={item.id}
+                to={item.path}
+                className="group flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-[1.02] text-slate-700 dark:text-slate-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 hover:shadow-md"
+              >
+                <item.icon className="mr-3 flex-shrink-0 transition-colors w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+                {item.label}
+              </Link>
+            ))}
+          </div>
 
-        {/* Enhanced User Section */}
-        <div className="p-4 border-t-2 border-slate-200/60 dark:border-slate-700/60 bg-gradient-to-r from-slate-50/50 via-white to-slate-50/50 dark:from-slate-800/50 dark:via-slate-700/50 dark:to-slate-800/50">
-          {user && (
-            <div className="flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-emerald-50/60 to-teal-50/60 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-200/50 dark:border-emerald-800/30">
-              <img
-                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=10b981&color=fff&size=40&font-size=0.40&bold=true`}
-                alt={user.name}
-                className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-600 shadow-md"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{user.name}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
+          {/* Project Navigation */}
+          {projectContextMenuItems.length > 0 && (
+            <div className="pt-3">
+              <div className="px-3 py-2">
+                <h3 className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Project Tools</h3>
+              </div>
+              <div className="space-y-1">
+                {projectContextMenuItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    to={item.path}
+                    className={`group flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-[1.02] ${
+                      item.disabled
+                        ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-50'
+                        : 'text-slate-700 dark:text-slate-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/20 dark:hover:to-pink-900/20 hover:shadow-md'
+                    }`}
+                    title={item.tooltip}
+                    onClick={item.disabled ? (e) => e.preventDefault() : undefined}
+                  >
+                    <item.icon className={`mr-3 flex-shrink-0 transition-colors w-5 h-5 ${
+                      item.disabled
+                        ? 'text-slate-400 dark:text-slate-600'
+                        : 'text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400'
+                    }`} />
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             </div>
           )}
-        </div>
+        </nav>
       </aside>
 
       {/* Enhanced Main Content */}
@@ -455,6 +487,11 @@ const Layout: React.FC = () => {
             >
               <PiMenuIcon className="w-6 h-6 text-slate-600 dark:text-slate-400" />
             </button>
+
+            {/* Context Actions for Current Page */}
+            <div className="flex items-center space-x-2">
+              {renderHeaderActions()}
+            </div>
 
             {/* Enhanced Right side controls */}
             <div className="flex items-center space-x-3">
@@ -475,18 +512,45 @@ const Layout: React.FC = () => {
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 p-2 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 border border-slate-200/50 dark:border-slate-600/50 hover:shadow-lg transition-all duration-200 hover:scale-105"
+                  className="flex items-center space-x-3 p-2 pr-3 rounded-xl bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-900/30 dark:to-teal-900/30 border border-emerald-200/50 dark:border-emerald-800/50 hover:shadow-lg transition-all duration-200 hover:scale-105"
                 >
-                  <PiUserCircleDuotone className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+                  {user && (
+                    <>
+                      <img
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=10b981&color=fff&size=32&font-size=0.40&bold=true`}
+                        alt={user.name}
+                        className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-600 shadow-md"
+                      />
+                      <div className="hidden sm:block text-left">
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate max-w-[120px]">{user.name}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[120px]">{user.email}</p>
+                      </div>
+                    </>
+                  )}
                   <PiCaretDownDuotone className={`w-4 h-4 text-slate-600 dark:text-slate-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {/* Enhanced User dropdown */}
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 backdrop-blur-xl overflow-hidden z-50">
-                    <div className="p-4 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-slate-200/60 dark:border-slate-700/60">
+                    <div className="p-4 bg-gradient-to-r from-emerald-50/50 to-teal-50/50 dark:from-emerald-900/20 dark:to-teal-900/20 border-b border-slate-200/60 dark:border-slate-700/60">
                       <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{user?.name}</p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">{user?.email}</p>
+                      {activeProjectRoles.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs text-slate-600 dark:text-slate-400">Roles:</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {activeProjectRoles.map((role) => (
+                              <span
+                                key={role}
+                                className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-md"
+                              >
+                                {role}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <button
                       onClick={handleAuthAction}
