@@ -7,13 +7,13 @@ interface CheckboxOption {
 }
 
 interface CheckboxGroupFieldProps {
-  label: string;
+  label: string; // This is the legend text
   idPrefix: string;
   options: CheckboxOption[];
   selectedValues: string[];
   onChange: (value: string) => void;
-  className?: string; // Optional class for the fieldset container
-  // itemClassName?: string; // Less needed with grid auto-fit
+  className?: string; // For the fieldset container
+  legendClassName?: string; // For the legend element
 }
 
 const CheckboxGroupField: React.FC<CheckboxGroupFieldProps> = ({
@@ -23,11 +23,15 @@ const CheckboxGroupField: React.FC<CheckboxGroupFieldProps> = ({
   selectedValues,
   onChange,
   className = '',
-  // itemClassName = '',
+  legendClassName = '',
 }) => {
+  const fieldsetClasses = ['form-field', className].filter(Boolean).join(' ');
+  // .form-label already has mb-1, but legend typically has more space after, so mb-2 from original is fine.
+  const finalLegendClassName = ['form-label', legendClassName, 'mb-2'].filter(Boolean).join(' ');
+
   return (
-    <fieldset className={`mb-4 ${className}`}>
-      <legend className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">{label}</legend>
+    <fieldset className={fieldsetClasses}>
+      <legend className={finalLegendClassName}>{label}</legend>
       {/* Use CSS Grid with auto-fit for dynamic columns */}
       {/* Adjust minmax(200px, 1fr) as needed for desired minimum item width */}
       <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-x-4 gap-y-2">
@@ -37,7 +41,7 @@ const CheckboxGroupField: React.FC<CheckboxGroupFieldProps> = ({
 
           return (
             // Container for each item
-            <div key={option.value} className={`flex items-center`}> {/* Removed itemClassName - less relevant */}
+            <div key={option.value} className="flex items-center">
               <input
                 id={fieldId}
                 name={fieldId}

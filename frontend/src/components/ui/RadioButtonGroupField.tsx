@@ -7,13 +7,13 @@ interface RadioOption {
 }
 
 interface RadioButtonGroupFieldProps {
-  label: string;
+  label: string; // Legend text
   idPrefix: string;
   options: RadioOption[];
   selectedValue: string | number | null;
   onChange: (value: string | number) => void;
-  className?: string; // Optional class for the fieldset container
-  // itemClassName?: string; // Less needed with grid auto-fit
+  className?: string; // For the fieldset container
+  legendClassName?: string; // For the legend element
   required?: boolean;
 }
 
@@ -24,14 +24,16 @@ const RadioButtonGroupField: React.FC<RadioButtonGroupFieldProps> = ({
   selectedValue,
   onChange,
   className = '',
-  // itemClassName = '',
+  legendClassName = '',
   required = false,
 }) => {
   const groupName = `${idPrefix}-radio-group`;
+  const fieldsetClasses = ['form-field', className].filter(Boolean).join(' ');
+  const finalLegendClassName = ['form-label', legendClassName, 'mb-2'].filter(Boolean).join(' ');
 
   return (
-    <fieldset className={`mb-4 ${className}`}>
-      <legend className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
+    <fieldset className={fieldsetClasses}>
+      <legend className={finalLegendClassName}>
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </legend>
@@ -44,7 +46,7 @@ const RadioButtonGroupField: React.FC<RadioButtonGroupFieldProps> = ({
 
           return (
             // Container for each item
-            <div key={option.value} className={`flex items-center`}> {/* Removed itemClassName */}
+            <div key={option.value} className="flex items-center">
               <input
                 id={fieldId}
                 name={groupName}
@@ -52,7 +54,7 @@ const RadioButtonGroupField: React.FC<RadioButtonGroupFieldProps> = ({
                 value={option.value}
                 checked={isChecked}
                 onChange={() => onChange(option.value)}
-                required={required && index === 0}
+                required={required && index === 0} // Only one radio in a group needs to be required for HTML5 validation
                 className="h-4 w-4 text-blue-600 dark:text-blue-500 border-slate-300 dark:border-slate-600 focus:ring-blue-500 dark:focus:ring-blue-600 focus:ring-offset-0 dark:focus:ring-offset-slate-800 flex-shrink-0"
               />
               <label htmlFor={fieldId} className="ml-2 block text-sm text-slate-900 dark:text-slate-300 break-words cursor-pointer">

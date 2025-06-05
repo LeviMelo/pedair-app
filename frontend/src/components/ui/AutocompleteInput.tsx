@@ -15,7 +15,9 @@ interface AutocompleteInputProps {
   placeholder?: string;
   options: AutocompleteOption[]; // The *full* list of searchable options (for simulation)
   onSelect: (selectedOption: AutocompleteOption | null) => void; // Callback when an item is selected
-  className?: string;
+  className?: string; // For the main container div
+  labelClassName?: string; // For the label element
+  inputClassName?: string; // For the input element
 }
 
 const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
@@ -25,6 +27,8 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
   options,
   onSelect,
   className = '',
+  labelClassName = '',
+  inputClassName = '',
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [filteredOptions, setFilteredOptions] = useState<AutocompleteOption[]>([]);
@@ -72,9 +76,12 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
     onSelect(option); // Call the parent's onSelect handler
   };
 
+  const finalLabelClassName = ['form-label', labelClassName].filter(Boolean).join(' ');
+  const finalInputClassName = ['input-base', inputClassName].filter(Boolean).join(' ');
+
   return (
     <div className={`relative ${className}`} ref={containerRef}>
-      <label htmlFor={id} className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">{label}</label>
+      <label htmlFor={id} className={finalLabelClassName}>{label}</label>
       <input
         type="text"
         id={id}
@@ -82,8 +89,7 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
         onChange={handleInputChange}
         onFocus={() => { if (inputValue.length > 1) setIsListVisible(true); }} // Show list on focus if input exists
         placeholder={placeholder}
-        className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-md text-sm shadow-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500
-                   focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+        className={finalInputClassName}
         autoComplete="off" // Prevent browser autocomplete interfering
       />
       {/* Suggestions List */}

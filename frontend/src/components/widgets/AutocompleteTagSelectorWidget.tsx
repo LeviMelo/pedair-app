@@ -80,7 +80,7 @@ const AutocompleteTagSelectorWidget: React.FC<AutocompleteTagSelectorWidgetProps
       </legend>
 
       <div className='mt-2'> {/* Added mt-2 for spacing from legend */} 
-        <label className='block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1'>{uiOptions.quickSelectLabel || 'Quick Select:'}</label>
+        <label className='form-label'>{uiOptions.quickSelectLabel || 'Quick Select:'}</label>
         <QuickSelectButtons
           options={commonDataList.map(opt => ({ value: opt.value, label: opt.label }))} // Adapt to QuickSelectOption if needed
           selectedValues={value.map(item => item.value)}
@@ -99,7 +99,7 @@ const AutocompleteTagSelectorWidget: React.FC<AutocompleteTagSelectorWidgetProps
       </div>
 
       <div>
-        <label className='block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1'>{uiOptions.selectedLabel || 'Selected:'}</label>
+        <label className='form-label'>{uiOptions.selectedLabel || 'Selected:'}</label>
         <SelectedItemTags
           items={value} // SelectedItemTags expects SelectedDiagnosis[] which should be compatible with SelectedItemType
           onRemove={handleTagRemove}

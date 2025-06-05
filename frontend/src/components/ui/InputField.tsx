@@ -33,13 +33,17 @@ const InputField = forwardRef<Ref, InputFieldProps>(({
   required = false,
   className = '',
   inputClassName = '',
-  labelClassName = "block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1",
+  labelClassName = '',
 }, ref // Add the ref as the second argument provided by forwardRef
 ) => {
+  // Combine base global classes with user-provided classes
+  const containerClasses = ['form-field', className].filter(Boolean).join(' ');
+  const labelClasses = ['form-label', labelClassName].filter(Boolean).join(' ');
+  const inputClasses = ['input-base', inputClassName].filter(Boolean).join(' ');
 
   return (
-    <div className={`mb-4 ${className}`}>
-      <label htmlFor={id} className={labelClassName}>
+    <div className={containerClasses}>
+      <label htmlFor={id} className={labelClasses}>
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -55,18 +59,7 @@ const InputField = forwardRef<Ref, InputFieldProps>(({
         onBlur={onBlur}
         placeholder={placeholder}
         required={required}
-        className={`mt-1 block w-full px-3 py-2 border rounded-md text-sm shadow-sm 
-                   bg-white dark:bg-slate-700/50 
-                   border-slate-300 dark:border-slate-600 
-                   text-slate-900 dark:text-slate-100 
-                   placeholder-slate-400 dark:placeholder-slate-500 
-                   focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
-                   dark:focus:border-blue-500 dark:focus:ring-blue-500 
-                   disabled:bg-slate-50 dark:disabled:bg-slate-600/50 
-                   disabled:text-slate-500 dark:disabled:text-slate-400 
-                   disabled:border-slate-200 dark:disabled:border-slate-700 
-                   disabled:shadow-none 
-                   ${inputClassName}`}
+        className={inputClasses} // Removed mt-1 as form-label provides mb-1
       />
     </div>
   );

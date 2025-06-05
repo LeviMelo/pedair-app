@@ -20,13 +20,20 @@ This document outlines the key development phases for the PedAir platform, align
     *   Finalize and implement the database schema (PostgreSQL) for all core entities: `projects`, `forms` (including versioning), `form_submissions`, `patients`, `contact_log`, `access_logs`.
     *   Develop initial CRUD APIs for managing `projects`, `forms` (schemas and versions), and basic `user` profile information.
 
-## Phase 1.5: Frontend Architectural Refactor - Project Context & RBAC Foundation
+## Phase 1.5: Frontend Architectural Refactor - Project Context, RBAC Foundation & State Management
 
-*   **1.5.1. Global State Management with Zustand (Mocked Auth/Roles):**
+*   **1.5.1. Global State Management with Zustand (Mocked Auth/Roles & Submission State):**
+    *   Install Zustand.
     *   Implement Zustand stores to manage global application state:
         *   `projectStore`: Manages the currently active/selected project ID, project details (mocked initially), and list of available projects.
         *   `authStore`: Manages (mocked) authenticated user information, including their roles specific to the active project (e.g., `ProjectLead`, `Researcher`).
-    *   Replace any existing React Context-based global state for project and auth with Zustand.
+        *   `submissionStore`: Manages the state of active/in-progress multi-form data submissions. This will include:
+            *   Current patient identification data (`patientInputData`).
+            *   The sequence of forms to be filled (`formsInSequence: FormDefinition[]`).
+            *   The data for each form in the sequence (`allFormsData: { [formKey: string]: any }`).
+            *   The index of the current form being filled in the sequence (`currentFormIndexInSequence`).
+            *   This store will be crucial for the "quit and resume" functionality.
+    *   Replace any existing React Context-based global state with Zustand.
 *   **1.5.2. Dashboard as Project Launchpad:**
     *   Refactor `DashboardPage.tsx` to display a list of (mocked) projects.
     *   Allow users to select a project, which updates the `ProjectContext`.
@@ -38,17 +45,21 @@ This document outlines the key development phases for the PedAir platform, align
 *   **1.5.4. Project-Aware Page Adaptation (Initial):**
     *   Begin adapting existing pages (`FormBuilderPage`, `RoleEditorPage`, etc.) to consume the `ProjectContext`. Their internal logic will start to depend on the selected project ID for fetching/displaying relevant data (though data will still be mocked or frontend-only for now).
 
-## Phase 2: Frontend - Dynamic Forms & Clinical UX Refactor (Post-Architectural Refactor)
+## Phase 2: Frontend - Dynamic Forms & Clinical UX Refinement (Post-Architectural Refactor)
 
-*   **2.1. Single-Load Form Submission UX ("Carregamento Integral de Formulários"):**
-    *   Refactor `DynamicFormRenderer.tsx` to render the *entire* form schema at once, removing any step-by-step or section-by-section rendering logic.
-    *   Update `DataSubmissionPage.tsx`:
-        *   Ensure it operates within the selected `ProjectContext` (via Zustand store), loading forms available for that project.
-        *   After form selection, the page will display:
-            *   A dedicated section for collecting initial `patient_input` (initials, gender, DOB) for pseudonymization.
-            *   The complete, scrollable form rendered by `DynamicFormRenderer` below the patient input section.
-        *   Remove all multi-step navigation logic (Next/Previous buttons, progress indicators for sections).
-        *   The focus is on speed and allowing professionals to view and fill the entire form in one go.
+*   **2.1. Sequential Multi-Form Submission UX with State Persistence:**
+    *   Refactor `DataSubmissionPage.tsx` to implement a sequential, multi-form workflow for patient data collection:
+        *   **Initial Step**: Capture patient identification data and (simulated) consent information.
+        *   **Form Sequence Management**: 
+            *   Define or fetch a sequence of forms (e.g., Pre-Op, Intra-Op, Post-Op) for the patient encounter (initially mocked).
+            *   Maintain the index of the currently active form in this sequence.
+        *   **Form Rendering**: Dynamically load and render the *entirety* of the current form in the sequence using `DynamicFormRenderer.tsx`.
+        *   **Navigation**: Implement "Next Form" and "Previous Form" (or similar) controls to navigate through the sequence.
+        *   **Data Persistence within Encounter**: 
+            *   As the user navigates between forms or completes a form, its data is saved into a central state object within `DataSubmissionPage.tsx` (e.g., `allFormsData`). 
+            *   This state (patient ID, all collected form data, current form index) will then be managed by the `submissionStore` (Zustand) to enable pausing and resuming the entire submission process for a patient.
+        *   **Submission Action**: Define how data for individual forms or the entire sequence is finalized/submitted (e.g., a "Complete Form & Proceed" button, and a final "Submit All Encounter Data" action after the last form).
+    *   Ensure `DynamicFormRenderer.tsx` continues to render individual forms completely, without internal stepping.
 *   **2.2. Form Versioning Awareness (Frontend):**
     *   Enable `DataSubmissionPage.tsx` to display the version of the selected form (loaded based on `ProjectContext`).
     *   Future: Allow selection from available form versions if multiple active versions exist for a form definition within the project.

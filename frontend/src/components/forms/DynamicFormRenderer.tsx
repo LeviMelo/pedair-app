@@ -174,8 +174,9 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
       }
     }
 
+    // Fallback for unhandled widget types
     return (
-      <div style={{ marginBottom: '1rem', padding: '0.5rem', border: '1px dashed #ccc' }}>
+      <div className="mb-4 p-2 border border-dashed border-slate-300 dark:border-slate-600 text-sm text-slate-600 dark:text-slate-300 rounded-md">
         <p><strong>Field:</strong> {fieldTitle} (<code>{propertyName}</code>)</p>
         <p><strong>Widget:</strong> {widgetName || 'Default (Unhandled)'}</p>
         <p><strong>Schema Type:</strong> {propertySchema.type}</p>
@@ -190,12 +191,12 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
     <form className="space-y-6">
       {/* Overall Form Title and Description - always show */}
       {schema.title && (
-        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
+        <h2 className="card-title mb-2">
           {schema.title}
         </h2>
       )}
       {schema.description && (
-        <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
+        <p className="form-description">
           {schema.description}
         </p>
       )}

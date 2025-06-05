@@ -1,5 +1,6 @@
 // frontend/src/components/ui/StepperInput.tsx
 import React from 'react';
+import Button from './Button'; // Import the new Button component
 
 interface StepperInputProps {
     id: string;
@@ -11,6 +12,7 @@ interface StepperInputProps {
     max?: number;
     step?: number;
     className?: string; // For the container div
+    inputClassName?: string; // For the input element itself
     // Add props for onKeyDown/onBlur if needed for the inner input
     onInputKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
     onInputBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
@@ -27,6 +29,7 @@ const StepperInput: React.FC<StepperInputProps> = ({
     max = 100,
     step = 1,
     className = '',
+    inputClassName = '',
     onInputKeyDown, // Destructure
     onInputBlur,    // Destructure
 }) => {
@@ -53,30 +56,44 @@ const StepperInput: React.FC<StepperInputProps> = ({
         onChange(numValue);
     };
 
+    const containerClasses = ['form-field', className].filter(Boolean).join(' ');
+    const finalLabelClassName = ['form-label', labelClassName].filter(Boolean).join(' ');
+    // Specific classes for the stepper input part to override/supplement .input-base
+    const stepperInputSpecificClasses = 'w-12 text-center border-l-0 border-r-0 rounded-none z-10';
+    const finalInputClassName = ['input-base', stepperInputSpecificClasses, inputClassName].filter(Boolean).join(' ');
+
     return (
-        <div className={`mb-4 ${className}`}>
-             {/* Apply labelClassName here */}
-            <label htmlFor={id} className={labelClassName}>
+        <div className={containerClasses}>
+            <label htmlFor={id} className={finalLabelClassName}>
                 {label}
             </label>
             <div className="flex items-center mt-1">
-                <button
-                    type="button" onClick={handleDecrement} disabled={value <= min}
-                    className="px-2.5 py-1 border border-slate-300 dark:border-slate-500 rounded-l-md bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 disabled:opacity-50 dark:disabled:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-500"
+                <Button
+                    variant="outline-slate"
+                    size="sm"
+                    onClick={handleDecrement} 
+                    disabled={value <= min}
+                    className="rounded-r-none py-1 px-2.5" // Adjusted padding and rounding
                     aria-label="Diminuir"
-                > - </button>
+                > - </Button>
                 <input
-                    type="text" id={id} value={value} onChange={handleInputChange}
-                    onKeyDown={onInputKeyDown} // Pass down
-                    onBlur={onInputBlur}       // Pass down
-                    className="w-12 px-2 py-1 border-t border-b border-slate-300 dark:border-slate-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 text-center text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-500"
+                    type="text" // Using text to allow empty string, parsing handles number conversion
+                    id={id} 
+                    value={String(value)} // Convert number to string for input value
+                    onChange={handleInputChange}
+                    onKeyDown={onInputKeyDown}
+                    onBlur={onInputBlur}
+                    className={finalInputClassName}
                     inputMode="numeric" pattern="[0-9]*"
                 />
-                <button
-                    type="button" onClick={handleIncrement} disabled={value >= max}
-                    className="px-2.5 py-1 border border-slate-300 dark:border-slate-500 rounded-r-md bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 disabled:opacity-50 dark:disabled:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-500"
+                <Button
+                    variant="outline-slate"
+                    size="sm"
+                    onClick={handleIncrement} 
+                    disabled={value >= max}
+                    className="rounded-l-none py-1 px-2.5" // Adjusted padding and rounding
                     aria-label="Aumentar"
-                > + </button>
+                > + </Button>
             </div>
         </div>
     );

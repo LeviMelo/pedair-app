@@ -134,8 +134,8 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
 
 * **Gerenciamento de Estado**:
 
-  * **Zustand** para armazenar globalmente: JWT, informações do usuário, papéis ativos e `project_id` selecionado.
-  * Estados locais em cada componente/formulário para controle de dados em tempo real.
+  * **Zustand** para armazenar globalmente: JWT, informações do usuário, papéis ativos, `project_id` selecionado, e o estado de submissões de dados em progresso (incluindo dados de pacientes e dados de múltiplos formulários).
+  * Estados locais em cada componente/formulário para controle de dados em tempo real antes de serem consolidados no estado global.
 
 * **Formulários Dinâmicos** (JSON Schema + uiSchema):
 
@@ -158,7 +158,8 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
   * **Toque e Gestos**: campos grandes, botões bem espaçosos, steppers e sliders para input rápido.
   * **Feedback Imediato**: validações em tempo real, mensagens de erro claras em destaque.
   * **Compatibilidade Móvel**: layouts fluidos que se ajustam a tablets e smartphones com tela sensível ao toque.
-  * **Carregamento Integral de Formulários**: Para máxima agilidade, especialmente em cenários intraoperatórios, os formulários devem ser carregados integralmente de uma só vez, evitando navegação por passos ou seções que demandem cliques adicionais. O objetivo é permitir que o profissional de saúde visualize e preencha todo o formulário rapidamente em uma única tela, com rolagem vertical conforme necessário.
+  * **Carregamento Integral de Formulários Individuais**: Para máxima agilidade, cada formulário *dentro de uma sequência de coleta* deve ser carregado integralmente de uma só vez. A navegação por passos ou seções que demandem cliques adicionais *dentro de um mesmo formulário* deve ser evitada.
+  * **Fluxo de Coleta Sequencial Multi-Formulário por Paciente**: Para um determinado paciente, a coleta de dados pode envolver uma sequência de múltiplos formulários (ex: Pré-operatório -> Intraoperatório -> Pós-operatório). A interface deve guiar o usuário através desta sequência, permitindo avançar para o próximo formulário ou retornar ao anterior. O progresso deve ser salvo continuamente, permitindo que o usuário pause a coleta e a retome posteriormente do mesmo ponto.
   * **Múltiplos Formulários por Paciente (Visão Futura)**: Considerar a capacidade de carregar e alternar entre múltiplos formulários relacionados ao mesmo paciente em uma interface unificada, para contextos onde diferentes coletas precisam ser acessadas em sequência rápida.
 
 * **Principais Páginas / Fluxos**:
@@ -182,22 +183,12 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
 
   4. **Submissão de Dados Clínicos**
 
-     * Carrega um formulário dinâmico (JSON Schema + uiSchema).
-     * Captura inputs em tempo real, mantém estado local e exibe erros de validação imediatamente.
-     * Ao submeter, envia POST para `/api/projects/:project_id/forms/:form_id/submissions`, incluindo:
-
-       ```json
-       {
-         "patient_input": {
-           "initials": "JS",
-           "gender": "M",
-           "dob": "2017-02-04"
-         },
-         "form_data": { /* respostas de cada campo */ },
-         "version": 2  // versão atual do schema
-       }
-       ```
-     * Backend gera `patient_id` (HMAC) e armazena submissão com `patient_id`, `user_id` (quem submeteu), `timestamp`.
+     * **Início da Coleta**: O processo inicia com a inserção de dados básicos de identificação do paciente (iniciais, sexo, DOB) e o registro de consentimentos necessários (inicialmente simulado, com lógica de validação complexa a ser desenvolvida).
+     * **Sequência de Formulários**: Uma vez identificada a necessidade de coleta (ex: novo paciente para um protocolo específico), o sistema apresenta uma sequência predefinida de formulários (ex: Pré-Anestesia, seguido por Intraoperatório, etc.).
+     * **Preenchimento Individual**: Cada formulário na sequência é carregado dinamicamente (JSON Schema + uiSchema) e apresentado integralmente para preenchimento.
+     * **Navegação e Persistência**: O usuário pode navegar entre os formulários da sequência (próximo/anterior). Todo o progresso (dados do paciente e dados de cada formulário preenchido ou parcialmente preenchido) é salvo de forma persistente (utilizando Zustand e potencialmente armazenamento local/backend para rascunhos), permitindo que a submissão seja interrompida e retomada posteriormente.
+     * **Envio Final**: Ao final da sequência, ou quando todos os formulários mandatórios estiverem completos, os dados consolidados são submetidos.
+     * Backend gera `patient_id` (HMAC) e armazena cada submissão de formulário com `patient_id`, `user_id`, `timestamp`, e a versão do schema do formulário específico.
 
   5. **Busca de Paciente Pseudonimizado**
 
