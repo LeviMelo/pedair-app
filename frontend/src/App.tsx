@@ -10,10 +10,17 @@ import NotificationSchedulerPage from './pages/NotificationSchedulerPage';
 import SettingsPage from './pages/SettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
+// Import the actual ProjectDetailsPage
+import ProjectDetailsPage from './pages/ProjectDetailsPage'; 
+import CreateProjectPage from './pages/CreateProjectPage';
+
 // Test pages (can be kept for development or removed later)
 import TestRecuperacaoFormPage from './pages/TestRecuperacaoFormPage';
 import TestPreAnestesiaFormPage from './pages/TestPreAnestesiaFormPage';
 import TestIntraoperatoriaFormPage from './pages/TestIntraoperatoriaFormPage';
+
+// Placeholder for ProjectDetailsPage - User will create this file manually
+// import ProjectDetailsPage from './pages/ProjectDetailsPage'; 
 
 import './index.css'; // Ensure global styles are loaded
 
@@ -22,6 +29,8 @@ function App() {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<DashboardPage />} />
+        <Route path="dashboard/create-project" element={<CreateProjectPage />} />
+        <Route path="project/:projectId" element={<ProjectDetailsPage />} /> 
         <Route path="forms" element={<DataSubmissionPage />} />
         <Route path="builder" element={<FormBuilderPage />} />
         <Route path="roles" element={<RoleEditorPage />} />

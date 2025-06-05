@@ -2,132 +2,148 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useProjectStore, { Project } from '../stores/projectStore';
 import useAuthStore from '../stores/authStore';
-import { PiPlusCircleDuotone, PiFolderOpenDuotone, PiBriefcaseDuotone, PiArrowSquareOut } from 'react-icons/pi';
+import {
+  PiBriefcaseDuotone,
+  PiArrowSquareOutDuotone,
+  PiBellSimpleRingingDuotone,
+  PiListChecksDuotone,
+} from 'react-icons/pi';
+import Button from '../components/ui/Button';
+import DashboardGreetingCard from '../components/ui/DashboardGreetingCard';
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const { 
-    availableProjects, 
-    activeProjectId, 
-    activeProjectDetails, 
-    fetchAvailableProjects, 
+  const {
+    availableProjects,
+    activeProjectId,
+    fetchAvailableProjects,
     setActiveProject,
     isLoading: projectsLoading,
-    error: projectsError
+    error: projectsError,
   } = useProjectStore();
   
   const { user, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
-    if (isAuthenticated) { // Only fetch if authenticated (or adjust logic as needed)
-        fetchAvailableProjects();
+    if (isAuthenticated) {
+      fetchAvailableProjects();
     }
   }, [fetchAvailableProjects, isAuthenticated]);
 
-  const handleSelectProject = (projectId: string) => {
-    setActiveProject(projectId);
-    // Optionally navigate to a project-specific dashboard or view
-    // navigate(`/project/${projectId}`); 
+  const handleSelectProject = (project: Project) => {
+    setActiveProject(project.id);
+    navigate(`/project/${project.id}`);
   };
 
   const handleCreateNewProject = () => {
-    // Placeholder: navigate to a form builder or project creation page
-    console.log("Navigate to create new project page - TBD");
-    // navigate('/builder/new-project');
-    alert("Project creation functionality is not yet implemented.")
+    navigate('/dashboard/create-project');
+  };
+
+  const handleViewProfile = () => {
+    // Placeholder: Navigation to a full profile page will be implemented later
+    alert('Navigate to full profile page - TBD');
+  };
+
+  const getUserRolesForProject = (project: Project): string[] => {
+    if (!user) return [];
+    const memberInfo = project.members.find(m => m.userId === user.id);
+    return memberInfo ? memberInfo.roles : [];
+  };
+
+  if (projectsLoading && !availableProjects.length) {
+    return <div className="p-6 text-center"><p className="text-slate-600 dark:text-slate-400">Loading dashboard...</p></div>;
+  }
+
+  if (projectsError) {
+    return <div className="p-6 text-center text-red-500 dark:text-red-400">Error loading projects: {projectsError}</div>;
   }
 
   return (
-    <div className="p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-slate-200 dark:border-slate-700/60">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">
-            {activeProjectDetails ? activeProjectDetails.name : 'Dashboard'}
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
-            {user ? `Welcome back, ${user.name}!` : 'Welcome to PedAir.'} 
-            {activeProjectDetails ? ` You are viewing the ${activeProjectDetails.name} project.` : 'Select a project to get started.'}
-          </p>
-        </div>
-        <button 
-            onClick={handleCreateNewProject}
-            className="mt-3 sm:mt-0 flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-70"
-        >
-          <PiPlusCircleDuotone className="mr-2" size={20}/> Create New Project
-        </button>
-      </div>
+    <div className="p-4 sm:p-6 space-y-8 bg-slate-50 dark:bg-slate-900 min-h-full flex flex-col max-w-6xl mx-auto w-full">
+      
+      <DashboardGreetingCard 
+        onCreateNewProject={handleCreateNewProject} 
+        onViewProfile={handleViewProfile} 
+      />
 
-      {projectsLoading && <p className="text-slate-600 dark:text-slate-400">Loading projects...</p>}
-      {projectsError && <p className="text-red-500 dark:text-red-400">Error loading projects: {projectsError}</p>}
-
-      {activeProjectDetails && (
-        <div className="mb-8 p-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-[0_0_25px_rgba(255,255,255,0.07)]">
-            <div className="flex justify-between items-start">
-                <div>
-                    <h2 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-1">Current Project Overview</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{activeProjectDetails.description || 'No description available for this project.'}</p>
-                </div>
-                <button 
-                    onClick={() => navigate('/forms')} // Example: navigate to data submission for this project
-                    className="ml-4 flex items-center text-sm px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors"
-                >
-                    <PiArrowSquareOut className="mr-1.5"/> Go to Data Entry
-                </button>
+      <div className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Column 1: My Projects (Scrollable) */}
+        <section className="lg:col-span-2 flex flex-col card-base rounded-lg p-0 overflow-hidden">
+          <h2 className="text-2xl font-semibold text-slate-700 dark:text-slate-200 flex items-center p-5 pb-3 border-b border-slate-200 dark:border-slate-700/80 shrink-0">
+            <PiBriefcaseDuotone className="mr-3 text-3xl text-blue-500 dark:text-blue-400" /> My Projects
+          </h2>
+          {availableProjects.filter(p => p.members.some(m => m.userId === user?.id)).length > 0 ? (
+            <div className="overflow-y-auto flex-grow p-5 space-y-3">
+              {availableProjects.filter(p => p.members.some(m => m.userId === user?.id)).map((project) => {
+                const userRolesInProject = getUserRolesForProject(project);
+                const isProjectActive = project.id === activeProjectId;
+                return (
+                  <div 
+                    key={project.id} 
+                    className={`p-4 rounded-md transition-all duration-200 cursor-pointer border dark:border-slate-700 
+                                bg-white dark:bg-slate-800 hover:shadow-md dark:hover:bg-slate-750 
+                                ${isProjectActive 
+                                  ? 'ring-2 ring-blue-500 dark:ring-blue-400 shadow-md shadow-blue-500/20 dark:shadow-blue-400/20' 
+                                  : 'border-slate-200 dark:border-slate-700 hover:border-blue-400/50 dark:hover:border-blue-500/50'}
+                              `}
+                    onClick={() => handleSelectProject(project)}
+                  >
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-md font-semibold text-blue-600 dark:text-blue-400 mb-0.5 truncate">{project.name}</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1 line-clamp-2 leading-relaxed">
+                          {project.description || 'No description available.'}
+                        </p>
+                        {userRolesInProject.length > 0 && (
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                                Your role(s): <span className="font-medium text-slate-700 dark:text-slate-200">{userRolesInProject.join(', ')}</span>
+                            </div>
+                        )}
+                      </div>
+                      <Button 
+                        variant="outline-primary" 
+                        size="sm" 
+                        onClick={(e) => { e.stopPropagation(); handleSelectProject(project); }} 
+                        iconRight={<PiArrowSquareOutDuotone/>}
+                        className="shrink-0 mt-1 sm:mt-0 py-1 px-2 text-xs"
+                      >
+                        Details
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-           
-            {/* Placeholder for project-specific metrics */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg">
-                    <h3 className="text-md font-medium text-slate-600 dark:text-slate-300">Total Submissions</h3>
-                    <p className="mt-1 text-2xl font-semibold text-slate-700 dark:text-slate-100">152</p> {/* Placeholder */}
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg">
-                    <h3 className="text-md font-medium text-slate-600 dark:text-slate-300">Pending Sync</h3>
-                    <p className="mt-1 text-2xl font-semibold text-slate-700 dark:text-slate-100">8</p> {/* Placeholder */}
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg">
-                    <h3 className="text-md font-medium text-slate-600 dark:text-slate-300">Active Users</h3>
-                    <p className="mt-1 text-2xl font-semibold text-slate-700 dark:text-slate-100">4</p> {/* Placeholder */}
-                </div>
+          ) : (
+            <div className="flex-grow flex flex-col items-center justify-center p-6 text-center">
+              <PiBriefcaseDuotone className="text-4xl text-slate-400 dark:text-slate-500 mx-auto mb-3" />
+              <p className="text-slate-500 dark:text-slate-400">No projects found, or you are not yet a member of any project.</p>
+              <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Try creating a new one if you have permissions!</p>
             </div>
-        </div>
-      )}
+          )}
+        </section>
 
-      <div className="mt-2">
-        <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200 mb-1">
-            {activeProjectId ? 'Switch Project' : 'Available Projects'}
-        </h2>
-         <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-            {activeProjectId ? 'You can also select another project from the list below.' : 'Please select a project to view its details and start working.'}
-        </p>
-        {availableProjects.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {availableProjects.map((project: Project) => (
-              <button 
-                key={project.id} 
-                onClick={() => handleSelectProject(project.id)}
-                disabled={project.id === activeProjectId}
-                className={`p-5 text-left bg-white dark:bg-slate-800 rounded-lg shadow-md hover:shadow-xl dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 
-                            ${project.id === activeProjectId 
-                                ? 'ring-2 ring-blue-500 dark:ring-blue-400 bg-blue-50 dark:bg-blue-900/30 cursor-default' 
-                                : 'hover:bg-slate-50 dark:hover:bg-slate-700/70 focus:ring-blue-500'}`}
-              >
-                <div className="flex items-center mb-2">
-                    <PiBriefcaseDuotone className={`mr-2.5 text-xl ${project.id === activeProjectId ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`} />
-                    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 truncate" title={project.name}>{project.name}</h3>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3 h-8">
-                  {project.description || 'No description available.'}
-                </p>
-                <div className={`text-xs font-medium ${project.id === activeProjectId ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-300'}`}>
-                    {project.id === activeProjectId ? 'Currently Active' : 'Select Project'}
-                </div>
-              </button>
-            ))}
-          </div>
-        ) : (
-          !projectsLoading && <p className="text-slate-500 dark:text-slate-400 mt-4">No projects found. You might need to create one or check your permissions.</p>
-        )}
+        {/* Column 2: News & Updates, then Quick Tasks */}
+        <div className="lg:col-span-1 flex flex-col gap-6">
+          <section className="card-base p-6 rounded-lg">
+            <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200 flex items-center mb-4">
+              <PiBellSimpleRingingDuotone className="mr-3 text-2xl text-purple-500 dark:text-purple-400" /> News & Updates
+            </h2>
+            <ul className="space-y-3 text-sm">
+              <li className="text-slate-600 dark:text-slate-300">Platform Update v1.2 Released! <span className="text-xs text-slate-400 dark:text-slate-500">(Placeholder)</span></li>
+              <li className="text-slate-600 dark:text-slate-300">Scheduled maintenance on Sunday @ 2 AM. <span className="text-xs text-slate-400 dark:text-slate-500">(Placeholder)</span></li>
+            </ul>
+          </section>
+
+          <section className="card-base p-6 rounded-lg">
+            <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200 flex items-center mb-4">
+              <PiListChecksDuotone className="mr-3 text-2xl text-green-500 dark:text-green-400" /> Quick Tasks
+            </h2>
+            <ul className="space-y-2 text-sm">
+              <li className="text-slate-600 dark:text-slate-300">No urgent tasks at the moment. (Placeholder)</li>
+            </ul>
+          </section>
+        </div>
       </div>
     </div>
   );

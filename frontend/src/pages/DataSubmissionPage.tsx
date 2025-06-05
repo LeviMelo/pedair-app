@@ -27,8 +27,7 @@ const fetchFormSequenceForEncounter = (): Promise<FormDefinition[]> => {
 
 type ProcessStep =
   | 'initialPatientInput'
-  | 'resumingEncounter' // New step for clarity during resume
-  | 'loadingFormSequence'
+  | 'loadingFormSequence' // Combines previous resume and initial loading indication
   | 'loadingFormSchema'
   | 'fillingFormInSequence'
   | 'submissionError';
@@ -46,12 +45,12 @@ const DataSubmissionPage: React.FC = () => {
     setCurrentFormIndex,
     updatePatientData,
     completeAndClearEncounter,
-    // resumeEncounter, // Not directly used, persist handles rehydration
   } = useSubmissionStore();
 
   // Local UI State
   const [currentProcessStep, setCurrentProcessStep] = useState<ProcessStep>('initialPatientInput');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isFormLoading, setIsFormLoading] = useState(false); // <-- ADDED: Flag to prevent re-entrant loading
   
   // Local state for the patient input form fields, synchronized with storePatientData
   const [localPatientInput, setLocalPatientInput] = useState<PatientInputData>({
@@ -66,26 +65,22 @@ const DataSubmissionPage: React.FC = () => {
   const [currentFormSchema, setCurrentFormSchema] = useState<any>(null);
   const [currentFormUiSchema, setCurrentFormUiSchema] = useState<any>(null);
   const [currentFormData, setCurrentFormData] = useState<any>({}); // Data for the *current* form being edited
+  const [isResuming, setIsResuming] = useState(false); // Local flag for resume flow
 
   // --- Effects --- 
 
-  // Effect to handle resuming an active encounter from the store
+  // Effect to set initial state based on store (e.g., on page load/refresh)
   useEffect(() => {
     if (isEncounterActive && storePatientData) {
-      console.log("Resuming active encounter from store...", storePatientData, storeFormSequence, storeCurrentFormIndex);
-      setLocalPatientInput(storePatientData); // Sync local input fields
-      setCurrentProcessStep('resumingEncounter'); // Indicate we are resuming
-      // Directly trigger form loading for the stored index
-      if (storeFormSequence.length > 0 && storeCurrentFormIndex >= 0 && storeCurrentFormIndex < storeFormSequence.length) {
-        // loadFormDefinition will be called by the other useEffect based on currentProcessStep and storeCurrentFormIndex
-      } else if (storeFormSequence.length === 0 && storePatientData) {
-        // Edge case: encounter started, patient data saved, but sequence not yet loaded/saved
-        handleStartSubmissionSequence(true); // true indicates it's a resume attempt
-      }
+      console.log("Store indicates active encounter. Patient:", storePatientData);
+      setLocalPatientInput(storePatientData);
+      setIsResuming(true); // Indicate that we should try to resume
+      setCurrentProcessStep('loadingFormSequence'); 
     } else {
-        setCurrentProcessStep('initialPatientInput'); // Default if no active encounter
+      setCurrentProcessStep('initialPatientInput');
+      setIsResuming(false);
     }
-  }, [isEncounterActive]); // Run only when isEncounterActive changes (e.g. on page load)
+  }, [isEncounterActive, storePatientData]); 
 
   const resetLocalUiStateForNewForm = () => {
     setCurrentFormSchema(null);
@@ -99,37 +94,38 @@ const DataSubmissionPage: React.FC = () => {
     setErrorMessage(null);
     setLocalPatientInput({ initials: '', gender: '', dob: '', projectConsent: false, recontactConsent: false });
     resetLocalUiStateForNewForm();
+    setIsResuming(false);
   };
   
-  const loadFormDefinition = useCallback(async (formIndex: number, sequenceToUse: FormDefinition[], allData: { [key: string]: any }) => {
-    if (formIndex < 0 || formIndex >= sequenceToUse.length) {
+  const loadFormDefinition = useCallback(async (formIndexToLoad: number, sequenceToUse: FormDefinition[], allDataFromStore: { [key: string]: any }) => {
+    if (formIndexToLoad < 0 || formIndexToLoad >= sequenceToUse.length) {
       setErrorMessage("Invalid form index.");
       setCurrentProcessStep('submissionError');
       return;
     }
 
-    const formDef = sequenceToUse[formIndex];
+    const formDef = sequenceToUse[formIndexToLoad];
     if (!formDef) {
-      setErrorMessage(`Form definition not found for index: ${formIndex}`);
+      setErrorMessage(`Form definition not found for index: ${formIndexToLoad}`);
       setCurrentProcessStep('submissionError');
       return;
     }
-
+    
+    console.log(`loadFormDefinition: Loading schema for ${formDef.name} (index ${formIndexToLoad})`);
     setCurrentProcessStep('loadingFormSchema');
-    resetLocalUiStateForNewForm(); // Clear previous form state before loading new
+    setIsFormLoading(true); // <-- SET LOADING FLAG
+    resetLocalUiStateForNewForm();
 
     try {
       const schemaModule = await import(/* @vite-ignore */ formDef.schemaPath);
       const uiSchemaModule = await import(/* @vite-ignore */ formDef.uiSchemaPath);
-      
       const loadedSchema = schemaModule.default;
       const loadedUiSchema = uiSchemaModule.default;
 
       setCurrentFormSchema(loadedSchema);
       setCurrentFormUiSchema(loadedUiSchema);
 
-      let initialDataForCurrentForm = allData[formDef.key] || {};
-      // Initialize with default values from schema if no data exists for this form yet
+      let initialDataForCurrentForm = allDataFromStore[formDef.key] || {};
       if (Object.keys(initialDataForCurrentForm).length === 0 && loadedSchema?.properties) {
          Object.keys(loadedSchema.properties).forEach(key => {
           const property = loadedSchema.properties[key];
@@ -138,53 +134,31 @@ const DataSubmissionPage: React.FC = () => {
           } else if (property?.type === 'array') {
             initialDataForCurrentForm[key] = [];
           } else if (property?.type === 'object') {
-             // Special handling for DrugSectionWidget-like structures
              if (property.properties?.selectedDrugs !== undefined && property.properties?.drugValues !== undefined) {
               initialDataForCurrentForm[key] = { 
                 selectedDrugs: property.properties.selectedDrugs.default !== undefined ? JSON.parse(JSON.stringify(property.properties.selectedDrugs.default)) : {},
                 drugValues: property.properties.drugValues.default !== undefined ? JSON.parse(JSON.stringify(property.properties.drugValues.default)) : {}
               };
             } else {
-              initialDataForCurrentForm[key] = {}; // Default for other objects
+              initialDataForCurrentForm[key] = {};
             }
           } 
-          // Other types (string, number, boolean) will be empty/undefined by default if not specified
         });
       }
       setCurrentFormData(initialDataForCurrentForm);
       setCurrentProcessStep('fillingFormInSequence');
-
     } catch (error) {
       console.error(`Error loading schemas for ${formDef.name}:`, error);
       setErrorMessage(`Error loading form '${formDef.name}'. Please try again.`);
       setCurrentProcessStep('submissionError');
+    } finally {
+      setIsFormLoading(false); // <-- RESET LOADING FLAG
     }
-  }, []);
+  }, []); 
 
-  // Effect to load form definition when currentFormIndex from store changes OR when resuming
-  useEffect(() => {
-    if (currentProcessStep === 'fillingFormInSequence' || currentProcessStep === 'resumingEncounter') {
-      if (storeFormSequence.length > 0 && storeCurrentFormIndex >=0 && storeCurrentFormIndex < storeFormSequence.length) {
-        loadFormDefinition(storeCurrentFormIndex, storeFormSequence, storeAllFormsData);
-      } 
-    } else if (currentProcessStep === 'loadingFormSequence' && storeFormSequence.length > 0) {
-        // This case handles after fetchFormSequenceForEncounter sets the sequence in store
-        // and we need to load the first form (index 0)
-        loadFormDefinition(0, storeFormSequence, storeAllFormsData);
-    }
-  }, [storeCurrentFormIndex, storeFormSequence, storeAllFormsData, loadFormDefinition, currentProcessStep]);
-  
-  const handlePatientInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { id, value, type } = event.target;
-    const checked = (event.target as HTMLInputElement).checked;
-    const updatedValue = type === 'checkbox' ? checked : value;
-    setLocalPatientInput((prev: PatientInputData) => ({ ...prev, [id]: updatedValue as any }));
-    // Update store DEBOUNCED or on blur in a real app, for now, direct update:
-    updatePatientData({ [id]: updatedValue }); 
-  };
-
-  const handleStartSubmissionSequence = async (isResumingFlow = false) => {
-    if (!isResumingFlow) { 
+  // Moved up to be defined before useEffect that uses it
+  const handleStartSubmissionSequence = useCallback(async (resuming = false) => {
+    if (!resuming) { 
       if (!localPatientInput.initials || !localPatientInput.gender || !localPatientInput.dob) {
         alert('Please fill in all patient identification details.');
         return;
@@ -194,23 +168,49 @@ const DataSubmissionPage: React.FC = () => {
         return;
       }
     }
-
+    
+    console.log("handleStartSubmissionSequence called. Resuming:", resuming);
     setCurrentProcessStep('loadingFormSequence');
     setErrorMessage(null);
     try {
       const sequence = await fetchFormSequenceForEncounter();
-      if (!isEncounterActive || !isResumingFlow || (isResumingFlow && storeFormSequence.length === 0) ) { 
-          startNewEncounter(localPatientInput, sequence); // This will set patient data, sequence, index 0, and clear allFormsData
-      } else if (isResumingFlow && storeFormSequence.length > 0) {
-          // If resuming and sequence already exists in store, do nothing here, useEffect will load definition.
-          // This branch might not be strictly needed if useEffect for resume is robust.
-          console.log("Resuming flow, sequence already in store.");
+      if (!resuming || (resuming && storeFormSequence.length === 0)) {
+          console.log("Starting new encounter in store with fetched sequence.");
+          startNewEncounter(localPatientInput, sequence);
+          setIsResuming(false); 
+      } else if (resuming && storeFormSequence.length > 0) {
+          console.log("Resuming existing encounter; sequence already in store. Form loading will be triggered by useEffect.");
       }
     } catch (error) {
       console.error("Error fetching form sequence:", error);
       setErrorMessage("Failed to load the sequence of forms for submission.");
       setCurrentProcessStep('submissionError');
     }
+  }, [localPatientInput, startNewEncounter, storeFormSequence.length]);
+
+
+  // Effect to trigger form loading when the target form index or sequence changes in the store.
+  useEffect(() => {
+    if (isFormLoading) { 
+      console.log("useEffect[formIndexChange]: Currently loading, skipping.");
+      return;
+    }
+
+    if (isEncounterActive && storeFormSequence.length > 0 && storeCurrentFormIndex >= 0 && storeCurrentFormIndex < storeFormSequence.length) {
+      console.log(`useEffect[formIndexChange]: storeCurrentFormIndex is ${storeCurrentFormIndex}.`);
+      loadFormDefinition(storeCurrentFormIndex, storeFormSequence, storeAllFormsData);
+    } else if (isEncounterActive && storeFormSequence.length === 0 && isResuming) {
+        console.log("useEffect[formIndexChange]: Resuming, but no sequence in store. Attempting to fetch sequence.");
+        handleStartSubmissionSequence(true); 
+    }
+  }, [isEncounterActive, storeCurrentFormIndex, storeFormSequence, loadFormDefinition, storeAllFormsData, isResuming, isFormLoading, handleStartSubmissionSequence]); 
+  
+  const handlePatientInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value, type } = event.target;
+    const checked = (event.target as HTMLInputElement).checked;
+    const updatedValue = type === 'checkbox' ? checked : value;
+    setLocalPatientInput((prev: PatientInputData) => ({ ...prev, [id]: updatedValue as any }));
+    updatePatientData({ [id]: updatedValue }); 
   };
 
   const handleCurrentFormChange = (updatedData: any) => {
@@ -220,7 +220,7 @@ const DataSubmissionPage: React.FC = () => {
   const persistCurrentFormProgress = () => {
     if (storeFormSequence.length > 0 && storeCurrentFormIndex < storeFormSequence.length) {
       const currentFormKey = storeFormSequence[storeCurrentFormIndex].key;
-      savePartialFormProgress(currentFormKey, { ...currentFormData }); // Save a copy
+      savePartialFormProgress(currentFormKey, { ...currentFormData });
       console.log('Progress for', currentFormKey, 'saved to store');
     }
   };
@@ -232,35 +232,30 @@ const DataSubmissionPage: React.FC = () => {
       : storeCurrentFormIndex - 1;
 
     if (newIndex >= 0 && newIndex < storeFormSequence.length) {
-      setCurrentFormIndex(newIndex);
+      setCurrentFormIndex(newIndex); 
     } else if (direction === 'next' && newIndex >= storeFormSequence.length) {
-      console.log("End of form sequence. Consider review or finalize step.");
+      console.log("End of form sequence.");
       alert("You have reached the end of the form sequence. Review and Submit All Data.");
     }
   };
 
   const handleSaveAndExit = () => {
     persistCurrentFormProgress();
-    alert('Progress Saved! You can close the page or navigate away.\n(Note: In a real app, this might navigate to a dashboard or show a persistent success message)');
+    alert('Progress Saved!');
     console.log("Save and Exit triggered. Data persisted to store.");
   };
 
   const handleSubmitAllData = () => {
     persistCurrentFormProgress(); 
     console.log("Submitting all form data:", storeAllFormsData, "for patient:", storePatientData);
-    alert(
-      'All form data submitted successfully (Simulated)!\n' + 
-      `Patient: ${storePatientData?.initials}\n` + 
-      `Total Forms: ${storeFormSequence.length}\n` +
-      'Data: ' + JSON.stringify(storeAllFormsData, null, 2)
-    );
+    alert('All form data submitted successfully (Simulated)!');
     completeAndClearEncounter(); 
     resetEntirePageToStart(); 
   };
 
   const handleClearPersistedDataForDev = () => {
     clearPersistedSubmission();
-    alert('Persisted submission data has been cleared from localStorage. Please refresh the page.');
+    alert('Persisted submission data cleared. Please refresh.');
     resetEntirePageToStart(); 
   };
 
@@ -275,11 +270,11 @@ const DataSubmissionPage: React.FC = () => {
           <label className="form-label">Consent</label>
           <div className="space-y-2 mt-1">
             <div className="flex items-center">
-              <input id="projectConsent" type="checkbox" checked={localPatientInput.projectConsent} onChange={handlePatientInputChange} className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-2" />
+              <input id="projectConsent" name="projectConsent" type="checkbox" checked={localPatientInput.projectConsent} onChange={handlePatientInputChange} className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-2" />
               <label htmlFor="projectConsent" className="form-label mb-0">I consent to this project's data usage terms.</label>
             </div>
             <div className="flex items-center">
-              <input id="recontactConsent" type="checkbox" checked={localPatientInput.recontactConsent} onChange={handlePatientInputChange} className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-2" />
+              <input id="recontactConsent" name="recontactConsent" type="checkbox" checked={localPatientInput.recontactConsent} onChange={handlePatientInputChange} className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-2" />
               <label htmlFor="recontactConsent" className="form-label mb-0">I consent to be recontacted for follow-up.</label>
             </div>
           </div>
@@ -291,7 +286,7 @@ const DataSubmissionPage: React.FC = () => {
             iconLeft={<FaPlay />} 
             fullWidth 
             className="sm:flex-1"
-            disabled={!localPatientInput.initials || !localPatientInput.gender || !localPatientInput.dob || !localPatientInput.projectConsent}
+            disabled={currentProcessStep === 'loadingFormSequence' || !localPatientInput.initials || !localPatientInput.gender || !localPatientInput.dob || !localPatientInput.projectConsent}
           >
             Start New Submission
           </Button>
@@ -302,6 +297,7 @@ const DataSubmissionPage: React.FC = () => {
               iconLeft={<FaRedoAlt />} 
               fullWidth 
               className="sm:flex-1"
+              disabled={currentProcessStep === 'loadingFormSequence'}
             >
               Resume Last Encounter
             </Button>
@@ -334,8 +330,11 @@ const DataSubmissionPage: React.FC = () => {
   );
 
   const renderFormNavigation = () => {
+    if (!storeFormSequence || storeFormSequence.length === 0 || storeCurrentFormIndex < 0 || storeCurrentFormIndex >= storeFormSequence.length) {
+        return renderLoading("Preparing form display...");
+    }
     const currentFormDef = storeFormSequence[storeCurrentFormIndex];
-    if (!currentFormDef) return null;
+    if (!currentFormDef) return renderLoading("Form definition missing...");
 
     return (
       <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
@@ -347,7 +346,6 @@ const DataSubmissionPage: React.FC = () => {
               Form {storeCurrentFormIndex + 1} of {storeFormSequence.length}
             </p>
         </div>
-        {/* Apply card-base and card-body to the DynamicFormRenderer container */}
         <div className="card-base card-body">
           {currentFormSchema && currentFormUiSchema ? (
             <DynamicFormRenderer
@@ -357,7 +355,7 @@ const DataSubmissionPage: React.FC = () => {
               onFormDataChange={handleCurrentFormChange}
             />
           ) : (
-            renderLoading("Loading form contents...") // Re-use loading component
+            renderLoading("Loading form contents...")
           )}
         </div>
         <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -392,14 +390,11 @@ const DataSubmissionPage: React.FC = () => {
   let content;
   switch (currentProcessStep) {
     case 'initialPatientInput':
-    case 'resumingEncounter': // Also use patient input for resuming, it will show resume button if active
       content = renderInitialPatientInput();
       break;
     case 'loadingFormSequence':
-      content = renderLoading('Loading form sequence...');
-      break;
-    case 'loadingFormSchema':
-      content = renderLoading(`Loading schema for ${storeFormSequence[storeCurrentFormIndex]?.name || 'form'}...`);
+    case 'loadingFormSchema': 
+      content = renderLoading(currentProcessStep === 'loadingFormSequence' ? 'Loading form sequence...' : `Loading schema for ${storeFormSequence[storeCurrentFormIndex]?.name || 'form'}...`);
       break;
     case 'fillingFormInSequence':
       content = renderFormNavigation();
@@ -408,12 +403,12 @@ const DataSubmissionPage: React.FC = () => {
       content = renderError();
       break;
     default:
-      content = <p>Unknown submission state.</p>;
+      const exhaustiveCheck: never = currentProcessStep;
+      content = <p>Unknown submission state: {exhaustiveCheck}</p>;
   }
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6">
-      {/* Page Header */}
       <header className="mb-8">
         <h1 className="page-header">Clinical Data Submission</h1>
         <p className="page-subheader mt-1">Follow the steps to submit clinical data for a patient encounter.</p>
@@ -421,7 +416,6 @@ const DataSubmissionPage: React.FC = () => {
       
       {content}
 
-      {/* Developer Utility: Clear Persisted Data */}
       {import.meta.env.DEV && (
         <div className="mt-10 pt-6 border-t border-dashed border-slate-300 dark:border-slate-700">
           <SectionCard title="Developer Utilities">

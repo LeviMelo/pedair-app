@@ -8,7 +8,7 @@ The PedAir interface aims for a **clinical-scientific aesthetic** that instills 
 
 *   **Color Palette:**
     *   **Primary:** Clean neutrals (whites, light grays, dark grays for text/elements) for the base UI to maintain a professional and uncluttered look.
-    *   **Accents:** Judicious use of **bright, clear colors** (e.g., a specific blue for primary actions, greens for success, reds for alerts/errors). These should be used consistently for calls to action, highlighting important information, and data visualization (e.g., status indicators, drug categories if applicable, charts).
+    *   **Accents:** Judicious use of **bright, clear colors** (e.g., a specific blue for primary actions, greens for success, reds for alerts/errors). These should be used consistently for calls to action, highlighting important information, and data visualization (e.g., status indicators, drug categories if applicable, charts). Accent colors should also be thoughtfully integrated to bring more "soul" and visual interest to the application, potentially in section backgrounds, iconography, and subtle UI flourishes, without becoming distracting.
     *   **Dark Mode:** A fully supported, thoughtfully designed dark theme is crucial. It should use a desaturated dark background (not pure black) with appropriate contrast for text and interactive elements to reduce eye strain and offer user choice.
 
 *   **Typography:**
@@ -29,11 +29,26 @@ The PedAir interface aims for a **clinical-scientific aesthetic** that instills 
 *   **Iconography:**
     *   Clean, modern, and universally understandable icons. Consistency in style and weight is key.
     *   Use SVGs for scalability and clarity.
+    *   **Sidebar Icons:** Generally displayed with their inherent or theme-defined colors.
+    *   **Header Icons:** Typically rendered monochromatically (e.g., using `currentColor` or a specific neutral shade) to maintain a cleaner header aesthetic, unless a specific icon requires color for status indication (e.g., a notification badge).
 
 ## 3. Interaction & User Experience
 
 *   **Responsiveness:** Fully responsive design that adapts seamlessly to various screen sizes, from mobile to desktop.
 *   **Touch-Friendly Interactions & Diverse Input Modalities:** Prioritize designing for touch interfaces, especially for tablets and phones. Explore and implement varied input controls (e.g., sliders, steppers, interactive time pickers) to minimize reliance on keyboard entry and enhance usability in clinical settings.
+*   **Centralized CSS and Reusable Components:** Adhere to the principle of centralizing common styles in global CSS (e.g., `index.css` using Tailwind's `@apply`) and building a robust library of reusable UI components. This ensures consistency, maintainability, and a coherent visual language across the application.
+
+*   **Application Flow & Navigation:**
+    *   **Dashboard as Central Hub:** The `DashboardPage` serves as the primary landing area after login. It should provide users with an overview of their projects, relevant news or updates (placeholder), quick access to their user profile, and a clear path to create new projects (if permitted). It's envisioned as a more comprehensive space, potentially distinct in its feel from the in-project operational pages.
+    *   **Project-Centric Workflow:** Once a project is selected (typically from the Dashboard), the application context switches to that specific project.
+    *   **Project Details Page:** A dedicated page (e.g., `/project/:projectId`) will display detailed information about the active project, including its description, goals, and a visual representation of team members (e.g., cards showing names, roles, photos, contact info), with potential emphasis on the project lead.
+    *   **Sidebar Navigation (Project Context):** The main sidebar provides navigation to different functional areas *within the context of the active project*. Links to features like "Data Submission," "Form Builder," "Role Editor," "Patient Search," etc., are only enabled and visible if:
+        1.  An active project is selected.
+        2.  The authenticated user possesses the necessary roles/permissions *for that specific project* to access the feature. Tooltips should clarify why a link is disabled.
+    *   **Header as Contextual Action Bar:** The main application header, besides displaying the current page title and global actions (like notifications or user profile access), will dynamically adapt to the active sidebar navigation item. It can provide context-specific actions or sub-navigation related to the selected page. For example:
+        *   If "Data Submission" is active, the header might offer "View Existing Patient Entries" and "Start New Patient Data Collection."
+        *   If "Form Builder" is active, it might show "Create New Form" or "Load Existing Form."
+
 *   **Sidebar Behavior:**
     *   **Collapsible Handle:** The sidebar should feature a minimal, discrete button/handle for collapsing and expanding, integrated subtly into its border or header.
     *   **Collapsed State:** In its collapsed state, the sidebar should only display icons, with tooltips appearing on hover to reveal item labels.
@@ -75,5 +90,6 @@ The PedAir interface aims for a **clinical-scientific aesthetic** that instills 
 ## Tools & Implementation
 
 *   **Tailwind CSS:** Leverage Tailwind CSS for utility-first styling. Define the core color palette, font families, and spacing scales in `tailwind.config.js` to ensure consistency and enable the dark mode variant (`darkMode: 'class'`).
+*   **Centralized Styles & Reusable Components:** Common styling patterns (buttons, inputs, cards, etc.) should be defined as global classes in `index.css` using `@apply` or as base styles for reusable React components. This approach promotes consistency and reduces code duplication, aligning with the goal of a maintainable and aesthetically cohesive UI.
 
 This philosophy will guide the UI/UX development, ensuring PedAir is not only functional and scientifically robust but also a pleasure to use. 

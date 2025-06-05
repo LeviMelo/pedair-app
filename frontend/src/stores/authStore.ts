@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import useProjectStore from './projectStore'; // Import project store to access project details
 
 // Define the types for the store's state and actions
 interface User {
@@ -20,15 +21,16 @@ interface AuthState {
 }
 
 interface AuthActions {
-  login: (userData: User, token: string, roles: string[]) => void;
+  login: (userData: User, token: string) => void;
   logout: () => void;
   setProjectRoles: (roles: string[]) => void; // To update roles when project context changes
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  internal_setUserForMock: (user: User) => void;
 }
 
 // Create the store
-const useAuthStore = create<AuthState & AuthActions>((set) => ({
+const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
   // Initial state
   isAuthenticated: false,
   user: null,
@@ -38,16 +40,17 @@ const useAuthStore = create<AuthState & AuthActions>((set) => ({
   error: null,
 
   // Actions
-  login: (userData, token, roles) =>
+  login: (userData, token) => {
     set({
       isAuthenticated: true,
       user: userData,
       jwtToken: token,
-      activeProjectRoles: roles,
       isLoading: false,
       error: null,
-    }),
-  logout: () =>
+      activeProjectRoles: [], // Reset roles, will be set by project context
+    });
+  },
+  logout: () => {
     set({
       isAuthenticated: false,
       user: null,
@@ -55,30 +58,35 @@ const useAuthStore = create<AuthState & AuthActions>((set) => ({
       activeProjectRoles: [],
       isLoading: false,
       error: null,
-    }),
+    });
+    // Also clear active project from project store on logout
+    useProjectStore.getState().clearActiveProject(); 
+  },
   setProjectRoles: (roles) => set({ activeProjectRoles: roles }),
   setLoading: (loading) => set({ isLoading: loading }),
   setError: (error) => set({ error: error, isLoading: false }),
+  internal_setUserForMock: (user: User) => set({ user, isAuthenticated: true }),
 }));
 
 // Mock login action for demonstration - in a real app, this would involve API calls
-export const mockLogin = (userId: string, projectRoles: string[] = ['Researcher']) => {
-  const { login } = useAuthStore.getState();
+export const mockLogin = (userIdToLogin: string) => {
+  // Simulate fetching user details and a token
   const mockUser: User = {
-    id: userId,
-    name: `Dr. User ${userId.substring(0, 4)}`,
-    email: `user.${userId.substring(0,4)}@example.com`,
+    id: userIdToLogin, // Use the provided userId
+    name: userIdToLogin === 'userLead123' ? 'Dr. User Lead' : 'Mock User',
+    email: userIdToLogin === 'userLead123' ? 'dr.lead@example.com' : 'mock.user@example.com',
   };
-  const mockToken = `mock-jwt-token-for-${userId}`;
-  login(mockUser, mockToken, projectRoles);
-  console.log(`Mock login successful for ${mockUser.name} with roles: ${projectRoles.join(', ')}`);
+  const mockToken = 'mock-jwt-token-' + Date.now();
+
+  // useAuthStore.getState().login(mockUser, mockToken, initialProjectRoles);
+  // Instead of passing roles directly, login sets the user, and Layout will derive roles.
+  useAuthStore.getState().login(mockUser, mockToken);
+  console.log(`Mock login for ${userIdToLogin}. Active project roles will be set based on project selection.`);
 };
 
 export const mockLogout = () => {
-  const { logout } = useAuthStore.getState();
-  logout();
-  console.log('Mock logout successful.');
+  useAuthStore.getState().logout();
+  console.log('Mock logout executed.');
 };
-
 
 export default useAuthStore; 
