@@ -47,6 +47,11 @@ The PedAir interface aims for a **clinical-scientific aesthetic** that instills 
     *   Keyboard navigability for all interactive elements.
     *   Proper use of ARIA attributes where necessary.
     *   Focus indicators should be clear.
+*   **Clinical Form Presentation (Step-by-Step):**
+    *   **Prioritize Campo Único Visível (Single Visible Field/Section Focus):** To reduce cognitive load and enhance usability in dynamic clinical environments, especially on touch/mobile devices, long or complex forms should be broken down into smaller, manageable chunks or steps.
+    *   Each step should ideally focus on a single section or a very small group of related fields.
+    *   Clear and intuitive navigation (e.g., "Next" and "Previous" buttons) must be provided to move between these steps.
+    *   Provide a sense of progress (e.g., step indicators).
 *   **Performance:** Optimize for fast load times and smooth interactions.
 
 ## 4. Component Design

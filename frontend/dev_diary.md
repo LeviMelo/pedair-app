@@ -213,4 +213,118 @@ This document tracks major development milestones, decisions, challenges, bugs, 
 *   **Status:** All current UI components and widgets now have consistent and complete dark mode styling. The application's visual presentation in dark mode is significantly improved and aligns with the design philosophy.
 *   **Next Steps:** Transition to conceptual planning and initial structural implementation for the Form Builder UI (`frontend/src/pages/FormBuilderPage.tsx`). This will involve outlining the main sections (Toolbar, Field Palette, Form Canvas, Property Inspector) and creating basic placeholder components for them.
 
+---
+
+**YYYY-MM-DD: Project Description Update & Major Refinements**
+
+*   **Task:** Reviewed the updated `project_description.md` provided by the user.
+*   **Key Findings & Impacts:**
+    *   **Step-by-Step Form UX:** The new description mandates a "Priorizar Campo Único Visível" approach for clinical forms, meaning forms should be presented section-by-section or field-by-field. This requires a significant refactor of `DynamicFormRenderer.tsx` and `DataSubmissionPage.tsx`.
+    *   **Form Versioning:** Schemas will have versions, impacting how forms are selected and rendered.
+    *   **Detailed Page Functionality:** More specific requirements for Dashboard (project creation), Form Builder (drag & drop, conditional logic, versioning), Role Editor (fine-grained permissions), Patient Search (specific input fields), and Notification Scheduler.
+    *   **Patient Input for Pseudonymization:** Clearer definition of collecting initials, gender, DOB during data submission.
+    *   **Enhanced Consent UI:** Multilayer consent (Project, Form, Recontact) will need specific UI elements.
+*   **Decision:** Prioritize refactoring the form submission process for step-by-step UX before diving deeper into Form Builder advanced features.
+*   **Next Steps (Revised Plan):**
+    1.  **Documentation Updates:**
+        *   Update `frontend_design_philosophy.md` with the step-by-step form principle.
+        *   Update `project_phases.md` to align with the new detailed feature descriptions and UX requirements.
+    2.  **Frontend Refactor (Step-by-Step Forms):** Plan and implement changes to `DynamicFormRenderer.tsx` and `DataSubmissionPage.tsx` for sectioned form presentation.
+    3.  **Resume Form Builder Development:** Continue with `FormBuilderPage.tsx` after the core form submission UX is updated.
+
+---
+
+**YYYY-MM-DD: Step-by-Step Form UX Implemented & Page Placeholders Updated**
+
+*   **Task:** Refactored `DynamicFormRenderer.tsx` to accept a `currentStepIndex` prop, enabling it to render only one top-level schema property (section) at a time. Form title/description visibility adjusted for stepped view.
+*   **Task:** Significantly updated `DataSubmissionPage.tsx` to implement the "Priorizar Campo Único Visível" UX:
+    *   Added an initial step for collecting patient identification data (initials, gender, DOB) using `InputField` components.
+    *   Implemented state management for `isPatientInputStep`, `currentStepIndex`, loaded schemas (`formSchema`, `formUiSchema`), `formData`, and `sectionKeys`.
+    *   Included an effect to load `intraoperatoria.schema.json` and `intraoperatoria.uiSchema.json` for testing, initializing `formData` with schema defaults (including nested objects).
+    *   Created navigation functions (`goToNextStep`, `goToPreviousStep`) and buttons.
+    *   Added a visual progress indicator for form sections.
+    *   Integrated placeholder UI for project and recontact consent checkboxes.
+    *   Utilizes the modified `DynamicFormRenderer` with `currentStepIndex` for section-by-section display.
+*   **Linter Fixes:** 
+    *   Modified `InputField.tsx` to add `'date'` to the allowed `type` prop values.
+    *   Adjusted `DataSubmissionPage.tsx` to use `event.target.id` instead of `event.target.name` in `handlePatientInputChange` and removed the `name` prop from `InputField` calls, resolving linter errors.
+*   **Task:** Updated `DashboardPage.tsx` to include a placeholder "Create New Project" button.
+*   **Task:** Updated `PatientSearchPage.tsx` placeholder text and added a sample input field to reflect the required search format (Initials + Gender + DOB + Project ID).
+*   **Status:** The core step-by-step form submission flow is now functional on the frontend. Placeholders for key actions and information on other pages have been updated.
+*   **Next Steps:** 
+    1.  Modify `DataSubmissionPage.tsx` to include an initial "Form Selection" step, allowing dynamic loading of different form schemas (e.g., Intraop, PreAnest, Recuperacao) instead of hardcoding one. This will make the data submission process more versatile.
+    2.  Proceed with `FormBuilderPage.tsx` development (MVP 1) after the data submission flow is further refined.
+
+---
+
+**YYYY-MM-DD: Data Submission Page Refactored for Dynamic Form Selection & Loading**
+
+*   **Task:** Significantly refactored `DataSubmissionPage.tsx` to introduce a multi-step submission process:
+    1.  **Form Selection Step:** Users can now choose from a predefined list of forms (Intraoperatória, Pré-Anestesia, Recuperação Pós-Anestésica).
+    2.  **Dynamic Schema Loading:** Schemas (.schema.json, .uiSchema.json) are dynamically imported using `import()` with `/* @vite-ignore */` comments when a form is selected.
+    3.  **Patient Identification Step:** Remains the same.
+    4.  **Form Filling Step:** Uses the dynamically loaded schemas for the selected form, rendered section by section via `DynamicFormRenderer`.
+*   **State Management:** Updated to use `currentProcessStep` ('formSelection', 'patientInput', 'formFilling') to manage the flow. Implemented `isLoadingSchema` for loading states and `resetFormState` for clearing form data when navigating or submitting.
+*   **Navigation:** `goToNextStep` and `goToPreviousStep` logic updated to accommodate the new multi-step process.
+*   **Error Handling:** Basic error handling and loading indicators added for the schema import process.
+*   **Status:** The data submission page is now more versatile, allowing users to select which form to complete. This is a major step towards the flexible form system envisioned.
+*   **Next Steps:** Begin development of the `FormBuilderPage.tsx` (MVP 1), focusing on enabling users to view and edit the raw JSON for form schemas and UI schemas, along with basic metadata.
+
+---
+
+**YYYY-MM-DD: Form Builder MVP 1 Implemented (Raw JSON Editors)**
+
+*   **Task:** Developed the initial version (MVP 1) of the `FormBuilderPage.tsx`.
+*   **New Components Created:**
+    *   `frontend/src/components/forms/FormBuilderToolbar.tsx`: Provides actions like "New Blank Form," "Load Form (Placeholder)," and "Save Form (Placeholder)."
+    *   `frontend/src/components/forms/FormMetadataEditor.tsx`: Allows editing of form title and description, and displays the form version.
+    *   `frontend/src/components/forms/SchemaEditor.tsx`: A reusable component with a textarea for raw JSON editing, including live JSON parsing and error display. Used for both main data schema and UI schema.
+*   **`FormBuilderPage.tsx` Updates:**
+    *   Integrated the new components into a two-column layout (Metadata & UI Schema on the left, Main Schema on the right).
+    *   Implemented state management for form metadata, schema JSON strings (initialized with sample valid JSON), and parsing error messages.
+    *   Included `onChange` handlers for schema text areas that update state and validate JSON in real-time.
+    *   `onNewForm` action resets the editors to a basic empty schema structure.
+*   **Status:** The Form Builder MVP 1 is functional, allowing users to directly edit and validate the JSON for both form schemas and their associated metadata. This lays the groundwork for more advanced form building features.
+*   **Next Steps (as per `project_phases.md`):** Proceed to Phase 3.2: Role Editor (MVP 1 - Basic Role & Permission Management), which involves developing the initial UI in `RoleEditorPage.tsx` for creating, viewing, and listing project-specific roles and assigning high-level permissions.
+
+---
+
+**YYYY-MM-DD: Role Editor MVP 1 Implemented (Mock Data)**
+
+*   **Task:** Developed the initial version (MVP 1) of the `RoleEditorPage.tsx` using mock data.
+*   **Core Functionality:**
+    *   **Role Listing & Selection:** Displays a list of predefined mock roles. Users can select a role to view/edit its details.
+    *   **Role Creation:** A "Create New Role" button allows users to initiate the creation of a new role.
+    *   **Role Editing Form:** When a role is selected or being created, a form appears allowing modification of:
+        *   Role Name (InputField)
+        *   Role Description (Textarea)
+        *   Permissions (Checkboxes based on a mock list: Submit Forms, View Submissions, Edit Project Settings, Manage Users, Build Forms).
+    *   **State Management:** Implemented local state to manage the list of roles, the currently selected/editing role, input field values, and selected permissions.
+    *   **Mock Save/Create:** "Save" and "Create" actions update the local mock `roles` array and provide user feedback via alerts.
+*   **Layout:** Uses a two-column layout. The left column lists roles, and the right column displays the editor/creator form or a placeholder message.
+*   **Status:** The Role Editor MVP 1 provides a functional UI for basic role management operations, currently operating on mock data. This serves as a solid foundation for future backend integration.
+*   **Next Steps (as per `project_phases.md`):** 
+    1. Phase 3.3: Data Submission Flow Refinement - Enhance `DataSubmissionPage.tsx` to load the list of available forms (and their versions) from a (mocked or eventually real) API endpoint instead of a hardcoded list. This sets the stage for backend integration of form definitions.
+    2. Phase 4: Backend - API Expansion & Core Logic Implementation - Begin work on the backend APIs to support the Form Builder and Role Editor functionality, including database interactions.
+
+---
+
+**YYYY-MM-DD: Critical Feedback & Architectural Refactoring Plan**
+
+*   **User Feedback Received:** Significant concerns raised regarding state management, component reusability, codebase size, UI data management, fundamental understanding of project-centric UI flow, and RBAC misalignment with `project_description.md`.
+*   **Acknowledgement:** The feedback is valid and highlights a premature dive into feature-specific MVP development without establishing a robust project-contextual and role-based architectural foundation on the frontend.
+*   **Decision:** Immediate pause on new feature development to address these core architectural issues.
+*   **Refactoring Plan - Key Objectives:**
+    1.  **Establish Project Context:** Implement a mechanism for selecting an "active project" that influences the entire UI/UX.
+    2.  **Introduce Global State (Mocked Auth/Roles):** Create contexts to manage (mocked) authenticated user details and their roles *within the active project*.
+    3.  **Revamp `DashboardPage` as Project Launch Pad:** Users will select projects from the dashboard.
+    4.  **Conditional Navigation & Access Control:** Sidebar links and page access (e.g., to `FormBuilderPage`, `RoleEditorPage`) will be conditional based on active project selection and user's role in that project.
+    5.  **Make Pages Project-Aware:** Existing tool pages will be refactored to operate within the scope of the selected project.
+*   **Impact:** This refactoring aims to create a more scalable, maintainable frontend that accurately reflects the multi-project, role-based nature of PedAir as described in `project_description.md`.
+*   **Next Steps:**
+    1.  Update `project_phases.md` to incorporate this new architectural refactoring phase.
+    2.  Begin implementation of `ProjectContext` and mocked `AuthContext`.
+    3.  Refactor `DashboardPage.tsx` to serve as the project launchpad.
+    4.  Modify `Layout.tsx` and routing in `App.tsx` for conditional navigation based on project context and roles.
+
 --- 

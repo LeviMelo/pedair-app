@@ -2,7 +2,7 @@
 
 ## Descrição do Projeto
 
-PedAir é uma plataforma web de pesquisa clínica voltada para o desenvolvimento de Protocolos ERAS (Enhanced Recovery After Surgery) em cirurgia torácica pediátrica. Seu propósito principal é coletar e analisar dados perioperatórios (pré-operatório, intraoperatório e pós-operatório) de crianças submetidas a procedimentos de via aérea, de forma a gerar recomendações baseadas em evidências para melhorar a segurança, reduzir complicações e otimizar o tempo de internação. Originalmente concebido para dar suporte ao “Projeto Respirar” (cirurgias pediátricas de via aérea no estado de Alagoas), PedAir foi projetado desde o início como um sistema **multi-projeto**, capaz de atender simultaneamente a múltiplos estudos, cada um com:
+PedAir é uma plataforma web de pesquisa clínica voltada para o desenvolvimento de Protocolos ERAS (Enhanced Recovery After Surgery) em cirurgia torácica pediátrica. Seu propósito principal é coletar e analisar dados perioperatórios (pré-operatório, intraoperatório e pós-operatório) de crianças submetidas a procedimentos de via aérea, de forma a gerar recomendações baseadas em evidências para melhorar a segurança, reduzir complicações e otimizar o tempo de internação. Originalmente concebido para dar suporte ao "Projeto Respirar" (cirurgias pediátricas de via aérea no estado de Alagoas), PedAir foi projetado desde o início como um sistema **multi-projeto**, capaz de atender simultaneamente a múltiplos estudos, cada um com:
 
 * Suas próprias regras de privacidade (incluindo políticas de LGPD),
 * Seus próprios formulários (esquemas JSON/JSON Schema dinâmicos),
@@ -13,9 +13,9 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
 ### Público-Alvo e Cenários de Uso
 
 1. **Pesquisadores e Líderes de Estudo**
-   • Criam projetos de pesquisa (ex.: “ERAS Pediátrico no Hospital X”)
+   • Criam projetos de pesquisa (ex.: "ERAS Pediátrico no Hospital X")
    • Definem políticas de consentimento, pseudonimização e retenção de dados
-   • Configuram papéis específicos (ex.: “Preceptor”, “Pesquisador Cego”, “Enfermeiro”)
+   • Configuram papéis específicos (ex.: "Preceptor", "Pesquisador Cego", "Enfermeiro")
 
 2. **Profissionais de Saúde (Anestesistas, Cirurgiões, Enfermeiros)**
    • Preenchem formulários estruturados em tempo real (pré, intra e pós-operatório)
@@ -39,7 +39,7 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
    Criar um motor de formulários dinâmicos (JSON/JSON Schema) que permita pesquisadores definirem esquemas de coleta (campos, tipos de entrada, validações, lógica condicional) sem necessidade de reprogramação. Esses formulários devem suportar entradas de profissionais (anestesiologistas, cirurgiões, enfermeiros) e de pacientes ou responsáveis (para dados de seguimento tardio).
 
 3. **Governança Científica via RBAC Personalizado**
-   Permitir que cada projeto defina papéis totalmente personalizados (ex.: “Preceptor”, “Pesquisador Cego”, “Coordenador de Campo”, “Paciente”) com permissões finas para visualizar, editar, aprovar ou exportar dados, respeitando o desenho metodológico do estudo (estudos cegados, ensaios clínicos randomizados, coortes, auditorias internas).
+   Permitir que cada projeto defina papéis totalmente personalizados (ex.: "Preceptor", "Pesquisador Cego", "Coordenador de Campo", "Paciente") com permissões finas para visualizar, editar, aprovar ou exportar dados, respeitando o desenho metodológico do estudo (estudos cegados, ensaios clínicos randomizados, coortes, auditorias internas).
 
 4. **Rastreamento Pseudonimizado de Pacientes**
    Linkar múltiplas submissões do mesmo paciente sem nunca expor dados de identificação direta. Utilizar pseudonimização determinística (HMAC-SHA256 com salt e pepper) para que pesquisadores busquem registros por dados conhecidos (iniciais, sexo, DOB, ID do projeto) sem armazenar ou conhecer a identidade real.
@@ -47,8 +47,8 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
 5. **Consentimento e Recontact**
    Implementar um sistema de consentimento multilayer:
 
-   * **Consentimento de Projeto**: Aceitação geral de uso dos dados para pesquisa “X”.
-   * **Consentimento de Formulário**: Cada formulário pode ter cláusulas específicas (“Aceito fornecer dados de comorbidades”).
+   * **Consentimento de Projeto**: Aceitação geral de uso dos dados para pesquisa "X".
+   * **Consentimento de Formulário**: Cada formulário pode ter cláusulas específicas ("Aceito fornecer dados de comorbidades").
    * **Consentimento de Recontacto**: Checkbox dedicado para permitir lembretes ou convites futuros.
      Cada projeto configura sua política (tempo de retenção, finalidade do recontacto, opt-in/opt-out), garantindo conformidade com a LGPD.
 
@@ -64,7 +64,7 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
 
 ### 1. Backend
 
-* **Framework**: Flask (Python 3.10+), organizado em Blueprints para separar lógicas de “projetos”, “formulários”, “usuários”, “submissões”, “notificações” e “auditoria”.
+* **Framework**: Flask (Python 3.10+), organizado em Blueprints para separar lógicas de "projetos", "formulários", "usuários", "submissões", "notificações" e "auditoria".
 
 * **ORM**: SQLAlchemy, com migrações gerenciadas por Alembic (via Flask-Migrate).
 
@@ -75,7 +75,7 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
   * `form_submissions`: armazenamento de respostas, campo JSONB com os dados preenchidos, relaciona-se a `project_id`, `form_id`, `patient_id` e versão do schema.
   * `patients`: armazena apenas o `patient_id` (hash), data de criação, projeto associado, consentimentos, e relaciona—se a `contact_log` (caso habilitado).
   * `users`: contas de login (Google OAuth 2.0), armazenando `sub` (ID do Google), `email` criptografado (opcional), `approved` (boolean), data de cadastro.
-  * `roles` e `user_roles`: definem papéis específicos para cada `project_id`. Por exemplo, “Preceptor A” tem X permissões, “Pesquisador Cego” tem Y, “Paciente” tem Z (limitado).
+  * `roles` e `user_roles`: definem papéis específicos para cada `project_id`. Por exemplo, "Preceptor A" tem X permissões, "Pesquisador Cego" tem Y, "Paciente" tem Z (limitado).
   * `contact_log`: registro de e-mails criptografados (AES-256 via `cryptography.fernet`) e data/hora de envio, consentimento específico de recontacto.
   * `access_logs`: auditoria de cada ação crítica (ex.: busca por `patient_id`, exportação de dados, modificação de schema, envio de notificações), contendo: `log_id`, `user_id`, `project_id`, `action`, `target_id` (se aplicável), `timestamp`, `IP` (opcional, para segurança) e `old_data`/`new_data` (para diffs básicos).
 
@@ -122,8 +122,8 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
   * Uso de **Flask-Migrate** (`flask db migrate` / `flask db upgrade`) contra o banco remoto (Supabase ou Render Managed).
   * Deploy contínuo via GitHub → Render.com:
 
-    * Serviço “Web Service” para o backend Flask (build: `pip install -r requirements.txt`; start: `gunicorn run:app --bind 0.0.0.0:10000`).
-    * Serviço “Static Site” para frontend (build: `yarn build`; publish: `dist/`).
+    * Serviço "Web Service" para o backend Flask (build: `pip install -r requirements.txt`; start: `gunicorn run:app --bind 0.0.0.0:10000`).
+    * Serviço "Static Site" para frontend (build: `yarn build`; publish: `dist/`).
     * Variáveis de ambiente configuradas no painel do Render.
 
 ---
@@ -134,7 +134,7 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
 
 * **Gerenciamento de Estado**:
 
-  * **Context API** ou **Zustand** para armazenar globalmente: JWT, informações do usuário, papéis ativos e `project_id` selecionado.
+  * **Zustand** para armazenar globalmente: JWT, informações do usuário, papéis ativos e `project_id` selecionado.
   * Estados locais em cada componente/formulário para controle de dados em tempo real.
 
 * **Formulários Dinâmicos** (JSON Schema + uiSchema):
@@ -158,19 +158,20 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
   * **Toque e Gestos**: campos grandes, botões bem espaçosos, steppers e sliders para input rápido.
   * **Feedback Imediato**: validações em tempo real, mensagens de erro claras em destaque.
   * **Compatibilidade Móvel**: layouts fluidos que se ajustam a tablets e smartphones com tela sensível ao toque.
-  * **Priorizar Campo Único Visível**: evitar rolagens excessivas; exibir uma seção de cada vez, com “passo a passo” para longos formulários.
+  * **Carregamento Integral de Formulários**: Para máxima agilidade, especialmente em cenários intraoperatórios, os formulários devem ser carregados integralmente de uma só vez, evitando navegação por passos ou seções que demandem cliques adicionais. O objetivo é permitir que o profissional de saúde visualize e preencha todo o formulário rapidamente em uma única tela, com rolagem vertical conforme necessário.
+  * **Múltiplos Formulários por Paciente (Visão Futura)**: Considerar a capacidade de carregar e alternar entre múltiplos formulários relacionados ao mesmo paciente em uma interface unificada, para contextos onde diferentes coletas precisam ser acessadas em sequência rápida.
 
 * **Principais Páginas / Fluxos**:
 
   1. **Dashboard de Projetos**
 
      * Exibe lista de projetos do usuário, papéis, contadores de formulários pendentes e próximos follow-ups.
-     * Botão “Criar Novo Projeto” (sempre visível para usuários com permissão).
+     * Botão "Criar Novo Projeto" (sempre visível para usuários com permissão).
 
   2. **Construtor de Formulários (Form Builder)**
 
      * Interface de arrastar e soltar (drag & drop) componentes para criar ou editar JSON Schema.
-     * Definição de rótulos, placeholders, regras de validação, lógica condicional (ex.: “se campo A = X, exibir campo B”).
+     * Definição de rótulos, placeholders, regras de validação, lógica condicional (ex.: "se campo A = X, exibir campo B").
      * Controle de versão: cada alteração gera uma nova versão do schema; possibilidade de manter versões antigas ativas para submissões históricas.
 
   3. **Editor de Papéis (Role Editor)**
@@ -200,14 +201,14 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
 
   5. **Busca de Paciente Pseudonimizado**
 
-     * Usuário preenche “iniciais + sexo + DOB + project\_id” em um campo único.
+     * Usuário preenche "iniciais + sexo + DOB + project\_id" em um campo único.
      * Frontend envia GET para `/api/projects/:project_id/patients/search?initials=JS&gender=M&dob=2017-02-04`.
      * Backend recalcula hash e retorna todas as submissões vinculadas a esse `patient_id` (lista de `submission_id`, `form_id`, data, status).
      * O usuário (se tiver permissão, ex.: `can_view_any_submission`) pode abrir cada submissão sem ver dados identificadores diretos.
 
   6. **Agendamento de Notificações**
 
-     * UI para configurar regras de lembrete: “X dias após data Y”, “Dia fixo do mês”, “Aniversário do procedimento”.
+     * UI para configurar regras de lembrete: "X dias após data Y", "Dia fixo do mês", "Aniversário do procedimento".
      * Cada regra gera uma tarefa agendada (cron interno ou via PaaS scheduler).
      * Quando chega o momento, backend consulta `patient_id` com `next_followup_date <= hoje`; busca e-mail/WhatsApp (descriptografa em memória) e dispara mensagem.
      * Cria registro em `contact_log` para auditoria (quem enviou, quando, canal, resposta, se houver).
@@ -235,9 +236,9 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
 
 2. **Consentimento Multicamadas**
 
-   * **Consentimento de Projeto**: Ao entrar no projeto pela primeira vez (usuário ou paciente), exibe-se banner: “Aceito que meus dados sejam usados para pesquisa X?”
-   * **Consentimento de Formulário**: Cada formulário pode conter um bloco de consentimento específico (ex.: “Aceito fornecer informações de histórico familiar”).
-   * **Consentimento de Recontacto**: Checkbox obrigatório para que paciente/responsável autorize envio de e-mails/WhatsApp. Se marcado, exibe campo para “Digite seu e-mail” (com validação de confirmação) ou “Número de WhatsApp”.
+   * **Consentimento de Projeto**: Ao entrar no projeto pela primeira vez (usuário ou paciente), exibe-se banner: "Aceito que meus dados sejam usados para pesquisa X?"
+   * **Consentimento de Formulário**: Cada formulário pode conter um bloco de consentimento específico (ex.: "Aceito fornecer informações de histórico familiar").
+   * **Consentimento de Recontacto**: Checkbox obrigatório para que paciente/responsável autorize envio de e-mails/WhatsApp. Se marcado, exibe campo para "Digite seu e-mail" (com validação de confirmação) ou "Número de WhatsApp".
    * O consentimento fica registrado em tabela própria, relacionando `patient_id`, `form_id`, `consent_type`, `timestamp`, `valid_until` (se houver expiração).
    * Se o paciente revoga o consentimento, bloqueiam-se todos os fluxos de notificação e, se necessário, seus dados podem ser excluídos (conforme configuração do projeto).
 
@@ -251,7 +252,7 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
 
    * Definida em `privacy_profile.expires_after_days` por projeto.
    * Após vencimento, **os dados de contato são destruídos** permanentemente e as submissões continuam apenas com `patient_id` pseudonimizado.
-   * Consentimentos expirados ou revogados ficam marcados como “inválidos” e não aparecem em buscas de recontacto.
+   * Consentimentos expirados ou revogados ficam marcados como "inválidos" e não aparecem em buscas de recontacto.
 
 5. **Registro de Auditoria**
 
@@ -271,7 +272,7 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
 
 * Cada projeto possui tabelas `roles` e `user_roles` que definem papéis arbitrários criados pelo líder:
 
-  * Por exemplo, “Preceptor A”, “Pesquisador B”, “Coordenador de Campo”, “Paciente”.
+  * Por exemplo, "Preceptor A", "Pesquisador B", "Coordenador de Campo", "Paciente".
   * Cada papel recebe um conjunto de permissões modulares, tais como:
 
     * **Visualizar Submissões** (`can_view_submissions`)
@@ -301,51 +302,51 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
 
 1. **Criação e Configuração de Novo Projeto**
 
-   * Pesquisador A (Project Lead) clica em “Criar Novo Projeto” no Dashboard.
+   * Pesquisador A (Project Lead) clica em "Criar Novo Projeto" no Dashboard.
    * Preenche metadados: nome do estudo, descrição, políticas de LGPD (base legal, período de retenção, regras de recontacto).
-   * Define papéis iniciais: “Preceptor”, “Pesquisador Cego”, “Enfermeiro”, “Paciente”.
-   * Configura permissões de cada papel (por exemplo, “Pesquisador Cego” não vê dados sensíveis, apenas dados essenciais para análise).
+   * Define papéis iniciais: "Preceptor", "Pesquisador Cego", "Enfermeiro", "Paciente".
+   * Configura permissões de cada papel (por exemplo, "Pesquisador Cego" não vê dados sensíveis, apenas dados essenciais para análise).
 
 2. **Definição de Formulários e Versões**
 
-   * No “Form Builder”, Pesquisador A importa o esquema JSON dos formulários tradicionais de ERAS (Pré-Operatório, Intra-Operatório, Pós-Operatório).
-   * Ajusta validações, adiciona campos de consentimento e configura lógica condicional (ex.: apenas exibir “Dados de Longo Prazo” se “Consentimento de Recontacto” estiver marcado).
-   * Publica a versão 1 do “Formulário Pré-Operatório” (form\_id = 123, version = 1).
-   * Posteriormente, ao precisar coletar um campo adicional (ex.: “Intercorrências Cardiovasculares”), cria a versão 2 desse mesmo formulário, definindo script de migração (optionally) ou mantendo as duas versões ativas simultaneamente.
+   * No "Form Builder", Pesquisador A importa o esquema JSON dos formulários tradicionais de ERAS (Pré-Operatório, Intra-Operatório, Pós-Operatório).
+   * Ajusta validações, adiciona campos de consentimento e configura lógica condicional (ex.: apenas exibir "Dados de Longo Prazo" se "Consentimento de Recontacto" estiver marcado).
+   * Publica a versão 1 do "Formulário Pré-Operatório" (form\_id = 123, version = 1).
+   * Posteriormente, ao precisar coletar um campo adicional (ex.: "Intercorrências Cardiovasculares"), cria a versão 2 desse mesmo formulário, definindo script de migração (optionally) ou mantendo as duas versões ativas simultaneamente.
 
 3. **Convite de Colaboradores**
 
    * Pesquisador A convida Ana (Enfermeira B) e Bruno (Estatístico C) por e-mail.
-   * Enfermeira B recebe link de convite, faz login via Google e é atribuída ao papel “Enfermeiro” (permissões: `can_submit_form`, `can_view_patient_summary`).
-   * Estatístico C recebe convite, faz login e recebe papel “Pesquisador Cego” (permissão: `can_export_data`, mas não vê campos que possibilitam identificar o paciente).
+   * Enfermeira B recebe link de convite, faz login via Google e é atribuída ao papel "Enfermeiro" (permissões: `can_submit_form`, `can_view_patient_summary`).
+   * Estatístico C recebe convite, faz login e recebe papel "Pesquisador Cego" (permissão: `can_export_data`, mas não vê campos que possibilitam identificar o paciente).
 
 4. **Coleta de Dados Iniciais (Formulário Pré-Operatório)**
 
-   * No dia do pré-operatório, Ana (Enfermeira B) clica em “Submeter Formulário” e escolhe “Formulário Pré-Operatório” (versão 2).
-   * Preenche: iniciais “JS”, sexo “M”, DOB “2017-02-04”, idade, peso, diagnósticos (autocomplete), comorbidades (tags), queixas.
-   * Assinala “Aceito receber lembretes por e-mail” e digita “[joao.pai@example.com](mailto:joao.pai@example.com)”. Ana clica em “Enviar”.
+   * No dia do pré-operatório, Ana (Enfermeira B) clica em "Submeter Formulário" e escolhe "Formulário Pré-Operatório" (versão 2).
+   * Preenche: iniciais "JS", sexo "M", DOB "2017-02-04", idade, peso, diagnósticos (autocomplete), comorbidades (tags), queixas.
+   * Assinala "Aceito receber lembretes por e-mail" e digita "[joao.pai@example.com](mailto:joao.pai@example.com)". Ana clica em "Enviar".
    * O backend:
 
      1. Gera `patient_id = HMAC-SHA256( "2017-02-04|M|JS|project123|pepper", salt )`.
-     2. Criptografa “[joao.pai@example.com](mailto:joao.pai@example.com)” via `Fernet` e registra em `contact_log`.
+     2. Criptografa "[joao.pai@example.com](mailto:joao.pai@example.com)" via `Fernet` e registra em `contact_log`.
      3. Grava em `form_submissions` o JSON com `form_data`, `version=2` e `patient_id`.
 
 5. **Coleta Intraoperatória (Formulário Intra-Operatório)**
 
-   * No dia da cirurgia, o anestesiologista Dr. C faz login, abre “Formulário Intra-Operatório”, digita “JS|M|2017-02-04” nos campos iniciais.
+   * No dia da cirurgia, o anestesiologista Dr. C faz login, abre "Formulário Intra-Operatório", digita "JS|M|2017-02-04" nos campos iniciais.
    * O frontend envia apenas `patient_input`; o backend recalcula o mesmo `patient_id` e preenche o `patient_id` nos dados.
-   * Dr. C preenche todo o restante (procedimento, fármacos, intercorrências) e clica em “Enviar”.
+   * Dr. C preenche todo o restante (procedimento, fármacos, intercorrências) e clica em "Enviar".
    * Esse registro fica vinculado automaticamente ao mesmo paciente.
 
 6. **Busca e Edição de Submissões**
 
-   * O Preceptor (com permissão `can_search_patient`) acessa “Buscar Paciente”, insere “JS|M|2017-02-04”.
+   * O Preceptor (com permissão `can_search_patient`) acessa "Buscar Paciente", insere "JS|M|2017-02-04".
    * Backend verifica permissão, recalcula `patient_id` e retorna lista de todas as submissões (Pré, Intra, Pós).
    * Preceptor clica em cada submissão para ver detalhes (campos anonimizados), sem jamais visualizar dados que permitam identificar diretamente o paciente.
 
 7. **Follow-up e Lembretes Automatizados**
 
-   * Na configuração de notificações, Pesquisador A definiu: “Enviar lembrete 30 dias após a data da cirurgia”.
+   * Na configuração de notificações, Pesquisador A definiu: "Enviar lembrete 30 dias após a data da cirurgia".
    * Um job diário no backend verifica:
 
      ```sql
@@ -355,19 +356,19 @@ A plataforma é voltada para uso primário por profissionais médicos em ambient
          AND submission_date + interval '30 days' <= NOW()
          AND consent_recontact = true;
      ```
-   * Para cada resultado, descriptografa o e-mail de `contact_log` e dispara mensagem “Por favor, preencha o Formulário de Avaliação aos 30 dias”.
+   * Para cada resultado, descriptografa o e-mail de `contact_log` e dispara mensagem "Por favor, preencha o Formulário de Avaliação aos 30 dias".
    * Registra cada envio em `access_logs`.
 
 8. **Exportação e Análise de Microdados**
 
-   * O Estatístico C (papel `can_export_data`) acessa “Exportar Dados” e seleciona “Formulário Intra-Operatório” → gera CSV.
+   * O Estatístico C (papel `can_export_data`) acessa "Exportar Dados" e seleciona "Formulário Intra-Operatório" → gera CSV.
    * Antes de retornar, o backend:
 
      1. Agrupa por `patient_id`.
      2. Para cada `patient_id`, calcula `export_patient_id = SHA256(patient_id + export_salt)`.
      3. Substitui todas as colunas de `patient_id` pelo `export_patient_id`.
    * O CSV contém: `export_patient_id`, dados clínicos (sem nenhum campo livre de texto que possa identificar) e `form_version`.
-   * Estatístico faz download e analisa sem nunca saber quem é “JS”.
+   * Estatístico faz download e analisa sem nunca saber quem é "JS".
 
 ---
 

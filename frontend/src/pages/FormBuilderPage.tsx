@@ -1,65 +1,127 @@
-import React from 'react';
+import React, { useState } from 'react';
+import FormBuilderToolbar from '../components/forms/FormBuilderToolbar';
+import FormMetadataEditor from '../components/forms/FormMetadataEditor';
+import SchemaEditor from '../components/forms/SchemaEditor'; // Reused for both schemas
 
-// Placeholder components for Form Builder sections
-const FormBuilderToolbar: React.FC = () => (
-  <div className="bg-slate-200 dark:bg-slate-700 p-3 rounded-md shadow mb-4">
-    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Form Builder Toolbar (Save, Form Settings, Preview)</p>
-  </div>
-);
+const initialSchema = JSON.stringify({
+  "title": "My New Form",
+  "description": "A description for my new form.",
+  "type": "object",
+  "properties": {
+    "fieldName": {
+      "type": "string",
+      "title": "My First Field"
+    }
+  }
+}, null, 2);
 
-const FieldPalette: React.FC = () => (
-  <div className="bg-slate-200 dark:bg-slate-700 p-4 rounded-md shadow h-full">
-    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-3">Field Palette</h3>
-    <p className="text-sm text-slate-600 dark:text-slate-300">Draggable field types will appear here (Text, Number, Select, Custom Widgets, etc.).</p>
-    {/* Example of a draggable item placeholder */}
-    <div className="my-2 p-2 border border-dashed border-slate-400 dark:border-slate-500 rounded-md bg-white dark:bg-slate-600">
-      <p className="text-xs text-slate-700 dark:text-slate-200">Text Input Field</p>
-    </div>
-    <div className="my-2 p-2 border border-dashed border-slate-400 dark:border-slate-500 rounded-md bg-white dark:bg-slate-600">
-      <p className="text-xs text-slate-700 dark:text-slate-200">Drug Section Widget</p>
-    </div>
-  </div>
-);
-
-const FormCanvas: React.FC = () => (
-  <div className="bg-white dark:bg-slate-800 p-6 rounded-md shadow-lg h-full overflow-y-auto">
-    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-3 border-b dark:border-slate-700 pb-2">Form Canvas</h3>
-    <p className="text-sm text-slate-600 dark:text-slate-300">Drag fields here to build the form. A live-ish preview or list of fields will be shown.</p>
-    <div className="mt-4 p-4 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg min-h-[200px] flex items-center justify-center">
-      <p className="text-slate-400 dark:text-slate-500">Drop Zone</p>
-    </div>
-  </div>
-);
-
-const PropertyInspector: React.FC = () => (
-  <div className="bg-slate-200 dark:bg-slate-700 p-4 rounded-md shadow h-full">
-    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-3">Property Inspector</h3>
-    <p className="text-sm text-slate-600 dark:text-slate-300">When a field is selected on the canvas, its properties (schema & UI schema options) will be editable here.</p>
-    <div className="mt-4 p-2 border border-dashed border-slate-400 dark:border-slate-500 rounded-md bg-white dark:bg-slate-600 min-h-[100px]">
-      <p className="text-xs text-slate-700 dark:text-slate-200">Field Properties...</p>
-    </div>
-  </div>
-);
+const initialUiSchema = JSON.stringify({
+  "fieldName": {
+    "ui:widget": "InputFieldWidget"
+  }
+}, null, 2);
 
 const FormBuilderPage: React.FC = () => {
+  const [formTitle, setFormTitle] = useState('New Form');
+  const [formDescription, setFormDescription] = useState('A basic form description.');
+  const [formVersion, setFormVersion] = useState('1.0.0'); // Placeholder
+
+  const [schemaJsonString, setSchemaJsonString] = useState<string>(initialSchema);
+  const [uiSchemaJsonString, setUiSchemaJsonString] = useState<string>(initialUiSchema);
+
+  const [schemaError, setSchemaError] = useState<string | null>(null);
+  const [uiSchemaError, setUiSchemaError] = useState<string | null>(null);
+
+  const handleSchemaChange = (newJsonString: string) => {
+    setSchemaJsonString(newJsonString);
+    try {
+      JSON.parse(newJsonString);
+      setSchemaError(null);
+    } catch (e: any) {
+      setSchemaError(e.message);
+    }
+  };
+
+  const handleUiSchemaChange = (newJsonString: string) => {
+    setUiSchemaJsonString(newJsonString);
+    try {
+      JSON.parse(newJsonString);
+      setUiSchemaError(null);
+    } catch (e: any) {
+      setUiSchemaError(e.message);
+    }
+  };
+
+  const handleNewForm = () => {
+    setFormTitle('Untitled Form');
+    setFormDescription('');
+    setFormVersion('1.0.0');
+    setSchemaJsonString(JSON.stringify({ type: 'object', properties: {} }, null, 2));
+    setUiSchemaJsonString(JSON.stringify({}, null, 2));
+    setSchemaError(null);
+    setUiSchemaError(null);
+    console.log("New Blank Form clicked");
+  };
+
+  const handleLoadForm = () => {
+    // Placeholder - In future, this would open a modal to select & load form schemas
+    console.log("Load Form clicked (Placeholder)");
+    alert("Load Form functionality not yet implemented.");
+  };
+
+  const handleSaveForm = () => {
+    // Placeholder - In future, this would validate and send schemas to backend
+    console.log("Save Form clicked (Placeholder)");
+    if (schemaError || uiSchemaError) {
+      alert("Cannot save: Please fix JSON errors first.");
+      return;
+    }
+    alert("Form save functionality not yet implemented. Check console for current data.");
+    console.log("Form Metadata:", { title: formTitle, description: formDescription, version: formVersion });
+    console.log("Schema JSON:", schemaJsonString);
+    console.log("UI Schema JSON:", uiSchemaJsonString);
+  };
+
   return (
     <div className="p-0 flex flex-col h-[calc(100vh-var(--header-height,4rem)-var(--page-padding,3rem))] max-h-[calc(100vh-var(--header-height,4rem)-var(--page-padding,3rem))]">
-      {/* Assuming header height is 4rem (h-16) and page padding is 1.5rem top/bottom (p-6 from Layout.tsx) */}
-      {/* Adjust --header-height and --page-padding if Layout.tsx main content padding changes */}
-      <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-4">Form Builder</h1>
-      <FormBuilderToolbar />
+      <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-3 px-1">Form Builder (MVP 1)</h1>
+      <FormBuilderToolbar 
+        onNewForm={handleNewForm}
+        onLoadForm={handleLoadForm}
+        onSaveForm={handleSaveForm}
+      />
       <div className="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
-        {/* Palette - takes 3 columns on large screens */}
-        <div className="lg:col-span-3 min-h-0">
-          <FieldPalette />
+        {/* Left Column: Metadata & UI Schema Editor */}
+        <div className="lg:col-span-4 flex flex-col gap-4 min-h-0">
+          <FormMetadataEditor
+            title={formTitle}
+            onTitleChange={setFormTitle}
+            description={formDescription}
+            onDescriptionChange={setFormDescription}
+            version={formVersion}
+          />
+          <div className="flex-grow min-h-0">
+            <SchemaEditor
+              id="uiSchemaEditor"
+              title="UI Schema Editor (.uiSchema.json)"
+              jsonString={uiSchemaJsonString}
+              onJsonStringChange={handleUiSchemaChange}
+              error={uiSchemaError}
+              height="100%" // Attempt to fill remaining space
+            />
+          </div>
         </div>
-        {/* Canvas - takes 6 columns on large screens */}
-        <div className="lg:col-span-6 min-h-0">
-          <FormCanvas />
-        </div>
-        {/* Inspector - takes 3 columns on large screens */}
-        <div className="lg:col-span-3 min-h-0">
-          <PropertyInspector />
+
+        {/* Right Column: Main Schema Editor */}
+        <div className="lg:col-span-8 min-h-0">
+          <SchemaEditor
+            id="mainSchemaEditor"
+            title="Form Data Schema Editor (.schema.json)"
+            jsonString={schemaJsonString}
+            onJsonStringChange={handleSchemaChange}
+            error={schemaError}
+            height="calc(100% - 0px)" // Adjust if FormMetadataEditor has variable height or there are other elements.
+          />
         </div>
       </div>
     </div>

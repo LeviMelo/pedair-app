@@ -4,9 +4,9 @@
 @tailwind utilities;
 
 /* Example - use with caution */
-.btn-primary {
-  @apply bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow transition-colors duration-150;
-}
+/* .btn-primary { */
+/*   @apply bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow transition-colors duration-150; */
+/* } */
 
 /* Add this for the fade-in effect */
 @keyframes fadeIn {

@@ -4,7 +4,7 @@ import React, { forwardRef } from 'react'; // Import forwardRef
 interface InputFieldProps {
   label: string;
   id: string;
-  type: 'text' | 'number' | 'email' | 'password';
+  type: 'text' | 'number' | 'email' | 'password' | 'date';
   placeholder?: string;
   value: string | number;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;

@@ -37,7 +37,7 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
   onFormDataChange,
 }) => {
   if (!schema || !schema.properties) {
-    return <p>Schema not provided or is invalid.</p>;
+    return <p className="text-red-500 dark:text-red-400">Schema not provided or is invalid.</p>;
   }
 
   const renderField = (propertyName: string, propertySchema: any) => {
@@ -85,7 +85,7 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
       return (
         <InputField
           {...baseProps}
-          type={inputType as 'text' | 'number' | 'email' | 'password'}
+          type={inputType as 'text' | 'number' | 'email' | 'password' | 'date'}
           placeholder={fieldUiOptions.placeholder || ''}
           value={formData[propertyName] || ''}
           onChange={(event) => {
@@ -184,12 +184,29 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
     );
   };
 
+  const sectionKeys = Object.keys(schema.properties);
+
   return (
     <form className="space-y-6">
-      <h2 className="text-xl font-semibold text-slate-800 mb-4">{schema.title || 'Form'}</h2>
-      {schema.description && <p className="text-sm text-slate-600 mb-6">{schema.description}</p>}
-      {Object.keys(schema.properties).map((propertyName) => {
+      {/* Overall Form Title and Description - always show */}
+      {schema.title && (
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
+          {schema.title}
+        </h2>
+      )}
+      {schema.description && (
+        <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
+          {schema.description}
+        </p>
+      )}
+
+      {/* Always render all fields */}
+      {sectionKeys.map((propertyName) => {
         const propertySchema = schema.properties[propertyName];
+        if (!propertySchema) {
+          console.warn(`DynamicFormRenderer: Schema definition missing for property: ${propertyName}`);
+          return <p key={propertyName} className="text-red-500 dark:text-red-400">Error: Missing schema for {propertyName}</p>;
+        }
         return <div key={propertyName}>{renderField(propertyName, propertySchema)}</div>;
       })}
       {/* We might add a submit button or other form-level actions here later */}
