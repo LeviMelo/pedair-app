@@ -30,30 +30,25 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<DashboardPage />} />
         <Route path="dashboard/create-project" element={<CreateProjectPage />} />
-        <Route path="project/:projectId" element={<ProjectDetailsPage />} /> 
-        <Route path="forms" element={<DataSubmissionPage />} />
-        <Route path="builder" element={<FormBuilderPage />} />
-        <Route path="roles" element={<RoleEditorPage />} />
-        <Route path="search" element={<PatientSearchPage />} />
-        <Route path="scheduler" element={<NotificationSchedulerPage />} />
+        
+        {/* Project-specific routes */}
+        <Route path="project/:projectId">
+          <Route index element={<ProjectDetailsPage />} />
+          <Route path="submission" element={<DataSubmissionPage />} />
+          <Route path="builder" element={<FormBuilderPage />} />
+          <Route path="roles" element={<RoleEditorPage />} />
+          <Route path="search" element={<PatientSearchPage />} />
+          <Route path="notifications" element={<NotificationSchedulerPage />} />
+        </Route>
+        
         <Route path="settings" element={<SettingsPage />} />
         
         {/* Routes for existing test form pages - can be integrated or kept separate */}
         <Route path="test/recuperacao" element={<TestRecuperacaoFormPage />} />
         <Route path="test/preanestesia" element={<TestPreAnestesiaFormPage />} />
         <Route path="test/intraoperatoria" element={<TestIntraoperatoriaFormPage />} />
-      </Route>
-      
-      {/* Route for pages without the main layout, e.g., login, or a standalone NotFoundPage */}
-      {/* For now, NotFoundPage will also use the Layout, but this can be changed. */}
-      {/* To have NotFoundPage outside Layout, define a separate <Route path="*" element={<NotFoundPage />} /> outside the Layout route. */}
-      {/* However, for a consistent experience, often 404 pages are also within the main layout. */}
-      {/* If you want a full screen 404 without sidebar: */}
-      {/* <Route path="*" element={<NotFoundPage />} /> */}
-      {/* For now, let's make it part of the layout for simplicity, or a specific route if needed. */}
-      {/* For a true catch-all, it should be outside and last. Let's use a specific path for now if needed or rely on nested. */}
-      {/* A common pattern is to have the catch-all * within the Layout to show 404 within the app structure */}
-      <Route path="/" element={<Layout />}> {/* Re-opening Layout for the wildcard to be inside it */}
+
+        {/* Catch-all for 404 Not Found pages */}
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

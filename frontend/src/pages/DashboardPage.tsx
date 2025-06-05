@@ -7,6 +7,8 @@ import {
   PiArrowSquareOutDuotone,
   PiBellSimpleRingingDuotone,
   PiListChecksDuotone,
+  PiFileTextDuotone,
+  PiCalendarCheckDuotone
 } from 'react-icons/pi';
 import Button from '../components/ui/Button';
 import DashboardGreetingCard from '../components/ui/DashboardGreetingCard';
@@ -94,11 +96,23 @@ const DashboardPage: React.FC = () => {
                         <p className="text-xs text-slate-500 dark:text-slate-400 mb-1 line-clamp-2 leading-relaxed">
                           {project.description || 'No description available.'}
                         </p>
-                        {userRolesInProject.length > 0 && (
-                            <div className="text-xs text-slate-500 dark:text-slate-400">
-                                Your role(s): <span className="font-medium text-slate-700 dark:text-slate-200">{userRolesInProject.join(', ')}</span>
-                            </div>
-                        )}
+                        <div className="flex items-center space-x-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                          {userRolesInProject.length > 0 && (
+                              <div className="flex items-center">
+                                  Your role(s): <span className="font-medium text-slate-700 dark:text-slate-200 ml-1">{userRolesInProject.join(', ')}</span>
+                              </div>
+                          )}
+                        </div>
+                        <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-xs">
+                          <div className="flex items-center text-amber-600 dark:text-amber-400">
+                            <PiFileTextDuotone className="mr-1.5 text-sm" />
+                            <span>3 Formulários Pendentes (Placeholder)</span>
+                          </div>
+                          <div className="flex items-center text-teal-600 dark:text-teal-400">
+                            <PiCalendarCheckDuotone className="mr-1.5 text-sm" />
+                            <span>2 Próximos Follow-ups (Placeholder)</span>
+                          </div>
+                        </div>
                       </div>
                       <Button 
                         variant="outline-primary" 

@@ -22,44 +22,45 @@ import {
   PiArchiveDuotone,
   PiPlayCircleDuotone,
   PiHouseDuotone,
+  PiListBulletsDuotone,
+  PiFloppyDiskDuotone,
+  PiUserPlusDuotone,
+  PiTextAaDuotone,
 } from 'react-icons/pi';
 import useAuthStore, { mockLogin, mockLogout } from '../../stores/authStore';
 import useProjectStore from '../../stores/projectStore';
-import useSubmissionStore from '../../stores/submissionStore';
+import useSubmissionStore, { PatientInputData } from '../../stores/submissionStore';
 import Button from '../ui/Button';
 
 const baseNavItems = [
-  { id: 'dashboard', path: '/', label: 'Dashboard', icon: PiGaugeDuotone, requiresProject: false, requiredRoles: [] },
-  { id: 'forms', path: '/forms', label: 'Data Submission', icon: PiListChecksDuotone, requiresProject: true, requiredRoles: ['Researcher', 'ProjectLead', 'DataEntry'] },
-  { id: 'builder', path: '/builder', label: 'Form Builder', icon: PiSquaresFourDuotone, requiresProject: true, requiredRoles: ['ProjectLead', 'FormDesigner'] },
-  { id: 'roles', path: '/roles', label: 'Role Editor', icon: PiUsersDuotone, requiresProject: true, requiredRoles: ['ProjectLead'] },
-  { id: 'search', path: '/search', label: 'Patient Search', icon: PiMagnifyingGlassDuotone, requiresProject: true, requiredRoles: ['Researcher', 'ProjectLead', 'Clinician'] },
-  { id: 'scheduler', path: '/scheduler', label: 'Notifications', icon: PiBellDuotone, requiresProject: true, requiredRoles: ['ProjectLead', 'Coordinator'] },
-  { id: 'settings', path: '/settings', label: 'Settings', icon: PiGearDuotone, requiresProject: false, requiredRoles: [] },
+  { id: 'dashboard', path: '/', label: 'Dashboard', icon: PiGaugeDuotone },
+  { id: 'settings', path: '/settings', label: 'Settings', icon: PiGearDuotone },
+];
+
+const projectNavItems = [
+  { id: 'overview', path: '', label: 'Project Overview', icon: PiHouseDuotone, requiredRoles: [] },
+  { id: "forms", path: "/submission", label: "Data Submission", icon: PiListChecksDuotone, requiredRoles: ["Researcher", "ProjectLead", "DataEntry"] },
+  { id: "builder", path: "/builder", label: "Form Builder", icon: PiSquaresFourDuotone, requiredRoles: ["ProjectLead", "FormDesigner"] },
+  { id: "roles", path: "/roles", label: "Role Editor", icon: PiUsersDuotone, requiredRoles: ["ProjectLead"] },
+  { id: "search", path: "/search", label: "Patient Search", icon: PiMagnifyingGlassDuotone, requiredRoles: ["Researcher", "ProjectLead", "Clinician"] },
+  { id: "scheduler", path: "/notifications", label: "Notifications", icon: PiBellDuotone, requiredRoles: ["ProjectLead", "Coordinator"] },
 ];
 
 const getPageTitle = (pathname: string, activeProjectName?: string | null, activeProjectId?: string | null) => {
-  let navItemsForTitle = [...baseNavItems];
-  if (activeProjectId) {
-    navItemsForTitle.unshift({
-      id: 'projectOverview',
-      path: `/project/${activeProjectId}`,
-      label: 'Project Overview',
-      icon: PiHouseDuotone, 
-      requiresProject: true,
-      requiredRoles: []
-    });
+  if (pathname === '/') return 'Dashboard';
+  if (pathname === '/settings') return 'Settings';
+  if (pathname.startsWith('/dashboard/create-project')) return 'Create New Project';
+  
+  if (activeProjectId && activeProjectName) {
+    if (pathname === `/project/${activeProjectId}`) {
+      return `Project Overview - ${activeProjectName}`;
+    }
+    const projectNavItem = projectNavItems.slice(1).find(item => pathname === `/project/${activeProjectId}${item.path}`);
+    if (projectNavItem) {
+      return `${projectNavItem.label} - ${activeProjectName}`;
+    }
   }
-  const mainNavItem = navItemsForTitle.find(navItem => navItem.path === pathname);
-  if (mainNavItem) {
-    return mainNavItem.requiresProject && activeProjectName ? `${mainNavItem.label} - ${activeProjectName}` : mainNavItem.label;
-  }
-  if (pathname.startsWith('/project/') && activeProjectName) {
-    return `Project Details - ${activeProjectName}`;
-  }
-  if (pathname.startsWith('/dashboard/create-project')) {
-    return 'Create New Project';
-  }
+
   if (pathname.startsWith('/test/')) {
     const testName = pathname.split('/').pop();
     return `Test: ${testName?.charAt(0).toUpperCase()}${testName?.slice(1).replace(/([A-Z])/g, ' $1').trim() || 'Form'}`;
@@ -87,7 +88,7 @@ const Layout: React.FC = () => {
     setActiveProject,
     clearActiveProject 
   } = useProjectStore();
-  const { patientData: submissionPatientData } = useSubmissionStore();
+  const { patientData: submissionPatientData, startNewEncounter } = useSubmissionStore();
 
   const pageTitle = getPageTitle(location.pathname, activeProjectDetails?.name, activeProjectId);
   const sidebarRef = useRef<HTMLElement>(null);
@@ -153,43 +154,31 @@ const Layout: React.FC = () => {
   const handleProjectSelect = (projectId: string) => {
     setActiveProject(projectId);
     setShowProjectSelector(false);
-    navigate('/'); 
+    navigate(`/project/${projectId}`); 
   };
   
-  const navItems = [
-    ...(activeProjectId ? [{
-      id: 'projectOverview',
-      path: `/project/${activeProjectId}`,
-      label: 'Project Overview',
-      icon: PiHouseDuotone, 
-      requiresProject: true,
-      requiredRoles: []
-    }] : []),
-    ...baseNavItems
-  ].map(item => {
+  const mainNavItems = baseNavItems.map(item => ({...item, disabled: false, tooltip: item.label, visible: true}));
+
+  const projectContextMenuItems = activeProjectId ? projectNavItems.map(item => {
     let isDisabled = false;
     let itemTooltip = item.label;
-    let isVisible = true; 
-
-    if (item.requiresProject) {
-      if (!activeProjectId) {
+    
+    if (item.requiredRoles.length > 0) {
+      const hasRequiredRole = item.requiredRoles.some(role => activeProjectRoles.includes(role));
+      if (!hasRequiredRole) {
         isDisabled = true;
-        itemTooltip = 'Select a project to access this feature.';
-      } else if (item.requiredRoles.length > 0) {
-        const hasRequiredRole = item.requiredRoles.some(role => activeProjectRoles.includes(role));
-        if (!hasRequiredRole) {
-          isDisabled = true;
-          itemTooltip = 'You do not have the required role for this feature in the current project.';
-        }
+        itemTooltip = 'You do not have the required role for this feature.';
       }
     }
+
     return {
       ...item,
+      path: `/project/${activeProjectId}${item.path}`,
       disabled: isDisabled,
       tooltip: itemTooltip,
-      visible: isVisible,
+      visible: true,
     };
-  }).filter(item => item.visible);
+  }).filter(item => item.visible) : [];
 
   const sidebarBottomActions = [
     {
@@ -207,66 +196,82 @@ const Layout: React.FC = () => {
   ];
 
   const renderHeaderActions = () => {
-    if (!activeProjectId && (location.pathname === '/forms' || location.pathname === '/builder')) {
-      return <p className="text-xs text-amber-600 dark:text-amber-400 animation-fade-in">Select a project to see actions.</p>;
-    }
-    if (!activeProjectId && (location.pathname === '/forms' || location.pathname === '/builder' || location.pathname.startsWith('/project/'))) return null;
+    const { pathname } = useLocation();
+    
+    const isEncounterEffectivelyActive = submissionPatientData && submissionPatientData.initials;
 
-    switch (location.pathname) {
-      case '/forms':
-        return (
-          <div className="flex items-center space-x-2 animation-fade-in">
-            <Button 
-              variant="ghost"
-              size="sm" 
-              iconLeft={<PiPlayCircleDuotone/>}
-              onClick={() => navigate('/forms')} 
-              title={submissionPatientData ? "Resume current encounter or start new if needed" : "Start a new data collection encounter"}
-              className="text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-            >
-              {submissionPatientData ? 'New/Resume Encounter' : 'New Encounter'}
-            </Button>
-            <Button 
-              variant="ghost"
-              size="sm" 
-              iconLeft={<PiArchiveDuotone/>}
-              onClick={() => navigate('/forms/history')} 
-              title="View Past Submissions (Placeholder)"
-              className="text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-            >
-              View Submissions
-            </Button>
-          </div>
-        );
-      case '/builder':
-        return (
-          <div className="flex items-center space-x-2 animation-fade-in">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              iconLeft={<PiFilePlusDuotone/>}
-              onClick={() => alert('Trigger New Blank Form in FormBuilderPage - TBD')}
-              className="text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-            >
-              New Form
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              iconLeft={<PiArchiveDuotone/>}
-              onClick={() => alert('Trigger Load Project Form in FormBuilderPage - TBD')}
-              className="text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-            >
-              Load Form
-            </Button>
-          </div>
-        );
-      default:
-        if (activeProjectDetails && location.pathname === `/project/${activeProjectDetails.id}`) {
-            return null; 
-        }
-        return null;
+    const defaultPatientData: PatientInputData = {
+      initials: '', gender: '', dob: '', projectConsent: false, recontactConsent: false,
+    };
+
+    let actions: React.ReactNode[] = [];
+
+    if (pathname === '/' || pathname === '/dashboard') {
+      actions.push(
+        <Button key="create-project" variant="primary" size="sm" onClick={() => navigate('/dashboard/create-project')} iconLeft={<PiPlusCircleDuotone/>} className="hidden sm:flex">
+          New Project
+        </Button>
+      );
     }
+
+    if (pathname.startsWith('/project/') && pathname.endsWith('/submission')) {
+      actions.push(
+        <Button key="new-encounter" variant="primary" size="sm" 
+          onClick={() => {
+            if (isEncounterEffectivelyActive) {
+                if (window.confirm('You have an active encounter. Starting a new one will clear the current progress. Continue?')) {
+                    startNewEncounter(defaultPatientData, []); 
+                    navigate(`/project/${activeProjectId}/submission`);
+                }
+            } else {
+                 startNewEncounter(defaultPatientData, []);
+                 navigate(`/project/${activeProjectId}/submission`);
+            }
+          }}
+          iconLeft={<PiFilePlusDuotone/>} className="hidden sm:flex"
+        >
+          New Encounter
+        </Button>
+      );
+      if (isEncounterEffectivelyActive) {
+        actions.push(
+          <Button key="resume-encounter" variant="outline-primary" size="sm" onClick={() => navigate(`/project/${activeProjectId}/submission`)} iconLeft={<PiPlayCircleDuotone/>} className="hidden sm:flex ml-2">
+            Resume Encounter
+          </Button>
+        );
+      }
+    }
+    
+    if (pathname.startsWith('/project/') && pathname.endsWith('/builder')) {
+      actions.push(
+        <Button key="new-form" variant="primary" size="sm" onClick={() => alert('New Blank Form (TBD)')} iconLeft={<PiTextAaDuotone />} className="hidden sm:flex">
+          New Form
+        </Button>,
+        <Button key="load-form" variant="outline-slate" size="sm" onClick={() => alert('Load Existing Form (TBD)')} iconLeft={<PiArchiveDuotone />} className="hidden sm:flex ml-2">
+          Load Form
+        </Button>
+      );
+    }
+
+    if (pathname.startsWith('/project/') && pathname.endsWith('/roles')) {
+       actions.push(
+        <Button key="new-role" variant="primary" size="sm" onClick={() => alert('Create New Role (TBD)')} iconLeft={<PiUserPlusDuotone />} className="hidden sm:flex">
+          New Role
+        </Button>
+      );
+    }
+    
+    if (pathname.startsWith('/project/') && activeProjectId) {
+        actions.push(
+            <Button key="quick-save" variant="outline-slate" size="sm" onClick={() => alert('Quick Save Project Details (TBD)')} iconLeft={<PiFloppyDiskDuotone />} className="hidden md:flex ml-2">
+                Quick Save
+            </Button>
+        );
+    }
+
+    if (actions.length === 0) return null;
+
+    return <div className="flex items-center gap-2 sm:gap-3">{actions}</div>;
   };
 
   return (
@@ -349,44 +354,97 @@ const Layout: React.FC = () => {
         
         <nav className="flex-grow px-2 py-3 space-y-0.5 overflow-y-auto">
           <ul>
-            {navItems.map((item, index) => (
-              <li key={item.id || item.path} 
-                  className={`${(index > 0 && !(activeProjectId && index === 0)) ? 'border-t border-slate-200/60 dark:border-slate-700/50' : ''} 
-                             ${(activeProjectId && index === 0) ? 'mb-2 border-b border-slate-200/80 dark:border-slate-700/60 pb-2' :'' }`}>
+            {mainNavItems.map(item => (
+               <li key={item.id || item.path}>
                 <Link 
-                  to={item.disabled ? '#' : item.path} 
+                  to={item.path} 
                   title={item.tooltip}
                   className={`flex items-center h-10 px-2.5 text-sm rounded-md transition-colors duration-150 group 
                               ${isSidebarCollapsed ? 'justify-center' : ''}
-                              ${item.disabled 
-                                ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-70' 
-                                : `text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 
-                                   ${(location.pathname === item.path || (item.id === 'projectOverview' && location.pathname.startsWith('/project/'))) ? 'bg-slate-100 dark:bg-slate-700 text-blue-600 dark:text-blue-400 font-semibold' : 'font-medium'}`}
-                            `}
-                  onClick={(e) => item.disabled && e.preventDefault()}
-                  aria-disabled={item.disabled}
+                              text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 
+                              ${location.pathname === item.path ? 'bg-slate-100 dark:bg-slate-700 text-blue-600 dark:text-blue-400 font-semibold' : 'font-medium'}`
+                            }
                 >
                   <item.icon 
                     size={isSidebarCollapsed ? 21 : 18} 
                     className={`transition-all duration-200 group-hover:scale-105 shrink-0 
                                 ${!isSidebarCollapsed ? 'mr-2.5' : 'mr-0'}
-                                ${item.disabled ? 'text-slate-400 dark:text-slate-500' : ((location.pathname === item.path || (item.id === 'projectOverview' && location.pathname.startsWith('/project/'))) ? 'text-blue-500 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400')}
+                                ${location.pathname === item.path ? 'text-blue-500 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400'}
                               `}
                   />
                   <span 
                     className={`whitespace-nowrap transition-all duration-200 overflow-hidden 
-                                ${isSidebarCollapsed ? 'opacity-0 w-0 ml-0' : 'opacity-100 w-auto ml-0 delay-100'} 
-                                ${isSidebarCollapsed && !item.disabled ? 'group-hover:ml-2.5' : 'ml-2.5'} `}
+                                ${isSidebarCollapsed ? 'opacity-0 w-0 ml-0' : 'opacity-100 w-auto ml-0 delay-100'} `}
                   >
                     {item.label}
                   </span>
-                   {item.disabled && isSidebarCollapsed && (
-                     <PiLockKeyDuotone size={14} className="absolute right-1 top-1 text-amber-500 dark:text-amber-600 opacity-70" title={item.tooltip}/>
-                   )}
                 </Link>
               </li>
             ))}
           </ul>
+
+          {activeProjectId && projectContextMenuItems.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-slate-200/80 dark:border-slate-700/60">
+              <div className={`px-2 mb-2 ${isSidebarCollapsed ? 'hidden' : 'block'}`}>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Project Menu</span>
+              </div>
+              <ul>
+                {projectContextMenuItems.map(item => {
+                  const isOverview = item.id === 'overview';
+                  const isActive = isOverview
+                    ? (location.pathname === item.path || location.pathname === `${item.path}/`)
+                    : location.pathname === item.path;
+
+                  return (
+                  <li key={item.id}>
+                    <Link
+                      to={item.disabled ? '#' : item.path}
+                      title={item.tooltip}
+                      className={`flex items-center text-sm rounded-md transition-colors duration-150 group 
+                                  ${isSidebarCollapsed 
+                                    ? 'h-10 px-2.5 justify-center' 
+                                    : isOverview 
+                                      ? 'h-10 px-2.5' 
+                                      : 'h-9 pl-6 pr-2.5'
+                                  }
+                                  ${item.disabled 
+                                    ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-70' 
+                                    : `text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 
+                                       ${isActive ? 'bg-slate-100 dark:bg-slate-700 text-blue-600 dark:text-blue-400 font-semibold' : 'font-medium'}`
+                                  }`
+                      }
+                      onClick={(e) => item.disabled && e.preventDefault()}
+                      aria-disabled={item.disabled}
+                    >
+                      <item.icon 
+                        size={isSidebarCollapsed ? 21 : (isOverview ? 18 : 17)} 
+                        className={`transition-all duration-200 group-hover:scale-105 shrink-0 
+                                    ${!isSidebarCollapsed ? 'mr-2.5' : 'mr-0'}
+                                    ${item.disabled 
+                                      ? 'text-slate-400 dark:text-slate-500' 
+                                      : (isActive 
+                                        ? 'text-blue-500 dark:text-blue-400' 
+                                        : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400'
+                                      )
+                                    }`
+                                  }
+                      />
+                      <span 
+                        className={`whitespace-nowrap transition-all duration-200 overflow-hidden 
+                                    ${isSidebarCollapsed ? 'opacity-0 w-0 ml-0' : 'opacity-100 w-auto ml-0 delay-100'}`}
+                      >
+                        {item.label}
+                      </span>
+                      {item.disabled && isSidebarCollapsed && (
+                        <PiLockKeyDuotone size={14} className="absolute right-1 top-1 text-amber-500 dark:text-amber-600 opacity-70" title={item.tooltip}/>
+                      )}
+                    </Link>
+                  </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </nav>
 
          <div className="p-2 border-t border-slate-200 dark:border-slate-700/80 space-y-1 shrink-0">

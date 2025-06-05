@@ -4,53 +4,11 @@ import useProjectStore, { Project } from '../stores/projectStore';
 import {
   PiArrowLeftDuotone, PiUsersDuotone, PiUserCirclePlusDuotone, 
   PiFileTextDuotone, PiChartLineUpDuotone, PiChatDotsDuotone, PiGearDuotone,
-  PiClipboardTextDuotone, PiArchiveDuotone, PiHourglassDuotone, PiMegaphoneDuotone
+  PiClipboardTextDuotone, PiArchiveDuotone, PiHourglassDuotone, PiMegaphoneDuotone,
+  PiFlagDuotone
 } from 'react-icons/pi';
 import Button from '../components/ui/Button';
 import DashboardGreetingCard from '../components/ui/DashboardGreetingCard'; // For inspiration, not direct use here yet
-
-// Mock data for team members - replace with actual data structure and fetching
-interface TeamMember {
-  id: string;
-  name: string;
-  role: string; // e.g., 'Project Lead', 'Researcher', 'Data Manager'
-  email: string;
-  avatarUrl?: string; // Optional
-  isLead?: boolean;
-  description?: string;
-}
-
-const MOCK_TEAM_MEMBERS: TeamMember[] = [
-  {
-    id: 'user1',
-    name: 'Dr. Alice Wonderland',
-    role: 'Project Lead',
-    email: 'alice.lead@example.com',
-    isLead: true,
-    description: 'Principal Investigator with expertise in pediatric respiratory conditions. Responsible for overall project direction and methodology.'
-  },
-  {
-    id: 'user2',
-    name: 'Bob The Builder',
-    role: 'Researcher',
-    email: 'bob.research@example.com',
-    description: 'Clinical researcher focusing on data collection and patient follow-up.'
-  },
-  {
-    id: 'user3',
-    name: 'Charlie Brown',
-    role: 'Data Manager',
-    email: 'charlie.data@example.com',
-    description: 'Responsible for data integrity, database management, and preliminary analysis.'
-  },
-    {
-    id: 'user4',
-    name: 'Diana Prince',
-    role: 'Ethics Advisor',
-    email: 'diana.ethics@example.com',
-    description: 'Ensures all research activities adhere to ethical guidelines and regulatory requirements.'
-  },
-];
 
 const ProjectDetailsPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -181,39 +139,33 @@ const ProjectDetailsPage: React.FC = () => {
             </Button>
           </div>
           <div className="space-y-4">
-            {MOCK_TEAM_MEMBERS.map(member => (
-              <div 
-                key={member.id} 
-                className={`p-4 rounded-md border dark:border-slate-700 flex items-start space-x-4 
-                            bg-white dark:bg-slate-800/60 hover:shadow-sm dark:hover:bg-slate-750/70 
-                            ${member.isLead ? 'border-blue-400 dark:border-blue-500 ring-1 ring-blue-400 dark:ring-blue-500 bg-blue-50/30 dark:bg-blue-900/20' : 'border-slate-200 dark:border-slate-700'}`}
-              >
-                <img 
-                  src={member.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random&size=48&color=fff&font-size=0.40&bold=true`}
-                  alt={member.name} 
-                  className="w-12 h-12 rounded-full flex-shrink-0 object-cover ring-1 ring-slate-300 dark:ring-slate-600 shadow-sm"
-                />
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-md font-semibold text-slate-800 dark:text-slate-100">{member.name}</h3>
-                  <p className={`text-xs font-medium px-1.5 py-0.5 rounded-full inline-block mt-0.5 mb-1 ${member.isLead ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/30 dark:text-blue-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-600 dark:text-slate-300'}`}>
-                    {member.role}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate" title={member.email}>{member.email}</p>
-                  {member.description && !member.isLead && (
-                     <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 text-opacity-80 dark:text-opacity-70 line-clamp-2">
-                      {member.description}
+            {currentProject && currentProject.members && currentProject.members.length > 0 ? (
+              currentProject.members.map(member => (
+                // TODO: Enhance this to show richer member details if available from another store (e.g., userStore)
+                // For now, displaying userId and roles.
+                <div 
+                  key={member.userId} 
+                  className={`p-4 rounded-md border dark:border-slate-700 flex items-start space-x-4 
+                              bg-white dark:bg-slate-800/60 hover:shadow-sm dark:hover:bg-slate-750/70 
+                              border-slate-200 dark:border-slate-700`}
+                >
+                  <img 
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(member.userId)}&background=random&size=48&color=fff&font-size=0.40&bold=true`}
+                    alt={member.userId} 
+                    className="w-12 h-12 rounded-full flex-shrink-0 object-cover ring-1 ring-slate-300 dark:ring-slate-600 shadow-sm"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-md font-semibold text-slate-800 dark:text-slate-100">User ID: {member.userId}</h3>
+                    <p className={`text-xs font-medium px-1.5 py-0.5 rounded-full inline-block mt-0.5 mb-1 bg-slate-100 text-slate-600 dark:bg-slate-600 dark:text-slate-300`}>
+                      Roles: {member.roles.join(', ') || 'No roles assigned'}
                     </p>
-                  )}
+                    {/* Placeholder for more details */}
+                    {/* <p className="text-sm text-slate-500 dark:text-slate-400 truncate">Additional details (e.g., email) would go here.</p> */}
+                  </div>
                 </div>
-              </div>
-            ))}
-             {MOCK_TEAM_MEMBERS.find(m => m.isLead)?.description && (
-                <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
-                    <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Project Lead Note:</h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">
-                        {MOCK_TEAM_MEMBERS.find(m => m.isLead)?.description}
-                    </p>
-                </div>
+              ))
+            ) : (
+              <p className="text-slate-500 dark:text-slate-400">No team members listed for this project yet.</p>
             )}
           </div>
         </section>
@@ -234,6 +186,23 @@ const ProjectDetailsPage: React.FC = () => {
               <li className="text-slate-600 dark:text-slate-300">User 'Dr. Alice' updated project description. <span className="text-xs text-slate-400 dark:text-slate-500">(Placeholder)</span></li>
               <li className="text-slate-600 dark:text-slate-300">Form 'Pre-Op Assessment v2' was activated. <span className="text-xs text-slate-400 dark:text-slate-500">(Placeholder)</span></li>
             </ul>
+          </section>
+
+          <section id="project-goals" className="card-base p-6 rounded-lg">
+            <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200 flex items-center mb-4">
+              <PiFlagDuotone className="mr-2.5 text-2xl text-green-500 dark:text-green-400" /> Project Goals
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              {currentProject?.goals || 'Specific research objectives and aims of this project will be detailed here. This section can be populated from project settings.'}
+            </p>
+            {/* Example: <ul className="list-disc list-inside space-y-1 text-sm text-slate-600 dark:text-slate-300"><li>Goal 1</li><li>Goal 2</li></ul> */} 
+          </section>
+
+          <section id="key-documents" className="card-base p-6 rounded-lg">
+            <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200 flex items-center mb-3">
+                <PiFileTextDuotone className="mr-2.5 text-2xl text-purple-500 dark:text-purple-400"/> Key Documents
+            </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Documents related to this project, such as protocols, consent forms, and project reports.</p>
           </section>
         </aside>
       </div>

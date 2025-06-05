@@ -29,6 +29,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   iconRight?: React.ReactElement<IconProps>;
   fullWidth?: boolean;
   children: React.ReactNode;
+  asChild?: boolean; // Add asChild prop
 }
 
 const Button: React.FC<ButtonProps> = React.forwardRef<
@@ -44,6 +45,7 @@ const Button: React.FC<ButtonProps> = React.forwardRef<
       iconLeft,
       iconRight,
       fullWidth = false,
+      asChild = false, // Default asChild to false
       className = '',
       disabled,
       ...props
@@ -81,14 +83,8 @@ const Button: React.FC<ButtonProps> = React.forwardRef<
     const iconMarginClass = children && size === 'sm' ? 'mr-1.5' : children ? 'mr-2' : '';
     const iconMarginClassRight = children && size === 'sm' ? 'ml-1.5' : children ? 'ml-2' : '';
 
-
-    return (
-      <button
-        ref={ref}
-        className={combinedClassName}
-        disabled={disabled || isLoading}
-        {...props}
-      >
+    const buttonContent = (
+      <>
         {isLoading && (
           <PiSpinnerGap className={`animate-spin ${iconLeft || iconRight || children ? (size === 'sm' ? 'mr-1.5' : 'mr-2') : ''}`} size={size === 'sm' ? 16 : 20} />
         )}
@@ -101,6 +97,34 @@ const Button: React.FC<ButtonProps> = React.forwardRef<
             className: `${iconMarginClassRight} ${iconRight.props.className || ''}`.trim(),
             size: iconRight.props.size || iconSize
         })}
+      </>
+    );
+
+    if (asChild && React.isValidElement<React.HTMLAttributes<HTMLElement>>(children)) {
+      // Type assertion for children to ensure props like className are recognized.
+      const childProps = children.props as React.HTMLAttributes<HTMLElement>;
+
+      return React.cloneElement(
+        children as React.ReactElement<React.HTMLAttributes<HTMLElement>>,
+        {
+          className: `${combinedClassName} ${childProps.className || ''}`.trim(),
+          // `disabled` is not a standard HTML attribute for all elements (e.g. `a` tag from Link).
+          // Visual disabled state is handled by classes. True non-interactivity for Link
+          // would require event.preventDefault() or not rendering it as a Link.
+          // We pass other ...props which might include aria-disabled if set by parent.
+          ...props, 
+        }
+      );
+    }
+
+    return (
+      <button
+        ref={ref}
+        className={combinedClassName}
+        disabled={disabled || isLoading}
+        {...props}
+      >
+        {buttonContent}
       </button>
     );
   }

@@ -12,6 +12,7 @@ export interface Project {
   name: string;
   description?: string;
   members: ProjectMember[]; // Added members array
+  goals?: string; // Add optional goals field
   // Add other project-specific details, e.g., form definitions, roles, etc.
   // For now, keeping it simple
 }
@@ -22,6 +23,7 @@ const mockProjects: Project[] = [
     id: 'proj_pedair_001',
     name: 'PedAir - Estudo Piloto Alagoas',
     description: 'Coleta de dados para o projeto Respirar em cirurgias pediátricas de via aérea no estado de Alagoas.',
+    goals: 'Desenvolver um protocolo ERAS específico para cirurgia de via aérea pediátrica no estado de Alagoas, visando reduzir complicações e tempo de internação.',
     members: [
       { userId: 'userLead123', roles: ['ProjectLead', 'Researcher', 'FormDesigner'] },
       { userId: 'user456', roles: ['DataEntry'] },
@@ -32,6 +34,7 @@ const mockProjects: Project[] = [
     id: 'proj_eras_002',
     name: 'ERAS Pediátrico - Hospital Central',
     description: 'Implementação e avaliação de protocolos ERAS em cirurgia torácica pediátrica no Hospital Central.',
+    goals: 'Avaliar a eficácia do protocolo ERAS em reduzir o tempo de recuperação e complicações em pacientes pediátricos submetidos a cirurgia torácica.',
     members: [
       { userId: 'userLead123', roles: ['Researcher'] },
       { userId: 'anotherLeadUser', roles: ['ProjectLead'] },
@@ -70,6 +73,7 @@ interface ProjectActions {
   fetchAvailableProjects: () => Promise<void>;
   setActiveProject: (projectId: string) => void;
   clearActiveProject: () => void;
+  addProject: (newProject: Project) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 }
@@ -115,6 +119,12 @@ const useProjectStore = create<ProjectState & ProjectActions>()(
       clearActiveProject: () => {
         set({ activeProjectId: null, activeProjectDetails: null });
         console.log('Active project cleared.');
+      },
+      addProject: (newProject) => {
+        set(state => ({
+          availableProjects: [...state.availableProjects, newProject]
+        }));
+        console.log('New project added:', newProject);
       },
       setLoading: (loading) => set({ isLoading: loading }),
       setError: (error) => set({ error: error, isLoading: false }),

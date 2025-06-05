@@ -3,7 +3,7 @@ import DynamicFormRenderer from '../components/forms/DynamicFormRenderer';
 import InputField from '../components/ui/InputField';
 import SectionCard from '../components/ui/SectionCard';
 import Button from '../components/ui/Button';
-import { FaSpinner, FaExclamationTriangle, FaArrowLeft, FaArrowRight, FaSave, FaPaperPlane, FaUndo, FaPlay, FaRedoAlt } from 'react-icons/fa';
+import { FaSpinner, FaExclamationTriangle, FaArrowLeft, FaArrowRight, FaSave, FaPaperPlane, FaUndo, FaPlay, FaRedoAlt, FaUserEdit, FaClipboardCheck, FaEye, FaFileMedical, FaCheckCircle, FaEllipsisH } from 'react-icons/fa';
 import useSubmissionStore, { PatientInputData, FormDefinition, clearPersistedSubmission } from '../stores/submissionStore';
 
 // --- Interfaces & Mock Data (some might be redundant if store types are comprehensive) ---
@@ -30,7 +30,98 @@ type ProcessStep =
   | 'loadingFormSequence' // Combines previous resume and initial loading indication
   | 'loadingFormSchema'
   | 'fillingFormInSequence'
+  | 'reviewAndSubmit'
   | 'submissionError';
+
+// Helper component for Stepper UI
+const SubmissionStepper: React.FC<{
+  currentOverallStep: ProcessStep;
+  currentFormIndexInSequence: number; // from store
+  formSequence: FormDefinition[]; // from store
+  patientInputComplete: boolean; // derived from localPatientInput
+}> = ({ currentOverallStep, currentFormIndexInSequence, formSequence, patientInputComplete }) => {
+  
+  const getStepStatus = (
+    stepKey: string, 
+    currentKey: string 
+  ): 'completed' | 'current' | 'upcoming' => {
+    const stepsOrder = ['patientInput', ...(formSequence || []).map(f => f.key), 'review'];
+    const currentIndex = stepsOrder.indexOf(currentKey);
+    const stepIndex = stepsOrder.indexOf(stepKey);
+
+    if (stepIndex < currentIndex) return 'completed';
+    if (stepIndex === currentIndex) return 'current';
+    return 'upcoming';
+  };
+
+  let activeDisplayStepKey = 'patientInput';
+  if (currentOverallStep === 'fillingFormInSequence' && formSequence && formSequence.length > 0 && formSequence[currentFormIndexInSequence]) {
+    activeDisplayStepKey = formSequence[currentFormIndexInSequence].key;
+  } else if (currentOverallStep === 'reviewAndSubmit') {
+    activeDisplayStepKey = 'review';
+  } else if (
+    currentOverallStep === 'initialPatientInput' || 
+    (currentOverallStep === 'loadingFormSequence' && !patientInputComplete) || 
+    (currentOverallStep === 'loadingFormSchema' && !patientInputComplete && (!formSequence || formSequence.length === 0))
+  ) {
+    activeDisplayStepKey = 'patientInput';
+  }
+
+  const stepsToDisplay = [
+    { key: 'patientInput', label: 'Patient Info & Consent', icon: FaUserEdit },
+    ...(formSequence || []).map(formDef => ({ key: formDef.key, label: formDef.name, icon: FaFileMedical })),
+    { key: 'review', label: 'Review & Submit', icon: FaEye }
+  ];
+
+  const getListItemClassName = (status: 'completed' | 'current' | 'upcoming', isLastStep: boolean): string => {
+    let baseClasses = 'flex md:w-full items-center';
+    if (status === 'current') baseClasses += ' text-blue-600 dark:text-blue-400';
+    if (status === 'completed') baseClasses += ' text-green-600 dark:text-green-400';
+    if (!isLastStep) {
+      baseClasses += " sm:after:content-[''] after:w-full after:h-1 after:border-b after:border-slate-200 dark:after:border-slate-700 after:border-1 sm:after:inline-block after:mx-2 xl:after:mx-4";
+    }
+    return baseClasses;
+  };
+
+  const getIconContainerClassName = (isLastStep: boolean): string => {
+    let baseClasses = 'flex items-center shrink-0';
+    if (!isLastStep) {
+      baseClasses += ' sm:after:hidden';
+    }
+    return baseClasses;
+  };
+
+  return (
+    <div className="mb-8 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg shadow print:hidden">
+      <ol className="flex items-center w-full text-sm font-medium text-center text-slate-500 dark:text-slate-400 sm:text-base">
+        {stepsToDisplay.map((step, index) => {
+          const status = getStepStatus(step.key, activeDisplayStepKey);
+          const IconComponent = step.icon;
+          const isLastStep = index === stepsToDisplay.length - 1;
+
+          return (
+            <li
+              key={step.key}
+              className={getListItemClassName(status, isLastStep)}
+            >
+              <span className={getIconContainerClassName(isLastStep)}>
+                {status === 'completed' ? (
+                  <FaCheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+                ) : status === 'current' ? (
+                  <FaEllipsisH className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 animate-pulse" />
+                ) : (
+                  <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 opacity-70" />
+                )}
+                <span className="hidden sm:inline-block whitespace-nowrap">{step.label}</span>
+                <span className="sm:hidden whitespace-nowrap text-xs">{step.label.length > 15 ? step.label.substring(0,12) + '...' : step.label}</span>
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+};
 
 const DataSubmissionPage: React.FC = () => {
   // Zustand Store Integration
@@ -50,7 +141,8 @@ const DataSubmissionPage: React.FC = () => {
   // Local UI State
   const [currentProcessStep, setCurrentProcessStep] = useState<ProcessStep>('initialPatientInput');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isFormLoading, setIsFormLoading] = useState(false); // <-- ADDED: Flag to prevent re-entrant loading
+  const [isFormLoading, setIsFormLoading] = useState(false);
+  const [currentlyLoadedFormKey, setCurrentlyLoadedFormKey] = useState<string | null>(null);
   
   // Local state for the patient input form fields, synchronized with storePatientData
   const [localPatientInput, setLocalPatientInput] = useState<PatientInputData>({
@@ -67,6 +159,11 @@ const DataSubmissionPage: React.FC = () => {
   const [currentFormData, setCurrentFormData] = useState<any>({}); // Data for the *current* form being edited
   const [isResuming, setIsResuming] = useState(false); // Local flag for resume flow
 
+  // Helper to check if initial patient mandatory fields are filled
+  const isPatientInputDataComplete = useCallback(() => {
+    return !!(localPatientInput.initials && localPatientInput.gender && localPatientInput.dob && localPatientInput.projectConsent);
+  }, [localPatientInput]);
+
   // --- Effects --- 
 
   // Effect to set initial state based on store (e.g., on page load/refresh)
@@ -74,8 +171,13 @@ const DataSubmissionPage: React.FC = () => {
     if (isEncounterActive && storePatientData) {
       console.log("Store indicates active encounter. Patient:", storePatientData);
       setLocalPatientInput(storePatientData);
-      setIsResuming(true); // Indicate that we should try to resume
-      setCurrentProcessStep('loadingFormSequence'); 
+      setIsResuming(true);
+      // If patient data is complete, move to loading sequence, otherwise stay on input page to complete it
+      if (storePatientData.initials && storePatientData.gender && storePatientData.dob && storePatientData.projectConsent) {
+        setCurrentProcessStep('loadingFormSequence'); 
+      } else {
+        setCurrentProcessStep('initialPatientInput');
+      }
     } else {
       setCurrentProcessStep('initialPatientInput');
       setIsResuming(false);
@@ -95,10 +197,20 @@ const DataSubmissionPage: React.FC = () => {
     setLocalPatientInput({ initials: '', gender: '', dob: '', projectConsent: false, recontactConsent: false });
     resetLocalUiStateForNewForm();
     setIsResuming(false);
+    setCurrentlyLoadedFormKey(null);
   };
   
   const loadFormDefinition = useCallback(async (formIndexToLoad: number, sequenceToUse: FormDefinition[], allDataFromStore: { [key: string]: any }) => {
     if (formIndexToLoad < 0 || formIndexToLoad >= sequenceToUse.length) {
+      // This condition means we've completed all forms in the sequence
+      if (formIndexToLoad >= sequenceToUse.length && sequenceToUse.length > 0) {
+        console.log("All forms in sequence completed. Moving to review step.");
+        setCurrentProcessStep('reviewAndSubmit');
+        setIsFormLoading(false); // Ensure loading is false
+        setCurrentlyLoadedFormKey(null); // No single form is "current" on review page
+        resetLocalUiStateForNewForm(); // Clear any single form schema/data
+        return;
+      }
       setErrorMessage("Invalid form index.");
       setCurrentProcessStep('submissionError');
       return;
@@ -113,7 +225,7 @@ const DataSubmissionPage: React.FC = () => {
     
     console.log(`loadFormDefinition: Loading schema for ${formDef.name} (index ${formIndexToLoad})`);
     setCurrentProcessStep('loadingFormSchema');
-    setIsFormLoading(true); // <-- SET LOADING FLAG
+    setIsFormLoading(true);
     resetLocalUiStateForNewForm();
 
     try {
@@ -147,12 +259,14 @@ const DataSubmissionPage: React.FC = () => {
       }
       setCurrentFormData(initialDataForCurrentForm);
       setCurrentProcessStep('fillingFormInSequence');
+      setCurrentlyLoadedFormKey(formDef.key);
     } catch (error) {
       console.error(`Error loading schemas for ${formDef.name}:`, error);
       setErrorMessage(`Error loading form '${formDef.name}'. Please try again.`);
       setCurrentProcessStep('submissionError');
+      setCurrentlyLoadedFormKey(null);
     } finally {
-      setIsFormLoading(false); // <-- RESET LOADING FLAG
+      setIsFormLoading(false);
     }
   }, []); 
 
@@ -167,9 +281,12 @@ const DataSubmissionPage: React.FC = () => {
         alert('Project consent is required to proceed.');
         return;
       }
+      // Persist localPatientInput to store immediately when starting
+      updatePatientData(localPatientInput);
     }
     
     console.log("handleStartSubmissionSequence called. Resuming:", resuming);
+    setCurrentlyLoadedFormKey(null);
     setCurrentProcessStep('loadingFormSequence');
     setErrorMessage(null);
     try {
@@ -192,25 +309,53 @@ const DataSubmissionPage: React.FC = () => {
   // Effect to trigger form loading when the target form index or sequence changes in the store.
   useEffect(() => {
     if (isFormLoading) { 
-      console.log("useEffect[formIndexChange]: Currently loading, skipping.");
+      console.log("useEffect[formLoadTrigger]: Form is currently loading, skipping.");
       return;
     }
 
     if (isEncounterActive && storeFormSequence.length > 0 && storeCurrentFormIndex >= 0 && storeCurrentFormIndex < storeFormSequence.length) {
-      console.log(`useEffect[formIndexChange]: storeCurrentFormIndex is ${storeCurrentFormIndex}.`);
+      const targetFormKey = storeFormSequence[storeCurrentFormIndex].key;
+      if (targetFormKey === currentlyLoadedFormKey) {
+        console.log(`useEffect[formLoadTrigger]: Form ${targetFormKey} (index ${storeCurrentFormIndex}) is already marked as loaded. Ensuring correct step.`);
+        if(currentProcessStep !== 'fillingFormInSequence' && currentProcessStep !== 'loadingFormSchema') {
+             setCurrentProcessStep('fillingFormInSequence');
+        }
+        return;
+      }
+      
+      console.log(`useEffect[formLoadTrigger]: Target form key ${targetFormKey} (index ${storeCurrentFormIndex}) is different from loaded key ${currentlyLoadedFormKey}. Attempting load.`);
       loadFormDefinition(storeCurrentFormIndex, storeFormSequence, storeAllFormsData);
     } else if (isEncounterActive && storeFormSequence.length === 0 && isResuming) {
-        console.log("useEffect[formIndexChange]: Resuming, but no sequence in store. Attempting to fetch sequence.");
+        console.log("useEffect[formLoadTrigger]: Resuming, but no sequence in store. Attempting to fetch sequence.");
+        setCurrentlyLoadedFormKey(null);
         handleStartSubmissionSequence(true); 
+    } else {
+      if (currentlyLoadedFormKey !== null) {
+        setCurrentlyLoadedFormKey(null);
+      }
     }
-  }, [isEncounterActive, storeCurrentFormIndex, storeFormSequence, loadFormDefinition, storeAllFormsData, isResuming, isFormLoading, handleStartSubmissionSequence]); 
+  }, [
+    isEncounterActive, 
+    storeCurrentFormIndex, 
+    storeFormSequence, 
+    storeAllFormsData, 
+    isResuming, 
+    isFormLoading, 
+    handleStartSubmissionSequence,
+    loadFormDefinition,
+    currentlyLoadedFormKey,
+    currentProcessStep
+  ]); 
   
   const handlePatientInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value, type } = event.target;
-    const checked = (event.target as HTMLInputElement).checked;
-    const updatedValue = type === 'checkbox' ? checked : value;
-    setLocalPatientInput((prev: PatientInputData) => ({ ...prev, [id]: updatedValue as any }));
-    updatePatientData({ [id]: updatedValue }); 
+    const checked = type === 'checkbox' ? (event.target as HTMLInputElement).checked : undefined;
+
+    setLocalPatientInput(prev => ({
+      ...prev,
+      [id]: type === 'checkbox' ? checked : value,
+    }));
+    // We will call updatePatientData explicitly when moving away from this step or resuming
   };
 
   const handleCurrentFormChange = (updatedData: any) => {
@@ -227,15 +372,26 @@ const DataSubmissionPage: React.FC = () => {
 
   const handleNavigateForm = (direction: 'next' | 'previous') => {
     persistCurrentFormProgress(); 
-    const newIndex = direction === 'next' 
-      ? storeCurrentFormIndex + 1 
-      : storeCurrentFormIndex - 1;
 
-    if (newIndex >= 0 && newIndex < storeFormSequence.length) {
-      setCurrentFormIndex(newIndex); 
-    } else if (direction === 'next' && newIndex >= storeFormSequence.length) {
-      console.log("End of form sequence.");
-      alert("You have reached the end of the form sequence. Review and Submit All Data.");
+    if (direction === 'next') {
+      const nextIndex = storeCurrentFormIndex + 1;
+      // The loadFormDefinition function will handle transitioning to 'reviewAndSubmit'
+      // if nextIndex >= storeFormSequence.length.
+      // So, we just update the index here.
+      if (storeFormSequence && storeFormSequence.length > 0) { 
+        setCurrentFormIndex(nextIndex);
+      } else {
+        setCurrentProcessStep('reviewAndSubmit'); 
+      }
+    } else { // direction === 'previous'
+      if (storeCurrentFormIndex > 0) {
+        setCurrentFormIndex(storeCurrentFormIndex - 1);
+      } else {
+        // At the first form, navigating previous goes back to patient input
+        setCurrentProcessStep('initialPatientInput');
+        setCurrentlyLoadedFormKey(null); 
+        resetLocalUiStateForNewForm(); 
+      }
     }
   };
 
@@ -246,189 +402,273 @@ const DataSubmissionPage: React.FC = () => {
   };
 
   const handleSubmitAllData = () => {
-    persistCurrentFormProgress(); 
-    console.log("Submitting all form data:", storeAllFormsData, "for patient:", storePatientData);
-    alert('All form data submitted successfully (Simulated)!');
-    completeAndClearEncounter(); 
-    resetEntirePageToStart(); 
+    persistCurrentFormProgress(); // Ensure last form's data is saved to store
+    console.log("Submitting all data for encounter...");
+    console.log("Patient Data:", storePatientData);
+    console.log("Forms Data:", storeAllFormsData);
+    alert("Encounter data submitted (mock)! Check console. Clearing encounter state.");
+    completeAndClearEncounter();
+    resetEntirePageToStart();
   };
 
   const handleClearPersistedDataForDev = () => {
     clearPersistedSubmission();
     alert('Persisted submission data cleared. Please refresh.');
-    resetEntirePageToStart(); 
+    resetEntirePageToStart();
   };
 
   // --- RENDER FUNCTIONS FOR EACH STEP ---
   const renderInitialPatientInput = () => (
-    <SectionCard title="Step 1: Patient Identification & Consent">
-      <div className="space-y-4">
-        <InputField label="Patient Initials" id="initials" type="text" value={localPatientInput.initials} onChange={handlePatientInputChange} required />
-        <InputField label="Gender" id="gender" type="text" value={localPatientInput.gender} onChange={handlePatientInputChange} required />
-        <InputField label="Date of Birth" id="dob" type="date" value={localPatientInput.dob} onChange={handlePatientInputChange} required />
-        <div className="form-field pt-2">
-          <label className="form-label">Consent</label>
-          <div className="space-y-2 mt-1">
-            <div className="flex items-center">
-              <input id="projectConsent" name="projectConsent" type="checkbox" checked={localPatientInput.projectConsent} onChange={handlePatientInputChange} className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-2" />
-              <label htmlFor="projectConsent" className="form-label mb-0">I consent to this project's data usage terms.</label>
+    <SectionCard title="Patient Identification & Consent">
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-medium text-slate-700 dark:text-slate-200 mb-3">Patient Details</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <InputField
+              label="Patient Initials"
+              id="initials"
+              type="text"
+              placeholder="e.g., JS"
+              value={localPatientInput.initials || ''} 
+              onChange={handlePatientInputChange}
+              required
+            />
+            <InputField
+              label="Gender"
+              id="gender" 
+              type="text" 
+              placeholder="e.g., M or F"
+              value={localPatientInput.gender || ''} 
+              onChange={handlePatientInputChange}
+              required
+            />
+            <InputField
+              label="Date of Birth"
+              id="dob"
+              type="date"
+              value={localPatientInput.dob || ''} 
+              onChange={handlePatientInputChange}
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-lg font-medium text-slate-700 dark:text-slate-200 mb-3">Consent Information</h3>
+          <div className="space-y-3 bg-slate-50 dark:bg-slate-700/30 p-4 rounded-md border border-slate-200 dark:border-slate-600">
+            <div className="flex items-start">
+              <input
+                id="projectConsent"
+                type="checkbox"
+                checked={localPatientInput.projectConsent || false} 
+                onChange={handlePatientInputChange}
+                className="h-5 w-5 text-blue-600 border-slate-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-slate-800 dark:bg-slate-700 dark:border-slate-600 mt-0.5 shrink-0"
+              />
+              <label htmlFor="projectConsent" className="ml-2.5 text-sm text-slate-700 dark:text-slate-200">
+                I confirm that project-specific consent has been obtained from the patient/guardian for participation in this study and data collection as per protocol <span className="font-semibold">[Project Name/ID Placeholder]</span>.
+                <span className="text-red-500 ml-1">*</span>
+              </label>
             </div>
-            <div className="flex items-center">
-              <input id="recontactConsent" name="recontactConsent" type="checkbox" checked={localPatientInput.recontactConsent} onChange={handlePatientInputChange} className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mr-2" />
-              <label htmlFor="recontactConsent" className="form-label mb-0">I consent to be recontacted for follow-up.</label>
+            <div className="flex items-start">
+              <input
+                id="recontactConsent"
+                type="checkbox"
+                checked={localPatientInput.recontactConsent || false} 
+                onChange={handlePatientInputChange}
+                className="h-5 w-5 text-blue-600 border-slate-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-slate-800 dark:bg-slate-700 dark:border-slate-600 mt-0.5 shrink-0"
+              />
+              <label htmlFor="recontactConsent" className="ml-2.5 text-sm text-slate-700 dark:text-slate-200">
+                Patient/guardian consents to potential re-contact for follow-up information or future related studies, if applicable.
+              </label>
             </div>
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+
+        <div className="flex justify-end space-x-3 mt-6">
+          <Button 
+            variant="outline-slate" 
+            onClick={resetEntirePageToStart} 
+            iconLeft={<FaUndo />}
+            disabled={isFormLoading || currentProcessStep === 'loadingFormSequence'}
+          >
+            Cancel & Reset
+          </Button>
           <Button 
             variant="primary" 
-            onClick={() => handleStartSubmissionSequence(false)} 
-            iconLeft={<FaPlay />} 
-            fullWidth 
-            className="sm:flex-1"
-            disabled={currentProcessStep === 'loadingFormSequence' || !localPatientInput.initials || !localPatientInput.gender || !localPatientInput.dob || !localPatientInput.projectConsent}
+            onClick={() => handleStartSubmissionSequence(isResuming && isEncounterActive)} 
+            iconRight={<FaArrowRight />}
+            isLoading={isFormLoading || currentProcessStep === 'loadingFormSequence'}
+            disabled={!isPatientInputDataComplete()}
           >
-            Start New Submission
+            {isResuming && isEncounterActive ? 'Resume Encounter' : 'Start Data Collection'}
           </Button>
-          {isEncounterActive && (
-            <Button 
-              variant="outline-slate" 
-              onClick={() => handleStartSubmissionSequence(true)} 
-              iconLeft={<FaRedoAlt />} 
-              fullWidth 
-              className="sm:flex-1"
-              disabled={currentProcessStep === 'loadingFormSequence'}
-            >
-              Resume Last Encounter
-            </Button>
-          )}
         </div>
       </div>
     </SectionCard>
   );
 
   const renderLoading = (message: string) => (
-    <SectionCard title="Loading...">
-      <div className="flex flex-col items-center justify-center p-8 text-slate-600 dark:text-slate-400">
-        <FaSpinner className="animate-spin text-4xl mb-3" />
-        <p className="text-lg">{message}</p>
-      </div>
-    </SectionCard>
+    <div className="flex flex-col items-center justify-center p-10 bg-white dark:bg-slate-800 rounded-lg shadow-md min-h-[300px]">
+      <FaSpinner className="animate-spin text-4xl text-blue-500 mb-4" />
+      <p className="text-slate-600 dark:text-slate-300">{message}</p>
+    </div>
   );
 
   const renderError = () => (
     <SectionCard title="Error">
-      <div className="flex flex-col items-center justify-center p-8 text-red-600 dark:text-red-400">
-        <FaExclamationTriangle className="text-4xl mb-3" />
-        <p className="text-lg font-semibold">An Error Occurred</p>
-        <p className="text-center mb-4">{errorMessage || "Something went wrong."}</p>
-        <Button variant="outline-primary" onClick={resetEntirePageToStart} iconLeft={<FaUndo />}>
-          Start Over
+      <div className="flex flex-col items-center justify-center p-6">
+        <FaExclamationTriangle className="text-5xl text-red-500 mb-4" />
+        <p className="text-red-600 dark:text-red-400 text-center mb-4">{errorMessage || "An unexpected error occurred."}</p>
+        <Button variant="outline-primary" onClick={resetEntirePageToStart} iconLeft={<FaRedoAlt />}>
+          Try Again from Start
         </Button>
       </div>
     </SectionCard>
   );
 
   const renderFormNavigation = () => {
-    if (!storeFormSequence || storeFormSequence.length === 0 || storeCurrentFormIndex < 0 || storeCurrentFormIndex >= storeFormSequence.length) {
-        return renderLoading("Preparing form display...");
-    }
-    const currentFormDef = storeFormSequence[storeCurrentFormIndex];
-    if (!currentFormDef) return renderLoading("Form definition missing...");
+    const currentFormDef = storeFormSequence && storeFormSequence.length > storeCurrentFormIndex && storeCurrentFormIndex >= 0 ? storeFormSequence[storeCurrentFormIndex] : null;
+    const isLastForm = storeFormSequence && storeFormSequence.length > 0 ? storeCurrentFormIndex === storeFormSequence.length - 1 : false;
 
     return (
-      <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
-        <div className="flex justify-between items-center mb-2">
-            <h3 className="card-title">
-                Form: {currentFormDef.name} <span className="text-xs font-normal text-slate-500 dark:text-slate-400">(v{currentFormDef.version})</span>
-            </h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Form {storeCurrentFormIndex + 1} of {storeFormSequence.length}
-            </p>
+      <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0 print:hidden">
+        <Button 
+          variant="outline-slate" 
+          onClick={() => handleNavigateForm('previous')} 
+          iconLeft={<FaArrowLeft />}
+          disabled={isFormLoading || (storeCurrentFormIndex === 0 && currentProcessStep === 'fillingFormInSequence')}
+        >
+          {storeCurrentFormIndex === 0 ? 'Back to Patient Info' : 'Previous Form'}
+        </Button>
+        
+        <div className="flex items-center space-x-2">
+            <span className="text-sm text-slate-500 dark:text-slate-400">
+                Form {storeCurrentFormIndex + 1} of {storeFormSequence.length}: {currentFormDef?.name || 'N/A'}
+            </span>
         </div>
-        <div className="card-base card-body">
-          {currentFormSchema && currentFormUiSchema ? (
-            <DynamicFormRenderer
-              schema={currentFormSchema}
-              uiSchema={currentFormUiSchema}
-              formData={currentFormData}
-              onFormDataChange={handleCurrentFormChange}
-            />
-          ) : (
-            renderLoading("Loading form contents...")
-          )}
-        </div>
-        <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
+
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
           <Button 
-            variant="outline-slate" 
-            onClick={() => handleNavigateForm('previous')} 
-            disabled={storeCurrentFormIndex === 0}
-            iconLeft={<FaArrowLeft />}
+            variant="ghost" 
+            onClick={handleSaveAndExit} 
+            iconLeft={<FaSave />}
+            disabled={isFormLoading}
+            className="text-slate-600 dark:text-slate-300"
           >
-            Previous Form
+            Save & Exit (Later)
           </Button>
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-            <Button variant="secondary" onClick={handleSaveAndExit} iconLeft={<FaSave />}>
-              Save Progress & Exit
-            </Button>
-            {storeCurrentFormIndex === storeFormSequence.length - 1 ? (
-              <Button variant="success" onClick={handleSubmitAllData} iconLeft={<FaPaperPlane />}>
-                Submit All Data
-              </Button>
-            ) : (
-              <Button variant="primary" onClick={() => handleNavigateForm('next')} iconLeft={<FaArrowRight />}>
-                Next Form
-              </Button>
-            )}
-          </div>
+          <Button 
+            variant="primary" 
+            onClick={() => handleNavigateForm('next')} 
+            iconRight={<FaArrowRight />}
+            isLoading={isFormLoading}
+          >
+            {isLastForm ? 'Proceed to Review' : 'Next Form'}
+          </Button>
         </div>
       </div>
     );
   };
   
-  // Main Page Return Logic
-  let content;
-  switch (currentProcessStep) {
-    case 'initialPatientInput':
-      content = renderInitialPatientInput();
-      break;
-    case 'loadingFormSequence':
-    case 'loadingFormSchema': 
-      content = renderLoading(currentProcessStep === 'loadingFormSequence' ? 'Loading form sequence...' : `Loading schema for ${storeFormSequence[storeCurrentFormIndex]?.name || 'form'}...`);
-      break;
-    case 'fillingFormInSequence':
-      content = renderFormNavigation();
-      break;
-    case 'submissionError':
-      content = renderError();
-      break;
-    default:
-      const exhaustiveCheck: never = currentProcessStep;
-      content = <p>Unknown submission state: {exhaustiveCheck}</p>;
-  }
+  const renderFillingFormInSequence = () => {
+    if (!currentFormSchema || !currentFormUiSchema) {
+      return renderLoading("Preparing form...");
+    }
+    const currentFormDef = storeFormSequence && storeFormSequence.length > storeCurrentFormIndex && storeCurrentFormIndex >=0 ? storeFormSequence[storeCurrentFormIndex] : null;
 
-  return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6">
-      <header className="mb-8">
-        <h1 className="page-header">Clinical Data Submission</h1>
-        <p className="page-subheader mt-1">Follow the steps to submit clinical data for a patient encounter.</p>
-      </header>
-      
-      {content}
+    return (
+      <SectionCard title={currentFormDef?.name || "Data Form"} className="animation-fade-in">
+        <DynamicFormRenderer
+          schema={currentFormSchema}
+          uiSchema={currentFormUiSchema}
+          formData={currentFormData}
+          onFormDataChange={handleCurrentFormChange}
+        />
+        {renderFormNavigation()}
+      </SectionCard>
+    );
+  };
 
-      {import.meta.env.DEV && (
-        <div className="mt-10 pt-6 border-t border-dashed border-slate-300 dark:border-slate-700">
-          <SectionCard title="Developer Utilities">
-            <div className="flex flex-col items-start gap-2">
-                <p className="text-sm text-slate-500 dark:text-slate-400">Current process step: <code className="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-xs">{currentProcessStep}</code></p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Store active: <code className="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-xs">{isEncounterActive ? 'Yes' : 'No'}</code></p>
-                <Button variant="warning" size="sm" onClick={handleClearPersistedDataForDev} iconLeft={<FaUndo />}>
-                    Clear Persisted Submission Data (Dev)
-                </Button>
+  const renderReviewAndSubmit = () => {
+    return (
+      <SectionCard title="Review Encounter Data" className="animation-fade-in">
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-2 border-b pb-1">Patient Information</h3>
+            <pre className="text-xs bg-slate-100 dark:bg-slate-700 p-3 rounded overflow-x-auto">
+              {JSON.stringify(storePatientData || {message: "Patient data not available."}, null, 2)}
+            </pre>
+          </div>
+
+          {(storeFormSequence || []).map(formDef => (
+            <div key={formDef.key}>
+              <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-2 border-b pb-1">{formDef.name} (v{formDef.version})</h3>
+              <pre className="text-xs bg-slate-100 dark:bg-slate-700 p-3 rounded overflow-x-auto">
+                {JSON.stringify(storeAllFormsData[formDef.key] || {message: "No data recorded for this form."}, null, 2)}
+              </pre>
             </div>
-          </SectionCard>
+          ))}
         </div>
+
+        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+           <Button 
+            variant="outline-slate" 
+            onClick={() => {
+                if (storeFormSequence && storeFormSequence.length > 0) {
+                    setCurrentFormIndex(storeFormSequence.length - 1);
+                } else {
+                    setCurrentProcessStep('initialPatientInput'); 
+                }
+            }} 
+            iconLeft={<FaArrowLeft />}
+            disabled={isFormLoading || !storeFormSequence || storeFormSequence.length === 0}
+          >
+            Back to Edit Last Form
+          </Button>
+          <Button 
+            variant="success" 
+            onClick={handleSubmitAllData} 
+            iconLeft={<FaPaperPlane />}
+            isLoading={isFormLoading} 
+          >
+            Confirm & Submit All Data
+          </Button>
+        </div>
+      </SectionCard>
+    );
+  };
+
+
+  // Main Render Logic
+  return (
+    <div className="p-4 sm:p-6 space-y-4">
+      { (currentProcessStep === 'initialPatientInput' || 
+         currentProcessStep === 'fillingFormInSequence' || 
+         currentProcessStep === 'reviewAndSubmit' ||
+         (currentProcessStep === 'loadingFormSequence' && isPatientInputDataComplete()) ||
+         (currentProcessStep === 'loadingFormSchema' && isPatientInputDataComplete() && storeFormSequence && storeFormSequence.length > 0)
+        ) && (
+        <SubmissionStepper 
+          currentOverallStep={currentProcessStep}
+          currentFormIndexInSequence={storeCurrentFormIndex}
+          formSequence={storeFormSequence}
+          patientInputComplete={isPatientInputDataComplete()}
+        />
       )}
+
+      {currentProcessStep === 'initialPatientInput' && renderInitialPatientInput()}
+      {currentProcessStep === 'loadingFormSequence' && renderLoading("Loading submission sequence...")}
+      {currentProcessStep === 'loadingFormSchema' && renderLoading("Loading form definition...")}
+      {currentProcessStep === 'fillingFormInSequence' && renderFillingFormInSequence()}
+      {currentProcessStep === 'reviewAndSubmit' && renderReviewAndSubmit()}
+      {currentProcessStep === 'submissionError' && renderError()}
+      
+       <div className="mt-8 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-md print:hidden">
+        <p className="text-sm text-amber-700 dark:text-amber-300 font-semibold mb-2">Developer Tools:</p>
+        <Button variant="warning" size="sm" onClick={handleClearPersistedDataForDev}>
+          Clear Persisted Encounter Data (Dev Only)
+        </Button>
+      </div>
     </div>
   );
 };
