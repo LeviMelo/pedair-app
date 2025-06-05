@@ -159,4 +159,33 @@ This document tracks major development milestones, decisions, challenges, bugs, 
     3.  Implement the dark mode toggle functionality.
     4.  Begin applying more specific styling (colors, spacing, shadows, etc.) from `frontend_design_philosophy.md` to `Layout.tsx` and its sub-components (sidebar, header). 
 
+---
+
+**YYYY-MM-DD: UI Enhancement Iteration 1 (Icons, Dark Mode, Collapsible Sidebar)**
+
+*   **Task:** Installed `react-icons` library.
+*   **Task:** Enabled class-based dark mode in `tailwind.config.js`.
+*   **Task:** Significantly updated `frontend/src/components/layout/Layout.tsx` to include:
+    *   Phosphor icons (`react-icons/pi`) for navigation and actions.
+    *   State and toggle functionality for a collapsible sidebar.
+    *   State, toggle, and `localStorage` persistence for dark mode, applying `.dark` class to `<html>`.
+    *   Dynamic page title in the header based on route.
+    *   Placeholders for user avatar and notification bell in the header.
+    *   Initial refined styling for colors, spacing, and dark mode variants.
+*   **User Feedback (Visual Review):** 
+    *   Collapsible sidebar is functional but toggle handle icon (`PiMenuIcon` / `PiCaretLeftDuotone`) isn't the desired "minimal button-handle."
+    *   Sidebar collapse animation is too coarse; text labels disappear abruptly.
+    *   Sidebar navigation items could use better, more minimal visual dividers.
+    *   **Critical Layout Issue:** Main content header (with page title) is misaligned with the sidebar's top "PedAir" logo block.
+    *   **Major Dark Mode Issue:** Dark mode is perceived as poorly handled, primarily just a dark blue background. Needs significant overhaul to match the (now updated) `frontend_design_philosophy.md` regarding desaturated palettes, glows instead of shadows, text contrast, and component-specific dark styles.
+    *   Request to ensure sidebar auto-collapses on small screens (this was implemented, user likely reiterating its importance).
+*   **Task:** Updated `frontend_design_philosophy.md` with much more detailed specifications for:
+    *   Sidebar behavior (collapsible handle, collapsed state, dividers, animation, small screen adaptation).
+    *   Dark Mode aesthetics (rethinking shadows/elevation with glows, desaturated palette, text contrast, glassmorphism considerations, specific component styling for buttons/inputs).
+    *   Layout alignment principles.
+*   **Next Steps:** 
+    1.  Prioritize fixing the header misalignment.
+    2.  Undertake a more thorough dark mode styling pass on `Layout.tsx` and core page elements (e.g., cards in `DashboardPage.tsx`) based on the updated philosophy.
+    3.  Refine sidebar toggle handle, animation, and item dividers.
+
 --- 
