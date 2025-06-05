@@ -8,10 +8,10 @@ interface FormBuilderToolbarProps {
 
 const FormBuilderToolbar: React.FC<FormBuilderToolbarProps> = ({ onNewForm, onLoadForm, onSaveForm }) => {
   return (
-    <div className="bg-slate-100 dark:bg-slate-700 p-3 rounded-md shadow mb-4 flex items-center space-x-2 print:hidden">
+    <div className="bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 dark:from-slate-700 dark:via-slate-750 dark:to-slate-700 p-3 rounded-xl shadow-lg mb-4 flex items-center space-x-2 print:hidden border border-slate-200/50 dark:border-slate-600/50">
       <button 
         onClick={onNewForm}
-        className="px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold rounded-md shadow-sm transition-colors duration-150"
+        className="px-3 py-1.5 text-sm bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/25 transition-all duration-150 hover:scale-105"
       >
         New Blank Form
       </button>

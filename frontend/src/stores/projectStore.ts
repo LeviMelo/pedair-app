@@ -20,8 +20,8 @@ export interface Project {
 // Mock data - replace with actual API calls later
 const mockProjects: Project[] = [
   {
-    id: 'proj_pedair_001',
-    name: 'PedAir - Estudo Piloto Alagoas',
+      id: 'proj_crest_001',
+  name: 'CREST - Estudo Piloto Alagoas',
     description: 'Coleta de dados para o projeto Respirar em cirurgias pediátricas de via aérea no estado de Alagoas.',
     goals: 'Desenvolver um protocolo ERAS específico para cirurgia de via aérea pediátrica no estado de Alagoas, visando reduzir complicações e tempo de internação.',
     members: [
@@ -130,7 +130,7 @@ const useProjectStore = create<ProjectState & ProjectActions>()(
       setError: (error) => set({ error: error, isLoading: false }),
     }),
     {
-      name: 'pedair-project-storage', 
+      name: 'crest-project-storage', 
       storage: createJSONStorage(() => localStorage), 
       partialize: (state) => ({ activeProjectId: state.activeProjectId }), // Only persist activeProjectId
     }

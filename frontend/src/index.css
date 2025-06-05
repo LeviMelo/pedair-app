@@ -14,19 +14,19 @@
 
   /* --- Button Variants --- */
   .btn-primary {
-    @apply btn bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400 dark:focus:ring-blue-600;
+    @apply btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white focus:ring-blue-500 dark:from-blue-500 dark:to-blue-600 dark:hover:from-blue-400 dark:hover:to-blue-500 dark:focus:ring-blue-400 shadow-lg shadow-blue-500/25 dark:shadow-blue-400/20;
   }
   .btn-secondary {
-    @apply btn bg-slate-600 hover:bg-slate-700 text-white focus:ring-slate-500 dark:bg-slate-500 dark:hover:bg-slate-400 dark:focus:ring-slate-600;
+    @apply btn bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white focus:ring-slate-500 dark:from-slate-500 dark:to-slate-600 dark:hover:from-slate-400 dark:hover:to-slate-500 dark:focus:ring-slate-600 shadow-lg shadow-slate-500/25 dark:shadow-slate-400/20;
   }
   .btn-success {
-    @apply btn bg-green-600 hover:bg-green-700 text-white focus:ring-green-500 dark:bg-green-500 dark:hover:bg-green-400 dark:focus:ring-green-600;
+    @apply btn bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white focus:ring-emerald-500 dark:from-emerald-500 dark:to-green-500 dark:hover:from-emerald-400 dark:hover:to-green-400 dark:focus:ring-emerald-400 shadow-lg shadow-emerald-500/25 dark:shadow-emerald-400/20;
   }
   .btn-danger {
-    @apply btn bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 dark:bg-red-500 dark:hover:bg-red-400 dark:focus:ring-red-600;
+    @apply btn bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white focus:ring-red-500 dark:from-red-500 dark:to-rose-500 dark:hover:from-red-400 dark:hover:to-rose-400 dark:focus:ring-red-400 shadow-lg shadow-red-500/25 dark:shadow-red-400/20;
   }
   .btn-warning {
-    @apply btn bg-amber-500 hover:bg-amber-600 text-white focus:ring-amber-500 dark:focus:ring-amber-600;
+    @apply btn bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white focus:ring-amber-500 dark:from-amber-400 dark:to-orange-400 dark:focus:ring-amber-400 shadow-lg shadow-amber-500/25 dark:shadow-amber-400/20;
   }
   .btn-outline-primary {
     @apply btn border border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-500/10 focus:ring-blue-500;
@@ -81,9 +81,19 @@
     @apply text-sm text-slate-600 dark:text-slate-400 mb-6;
   }
 
-  /* --- Card Styles --- */
+  /* --- Enhanced Card Styles --- */
   .card-base {
-    @apply bg-white dark:bg-slate-800 rounded-lg shadow-md dark:shadow-[0_0_15px_rgba(255,255,255,0.05)];
+    @apply bg-white dark:bg-slate-800 rounded-lg shadow-md dark:shadow-[0_0_15px_rgba(255,255,255,0.05)]
+           border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm;
+  }
+  .card-enhanced {
+    @apply bg-gradient-to-br from-white via-slate-50/80 to-white 
+           dark:from-slate-800 dark:via-slate-750/80 dark:to-slate-800
+           border border-slate-200/60 dark:border-slate-700/60
+           shadow-lg shadow-slate-200/50 dark:shadow-slate-900/20 rounded-xl;
+  }
+  .card-colorful {
+    @apply card-base relative overflow-hidden;
   }
   .card-header {
     @apply pb-2 mb-4 border-b border-slate-300 dark:border-slate-700;
@@ -106,6 +116,41 @@
     @apply text-slate-600 dark:text-slate-400 text-sm mt-1;
   }
 
+  /* --- CREST Visual Enhancements --- */
+  .gradient-primary {
+    @apply bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600;
+  }
+  .gradient-success {
+    @apply bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500;
+  }
+  .gradient-warning {
+    @apply bg-gradient-to-r from-amber-500 via-orange-500 to-red-500;
+  }
+  .text-gradient {
+    @apply bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent;
+  }
+  .text-gradient-warm {
+    @apply bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent;
+  }
+  .text-gradient-cool {
+    @apply bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 bg-clip-text text-transparent;
+  }
+  .icon-colorful {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500;
+  }
+}
+
+/* Colorful card overlay */
+.card-colorful::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 50%, rgba(16, 185, 129, 0.05) 100%);
+  pointer-events: none;
+}
+
+.dark .card-colorful::before {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 51, 234, 0.08) 50%, rgba(16, 185, 129, 0.08) 100%);
 }
 
 /* Add this for the fade-in effect */
@@ -122,4 +167,18 @@
 
 .animation-fade-in {
   animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Pulsing gradient animation for special elements */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
 }

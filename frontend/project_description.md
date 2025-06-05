@@ -1,8 +1,8 @@
-# PedAir – Resumo do Projeto e Visão Geral
+# CREST – Clinical REsearch Study Tool
 
 ## Descrição do Projeto
 
-PedAir é uma plataforma web de pesquisa clínica voltada para o desenvolvimento de Protocolos ERAS (Enhanced Recovery After Surgery) em cirurgia torácica pediátrica. Seu propósito principal é coletar e analisar dados perioperatórios (pré-operatório, intraoperatório e pós-operatório) de crianças submetidas a procedimentos de via aérea, de forma a gerar recomendações baseadas em evidências para melhorar a segurança, reduzir complicações e otimizar o tempo de internação. Originalmente concebido para dar suporte ao "Projeto Respirar" (cirurgias pediátricas de via aérea no estado de Alagoas), PedAir foi projetado desde o início como um sistema **multi-projeto**, capaz de atender simultaneamente a múltiplos estudos, cada um com:
+CREST (Clinical REsearch Study Tool) é uma plataforma web de pesquisa clínica voltada para o desenvolvimento de Protocolos ERAS (Enhanced Recovery After Surgery) em cirurgia torácica pediátrica. Seu propósito principal é coletar e analisar dados perioperatórios (pré-operatório, intraoperatório e pós-operatório) de crianças submetidas a procedimentos de via aérea, de forma a gerar recomendações baseadas em evidências para melhorar a segurança, reduzir complicações e otimizar o tempo de internação. Originalmente concebido para dar suporte ao "Projeto Respirar" (cirurgias pediátricas de via aérea no estado de Alagoas), PedAir foi projetado desde o início como um sistema **multi-projeto**, capaz de atender simultaneamente a múltiplos estudos, cada um com:
 
 * Suas próprias regras de privacidade (incluindo políticas de LGPD),
 * Seus próprios formulários (esquemas JSON/JSON Schema dinâmicos),

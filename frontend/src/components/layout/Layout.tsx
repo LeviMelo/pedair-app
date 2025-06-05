@@ -65,7 +65,7 @@ const getPageTitle = (pathname: string, activeProjectName?: string | null, activ
     const testName = pathname.split('/').pop();
     return `Test: ${testName?.charAt(0).toUpperCase()}${testName?.slice(1).replace(/([A-Z])/g, ' $1').trim() || 'Form'}`;
   }
-  return activeProjectName ? `Project: ${activeProjectName}` : 'PedAir Application';
+  return activeProjectName ? `Project: ${activeProjectName}` : 'CREST Application';
 };
 
 const Layout: React.FC = () => {
@@ -204,74 +204,158 @@ const Layout: React.FC = () => {
       initials: '', gender: '', dob: '', projectConsent: false, recontactConsent: false,
     };
 
-    let actions: React.ReactNode[] = [];
+    interface ContextAction {
+      key: string;
+      label: string;
+      icon: React.ReactElement;
+      onClick: () => void;
+      variant: 'primary' | 'secondary' | 'outline-primary' | 'outline-slate';
+      priority?: 'high' | 'medium' | 'low';
+    }
+
+    let contextActions: ContextAction[] = [];
 
     if (pathname === '/' || pathname === '/dashboard') {
-      actions.push(
-        <Button key="create-project" variant="primary" size="sm" onClick={() => navigate('/dashboard/create-project')} iconLeft={<PiPlusCircleDuotone/>} className="hidden sm:flex">
-          New Project
-        </Button>
-      );
+      contextActions.push({
+        key: 'create-project',
+        label: 'New Project',
+        icon: <PiPlusCircleDuotone/>,
+        onClick: () => navigate('/dashboard/create-project'),
+        variant: 'primary',
+        priority: 'high'
+      });
     }
 
     if (pathname.startsWith('/project/') && pathname.endsWith('/submission')) {
-      actions.push(
-        <Button key="new-encounter" variant="primary" size="sm" 
-          onClick={() => {
-            if (isEncounterEffectivelyActive) {
-                if (window.confirm('You have an active encounter. Starting a new one will clear the current progress. Continue?')) {
-                    startNewEncounter(defaultPatientData, []); 
-                    navigate(`/project/${activeProjectId}/submission`);
-                }
-            } else {
-                 startNewEncounter(defaultPatientData, []);
-                 navigate(`/project/${activeProjectId}/submission`);
-            }
-          }}
-          iconLeft={<PiFilePlusDuotone/>} className="hidden sm:flex"
-        >
-          New Encounter
-        </Button>
-      );
+      contextActions.push({
+        key: 'new-encounter',
+        label: 'New Encounter',
+        icon: <PiFilePlusDuotone/>,
+        onClick: () => {
+          if (isEncounterEffectivelyActive) {
+              if (window.confirm('You have an active encounter. Starting a new one will clear the current progress. Continue?')) {
+                  startNewEncounter(defaultPatientData, []); 
+                  navigate(`/project/${activeProjectId}/submission`);
+              }
+          } else {
+               startNewEncounter(defaultPatientData, []);
+               navigate(`/project/${activeProjectId}/submission`);
+          }
+        },
+        variant: 'primary',
+        priority: 'high'
+      });
+      
       if (isEncounterEffectivelyActive) {
-        actions.push(
-          <Button key="resume-encounter" variant="outline-primary" size="sm" onClick={() => navigate(`/project/${activeProjectId}/submission`)} iconLeft={<PiPlayCircleDuotone/>} className="hidden sm:flex ml-2">
-            Resume Encounter
-          </Button>
-        );
+        contextActions.push({
+          key: 'resume-encounter',
+          label: 'Resume Encounter',
+          icon: <PiPlayCircleDuotone/>,
+          onClick: () => navigate(`/project/${activeProjectId}/submission`),
+          variant: 'outline-primary',
+          priority: 'high'
+        });
       }
     }
     
     if (pathname.startsWith('/project/') && pathname.endsWith('/builder')) {
-      actions.push(
-        <Button key="new-form" variant="primary" size="sm" onClick={() => alert('New Blank Form (TBD)')} iconLeft={<PiTextAaDuotone />} className="hidden sm:flex">
-          New Form
-        </Button>,
-        <Button key="load-form" variant="outline-slate" size="sm" onClick={() => alert('Load Existing Form (TBD)')} iconLeft={<PiArchiveDuotone />} className="hidden sm:flex ml-2">
-          Load Form
-        </Button>
+      contextActions.push(
+        {
+          key: 'new-form',
+          label: 'New Form',
+          icon: <PiTextAaDuotone />,
+          onClick: () => alert('New Blank Form (TBD)'),
+          variant: 'primary',
+          priority: 'high'
+        },
+        {
+          key: 'load-form',
+          label: 'Load Form',
+          icon: <PiArchiveDuotone />,
+          onClick: () => alert('Load Existing Form (TBD)'),
+          variant: 'outline-slate',
+          priority: 'medium'
+        }
       );
     }
 
     if (pathname.startsWith('/project/') && pathname.endsWith('/roles')) {
-       actions.push(
-        <Button key="new-role" variant="primary" size="sm" onClick={() => alert('Create New Role (TBD)')} iconLeft={<PiUserPlusDuotone />} className="hidden sm:flex">
-          New Role
-        </Button>
-      );
+       contextActions.push({
+        key: 'new-role',
+        label: 'New Role',
+        icon: <PiUserPlusDuotone />,
+        onClick: () => alert('Create New Role (TBD)'),
+        variant: 'primary',
+        priority: 'high'
+       });
     }
     
     if (pathname.startsWith('/project/') && activeProjectId) {
-        actions.push(
-            <Button key="quick-save" variant="outline-slate" size="sm" onClick={() => alert('Quick Save Project Details (TBD)')} iconLeft={<PiFloppyDiskDuotone />} className="hidden md:flex ml-2">
-                Quick Save
-            </Button>
-        );
+        contextActions.push({
+          key: 'quick-save',
+          label: 'Quick Save',
+          icon: <PiFloppyDiskDuotone />,
+          onClick: () => alert('Quick Save Project Details (TBD)'),
+          variant: 'outline-slate',
+          priority: 'low'
+        });
     }
 
-    if (actions.length === 0) return null;
+    if (contextActions.length === 0) return null;
 
-    return <div className="flex items-center gap-2 sm:gap-3">{actions}</div>;
+    // Render context action buttons with distinctive styling
+    return contextActions.map((action) => (
+      <div key={action.key} className="group/context-action relative">
+        {/* Context Action Button */}
+        <button
+          onClick={action.onClick}
+          className={`
+            context-action-btn flex items-center justify-center
+            transition-all duration-300 ease-out
+            relative overflow-hidden
+            ${action.variant === 'primary' 
+              ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600 text-white shadow-lg dark:shadow-blue-500/25' 
+              : action.variant === 'outline-primary'
+                ? 'bg-white dark:bg-slate-800 border-2 border-blue-500 dark:border-blue-400 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 shadow-md'
+                : 'bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-md'
+            }
+            
+            /* Responsive sizing */
+            h-10 sm:h-11
+            w-10 sm:w-auto
+            rounded-xl sm:rounded-lg
+            px-0 sm:px-4
+            
+            /* Hover effects */
+            hover:scale-105 hover:shadow-xl
+            active:scale-95
+            
+            /* Focus states */
+            focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800
+          `}
+          title={action.label}
+        >
+          {/* Icon */}
+          <span className="flex items-center justify-center text-lg sm:text-base transition-transform duration-200 group-hover/context-action:scale-110">
+{action.icon}
+          </span>
+          
+          {/* Text - hidden on small screens, visible on larger screens */}
+          <span className="hidden sm:inline-block ml-2 font-medium text-sm whitespace-nowrap">
+            {action.label}
+          </span>
+          
+          {/* Animated background overlay on hover */}
+          <div className="absolute inset-0 bg-white/20 dark:bg-white/10 opacity-0 group-hover/context-action:opacity-100 transition-opacity duration-300 rounded-xl sm:rounded-lg"></div>
+        </button>
+        
+        {/* Tooltip for small screens - appears on hover */}
+        <div className="sm:hidden absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-md opacity-0 group-hover/context-action:opacity-100 transition-all duration-200 delay-500 pointer-events-none whitespace-nowrap z-50">
+          {action.label}
+          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 dark:bg-slate-700 rotate-45"></div>
+        </div>
+      </div>
+    ));
   };
 
   return (
@@ -284,8 +368,8 @@ const Layout: React.FC = () => {
       >
         <div className={`h-16 flex items-center shrink-0 px-4 border-b border-slate-200 dark:border-slate-700/80 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isSidebarCollapsed && (
-            <Link to="/" className="text-2xl font-bold text-blue-600 dark:text-blue-500 hover:opacity-80 transition-opacity">
-              PedAir
+            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-emerald-500 hover:via-blue-500 hover:to-purple-500 transition-all duration-300">
+              CREST
             </Link>
           )}
           <Button 
@@ -466,30 +550,39 @@ const Layout: React.FC = () => {
       </aside>
 
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 flex items-center justify-between bg-white dark:bg-slate-800 shadow-sm dark:shadow-none dark:border-b dark:border-slate-700/80 dark:shadow-[0_2px_8px_-1px_rgba(0,0,0,0.1)] p-4 print:hidden">
-            <div className="flex flex-col flex-grow min-w-0">
+        <header className="bg-white dark:bg-slate-800 shadow-sm dark:shadow-none dark:border-b dark:border-slate-700/80 dark:shadow-[0_2px_8px_-1px_rgba(0,0,0,0.1)] print:hidden">
+          {/* Top row: Page title and user info */}
+          <div className="h-16 flex items-center justify-between px-4 sm:px-6">
+            <div className="flex-grow min-w-0">
               <h1 className="page-header truncate">{pageTitle}</h1>
-              <div className="mt-0.5 h-6 text-xs">
+            </div>
+            <div className="flex items-center space-x-3 shrink-0 ml-4">
+              <Button 
+                variant="ghost" 
+                size="md"
+                className="btn-icon text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                title="Notifications" 
+                iconLeft={<PiBellDuotone size={20} />}
+              >{null}</Button>
+              {isAuthenticated && user ? (
+                <div title={`${user.name} (${user.email})`} className="flex items-center space-x-2 cursor-default">
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-300 hidden sm:inline truncate max-w-xs">{user.name}</span> 
+                  <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&size=32&color=fff&font-size=0.40`} alt={user.name} className="w-8 h-8 rounded-full ring-1 ring-slate-200 dark:ring-slate-600"/>
+                </div>
+              ) : (
+                <img src="https://via.placeholder.com/32?text=?" alt="User Avatar" className="w-8 h-8 rounded-full ring-1 ring-slate-200 dark:ring-slate-600"/>
+              )}
+            </div>
+          </div>
+          
+          {/* Bottom row: Contextual actions - only show when there are actions */}
+          {renderHeaderActions() && (
+            <div className="px-4 sm:px-6 py-3 bg-gradient-to-r from-slate-50 via-slate-100/50 to-slate-50 dark:from-slate-800/60 dark:via-slate-800/40 dark:to-slate-800/60 border-t border-slate-200 dark:border-slate-700/60 backdrop-blur-sm">
+              <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3">
                 {renderHeaderActions()}
               </div>
             </div>
-            <div className="flex items-center space-x-3 shrink-0 ml-4">
-                <Button 
-                    variant="ghost" 
-                    size="md"
-                    className="btn-icon text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                    title="Notifications" 
-                    iconLeft={<PiBellDuotone size={20} />}
-                >{null}</Button>
-                {isAuthenticated && user ? (
-                     <div title={`${user.name} (${user.email})`} className="flex items-center space-x-2 cursor-default">
-                        <span className="text-sm font-medium text-slate-600 dark:text-slate-300 hidden sm:inline truncate max-w-xs">{user.name}</span> 
-                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&size=32&color=fff&font-size=0.40`} alt={user.name} className="w-8 h-8 rounded-full ring-1 ring-slate-200 dark:ring-slate-600"/>
-                    </div>
-                ) : (
-                     <img src="https://via.placeholder.com/32?text=?" alt="User Avatar" className="w-8 h-8 rounded-full ring-1 ring-slate-200 dark:ring-slate-600"/>
-                )}
-            </div>
+          )}
         </header>
         
         <div className="flex-1 p-4 sm:p-6 overflow-y-auto bg-slate-100 dark:bg-slate-900">

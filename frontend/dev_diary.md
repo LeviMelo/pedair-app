@@ -1,6 +1,6 @@
-# PedAir Development Diary
+# CREST Development Diary
 
-This document tracks major development milestones, decisions, challenges, bugs, fixes, and solutions encountered during the PedAir project refactor and enhancement.
+This document tracks major development milestones, decisions, challenges, bugs, fixes, and solutions encountered during the CREST project refactor and enhancement.
 
 ## Entries
 

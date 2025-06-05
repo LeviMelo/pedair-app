@@ -29,10 +29,10 @@ const DashboardGreetingCard: React.FC<DashboardGreetingCardProps> = ({
       <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex-1">
           <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-100">
-            Welcome back, <span className="text-blue-600 dark:text-blue-400">{user?.name || 'User'}</span>!
+            Welcome back, <span className="text-gradient">{user?.name || 'User'}</span>!
           </h1>
           <p className="mt-2 text-slate-600 dark:text-slate-300 text-lg">
-            Here's your mission control. Manage projects, track progress, and stay updated.
+            Welcome to <span className="font-semibold text-gradient">CREST</span> - your Clinical REsearch Study Tool. Manage projects, track progress, and stay updated.
           </p>
         </div>
         <div className="shrink-0">

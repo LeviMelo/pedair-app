@@ -83,8 +83,8 @@ const FormBuilderPage: React.FC = () => {
   };
 
   return (
-    <div className="p-0 flex flex-col h-[calc(100vh-var(--header-height,4rem)-var(--page-padding,3rem))] max-h-[calc(100vh-var(--header-height,4rem)-var(--page-padding,3rem))]">
-      <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-3 px-1">Form Builder (MVP 1)</h1>
+    <div className="p-0 flex flex-col h-[calc(100vh-var(--header-height,4rem)-var(--page-padding,3rem))] max-h-[calc(100vh-var(--header-height,4rem)-var(--page-padding,3rem))] bg-gradient-to-br from-slate-50 via-blue-50/20 to-purple-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
+      <h1 className="text-2xl font-semibold text-gradient mb-3 px-1">Form Builder (MVP 1)</h1>
       <FormBuilderToolbar 
         onNewForm={handleNewForm}
         onLoadForm={handleLoadForm}

@@ -1,6 +1,6 @@
-# PedAir Development Roadmap - Complete Strategic Plan
+# CREST Development Roadmap - Complete Strategic Plan
 
-This document outlines the comprehensive development roadmap for PedAir, a multi-project clinical research platform for pediatric thoracic surgery ERAS protocols. The roadmap prioritizes clinical UX requirements, data privacy compliance (LGPD), and the sophisticated multi-project architecture described in the project vision.
+This document outlines the comprehensive development roadmap for CREST (Clinical REsearch Study Tool), a multi-project clinical research platform for pediatric thoracic surgery ERAS protocols. The roadmap prioritizes clinical UX requirements, data privacy compliance (LGPD), and the sophisticated multi-project architecture described in the project vision.
 
 ## Current Status & Foundation
 

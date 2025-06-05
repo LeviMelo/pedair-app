@@ -110,7 +110,7 @@ const useSubmissionStore = create<SubmissionState & SubmissionActions>()(
       },
     }),
     {
-      name: 'pedair-submission-storage', // name of the item in storage (must be unique)
+      name: 'crest-submission-storage', // name of the item in storage (must be unique)
       storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
       partialize: (state) => ({
         // Persist only these parts of the state to avoid storing functions or very large non-serializable objects

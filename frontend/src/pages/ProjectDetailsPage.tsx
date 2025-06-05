@@ -75,7 +75,7 @@ const ProjectDetailsPage: React.FC = () => {
   ];
 
   return (
-    <div className="p-4 sm:p-6 space-y-8 bg-slate-50 dark:bg-slate-900 min-h-full max-w-6xl mx-auto w-full">
+    <div className="p-4 sm:p-6 space-y-8 bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 min-h-full max-w-6xl mx-auto w-full">
       {/* Back to Dashboard Button - outside the main banner for cleaner separation */}
       <div className="mb-0">
         <Button 
@@ -102,7 +102,7 @@ const ProjectDetailsPage: React.FC = () => {
         <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-indigo-400/20 dark:bg-indigo-500/15 rounded-full filter blur-3xl opacity-40 animation-delay-2000 animate-pulse"></div>
         
         <div className="relative z-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-100">
+          <h1 className="text-3xl md:text-4xl font-bold text-gradient">
             {currentProject.name}
           </h1>
           <p className="mt-2 text-slate-600 dark:text-slate-300 text-lg max-w-3xl">
