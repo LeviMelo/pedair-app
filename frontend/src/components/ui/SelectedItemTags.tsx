@@ -16,7 +16,7 @@ const SelectedItemTags: React.FC<SelectedItemTagsProps> = ({
   noItemsText = 'Nenhum item selecionado.',
 }) => {
   if (!items || items.length === 0) {
-    return <p className={`text-sm text-slate-500 italic ${className}`}>{noItemsText}</p>;
+    return <p className={`text-sm text-slate-500 dark:text-slate-400 italic ${className}`}>{noItemsText}</p>;
   }
 
   return (
@@ -24,19 +24,18 @@ const SelectedItemTags: React.FC<SelectedItemTagsProps> = ({
       {items.map((item) => (
         <div
           key={item.value}
-          className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full"
+          className="flex items-center bg-blue-100 dark:bg-slate-600 text-blue-800 dark:text-slate-100 text-sm font-medium px-3 py-1 rounded-full"
         >
           <span>
             {item.label}
-            {item.icd10 && <span className="text-xs text-blue-600 ml-1">({item.icd10})</span>}
+            {item.icd10 && <span className="text-xs text-blue-600 dark:text-slate-300 ml-1">({item.icd10})</span>}
           </span>
           <button
             type="button"
             onClick={() => onRemove(item.value)}
-            className="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none"
-            aria-label={`Remover ${item.label}`} // Accessibility
+            className="ml-2 text-blue-600 dark:text-slate-400 hover:text-blue-800 dark:hover:text-slate-200 focus:outline-none"
+            aria-label={`Remover ${item.label}`}
           >
-            {/* Simple 'x' icon */}
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>

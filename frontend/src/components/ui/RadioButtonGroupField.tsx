@@ -31,7 +31,7 @@ const RadioButtonGroupField: React.FC<RadioButtonGroupFieldProps> = ({
 
   return (
     <fieldset className={`mb-4 ${className}`}>
-      <legend className="block text-sm font-medium text-slate-700 mb-2">
+      <legend className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </legend>
@@ -53,9 +53,9 @@ const RadioButtonGroupField: React.FC<RadioButtonGroupFieldProps> = ({
                 checked={isChecked}
                 onChange={() => onChange(option.value)}
                 required={required && index === 0}
-                className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500 focus:ring-offset-0 flex-shrink-0"
+                className="h-4 w-4 text-blue-600 dark:text-blue-500 border-slate-300 dark:border-slate-600 focus:ring-blue-500 dark:focus:ring-blue-600 focus:ring-offset-0 dark:focus:ring-offset-slate-800 flex-shrink-0"
               />
-              <label htmlFor={fieldId} className="ml-2 block text-sm text-slate-900 break-words cursor-pointer">
+              <label htmlFor={fieldId} className="ml-2 block text-sm text-slate-900 dark:text-slate-300 break-words cursor-pointer">
                 {option.label}
               </label>
             </div>

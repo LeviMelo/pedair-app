@@ -33,7 +33,7 @@ const InputField = forwardRef<Ref, InputFieldProps>(({
   required = false,
   className = '',
   inputClassName = '',
-  labelClassName = "block text-sm font-medium text-slate-700 mb-1",
+  labelClassName = "block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1",
 }, ref // Add the ref as the second argument provided by forwardRef
 ) => {
 
@@ -55,9 +55,17 @@ const InputField = forwardRef<Ref, InputFieldProps>(({
         onBlur={onBlur}
         placeholder={placeholder}
         required={required}
-        className={`mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
-                   focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500
-                   disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none
+        className={`mt-1 block w-full px-3 py-2 border rounded-md text-sm shadow-sm 
+                   bg-white dark:bg-slate-700/50 
+                   border-slate-300 dark:border-slate-600 
+                   text-slate-900 dark:text-slate-100 
+                   placeholder-slate-400 dark:placeholder-slate-500 
+                   focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
+                   dark:focus:border-blue-500 dark:focus:ring-blue-500 
+                   disabled:bg-slate-50 dark:disabled:bg-slate-600/50 
+                   disabled:text-slate-500 dark:disabled:text-slate-400 
+                   disabled:border-slate-200 dark:disabled:border-slate-700 
+                   disabled:shadow-none 
                    ${inputClassName}`}
       />
     </div>

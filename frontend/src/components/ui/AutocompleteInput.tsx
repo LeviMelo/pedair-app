@@ -74,7 +74,7 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
-      <label htmlFor={id} className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
+      <label htmlFor={id} className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">{label}</label>
       <input
         type="text"
         id={id}
@@ -82,30 +82,30 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
         onChange={handleInputChange}
         onFocus={() => { if (inputValue.length > 1) setIsListVisible(true); }} // Show list on focus if input exists
         placeholder={placeholder}
-        className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400
-                   focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+        className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-md text-sm shadow-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500
+                   focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:focus:border-blue-500 dark:focus:ring-blue-500"
         autoComplete="off" // Prevent browser autocomplete interfering
       />
       {/* Suggestions List */}
       {isListVisible && filteredOptions.length > 0 && (
-        <ul className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+        <ul className="absolute z-10 mt-1 w-full bg-white dark:bg-slate-700 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black dark:ring-slate-600 ring-opacity-5 dark:ring-opacity-100 overflow-auto focus:outline-none sm:text-sm">
           {filteredOptions.map((option) => (
             <li
               key={option.value}
               onClick={() => handleOptionClick(option)}
-              className="text-slate-900 cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-blue-50"
+              className="text-slate-900 dark:text-slate-200 cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-blue-50 dark:hover:bg-slate-600"
             >
               {/* Display label and potentially other info like ICD10 */}
               <span className="block truncate font-normal">
                 {option.label}
-                {option.icd10 && <span className="text-xs text-slate-500 ml-2">({option.icd10})</span>}
+                {option.icd10 && <span className="text-xs text-slate-500 dark:text-slate-400 ml-2">({option.icd10})</span>}
               </span>
             </li>
           ))}
         </ul>
       )}
        {isListVisible && inputValue.length > 1 && filteredOptions.length === 0 && (
-         <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md p-3 text-sm text-slate-500">
+         <div className="absolute z-10 mt-1 w-full bg-white dark:bg-slate-700 shadow-lg rounded-md p-3 text-sm text-slate-500 dark:text-slate-400">
              Nenhum resultado encontrado.
          </div>
        )}

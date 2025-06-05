@@ -188,4 +188,29 @@ This document tracks major development milestones, decisions, challenges, bugs, 
     2.  Undertake a more thorough dark mode styling pass on `Layout.tsx` and core page elements (e.g., cards in `DashboardPage.tsx`) based on the updated philosophy.
     3.  Refine sidebar toggle handle, animation, and item dividers.
 
+---
+
+**YYYY-MM-DD: UI Rendering Bug & Dark Mode Refinement Continuation**
+
+*   **Issue Encountered:** After applying glow effects, the application started rendering a plain white screen. Vite HMR also showed connection lags.
+*   **Troubleshooting:** User confirmed restarting Vite resolved the white screen issue, suggesting a Tailwind CSS build/cache problem with the new arbitrary shadow classes, rather than a fundamental code error.
+*   **Fix Applied (Preventative):** Removed a potentially problematic secondary arbitrary shadow class (`dark:shadow-slate-950/50`) from `Layout.tsx` that was combined with another. The primary arbitrary shadows for subtle dark glows were kept but made even more subtle (`rgba(0,0,0,0.1)`).
+*   **User Confirmation:** UI rendering correctly after Vite restart.
+*   **Status:** Dark mode styling applied to dashboard cards (glows), layout elements (subtle dark shadows), and basic dark styles applied to all placeholder pages.
+*   **Clarification from User:** The three initial forms (`Intraoperatoria`, `PreAnestesia`, `RecuperacaoPosAnestesica`) will be conceptualized as a default form type named "ana_ERAS".
+*   **Next Steps (Refined Plan):**
+    1.  **Comprehensive Dark Mode for Core UI Components:** Systematically update all components in `frontend/src/components/ui/` (InputField, SelectField, CheckboxGroupField, etc.) to fully align with `frontend_design_philosophy.md` for dark mode (borders, backgrounds, text colors, focus states with glows where appropriate).
+    2.  **Dark Mode Review for Widgets:** Ensure custom widgets (`AutocompleteTagSelectorWidget`, `DrugSectionWidget`) correctly compose and display the styled UI components in dark mode.
+    3.  **Conceptual Planning for "ana_ERAS" & Form Builder UI:** Begin high-level planning for the Form Builder interface, keeping in mind the "ana_ERAS" default form type.
+
+---
+
+**YYYY-MM-DD: Comprehensive Dark Mode Styling Completed**
+
+*   **Task:** Systematically applied dark mode styling to all core UI components in `frontend/src/components/ui/` based on `frontend_design_philosophy.md`.
+    *   Components updated: `InputField.tsx`, `SelectField.tsx`, `CheckboxGroupField.tsx`, `RadioButtonGroupField.tsx`, `StepperInput.tsx`, `QuickSelectButtons.tsx`, `DrugInputField.tsx`, `AutocompleteInput.tsx`, `SelectedItemTags.tsx`, `SectionCard.tsx`.
+*   **Task:** Reviewed and updated custom widgets (`AutocompleteTagSelectorWidget.tsx`, `DrugSectionWidget.tsx`) to ensure their direct structural elements (fieldsets, legends, internal labels) are dark-mode compatible and that they correctly compose the newly styled UI components.
+*   **Status:** All current UI components and widgets now have consistent and complete dark mode styling. The application's visual presentation in dark mode is significantly improved and aligns with the design philosophy.
+*   **Next Steps:** Transition to conceptual planning and initial structural implementation for the Form Builder UI (`frontend/src/pages/FormBuilderPage.tsx`). This will involve outlining the main sections (Toolbar, Field Palette, Form Canvas, Property Inspector) and creating basic placeholder components for them.
+
 --- 

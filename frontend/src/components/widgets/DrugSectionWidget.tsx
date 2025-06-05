@@ -64,8 +64,8 @@ const DrugSectionWidget: React.FC<DrugSectionWidgetProps> = ({
   };
 
   return (
-    <fieldset className="border border-slate-200 p-4 rounded-md bg-white mb-6" id={id}>
-      <legend className="text-base font-semibold text-slate-800 px-2">
+    <fieldset className="border border-slate-200 dark:border-slate-600 p-4 rounded-md bg-white dark:bg-slate-800 mb-6" id={id}>
+      <legend className="text-base font-semibold text-slate-800 dark:text-slate-100 px-2">
         {sectionTitle}
         {required && <span className="text-red-500 ml-1">*</span>} 
       </legend>

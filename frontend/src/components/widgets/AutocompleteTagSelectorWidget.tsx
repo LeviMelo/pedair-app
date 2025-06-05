@@ -73,14 +73,14 @@ const AutocompleteTagSelectorWidget: React.FC<AutocompleteTagSelectorWidgetProps
   };
 
   return (
-    <fieldset className="mb-4 p-4 border border-slate-200 rounded-md bg-white space-y-4">
-      <legend className="text-base font-semibold text-slate-800 px-2 -mb-2">
+    <fieldset className="mb-4 p-4 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 space-y-4">
+      <legend className="text-base font-semibold text-slate-800 dark:text-slate-100 px-2 -mb-2">
         {mainFieldLabel}
         {required && <span className="text-red-500 ml-1">*</span>}
       </legend>
 
       <div className='mt-2'> {/* Added mt-2 for spacing from legend */} 
-        <label className='block text-sm font-medium text-slate-600 mb-1'>{uiOptions.quickSelectLabel || 'Quick Select:'}</label>
+        <label className='block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1'>{uiOptions.quickSelectLabel || 'Quick Select:'}</label>
         <QuickSelectButtons
           options={commonDataList.map(opt => ({ value: opt.value, label: opt.label }))} // Adapt to QuickSelectOption if needed
           selectedValues={value.map(item => item.value)}
@@ -99,7 +99,7 @@ const AutocompleteTagSelectorWidget: React.FC<AutocompleteTagSelectorWidgetProps
       </div>
 
       <div>
-        <label className='block text-sm font-medium text-slate-600 mb-1'>{uiOptions.selectedLabel || 'Selected:'}</label>
+        <label className='block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1'>{uiOptions.selectedLabel || 'Selected:'}</label>
         <SelectedItemTags
           items={value} // SelectedItemTags expects SelectedDiagnosis[] which should be compatible with SelectedItemType
           onRemove={handleTagRemove}

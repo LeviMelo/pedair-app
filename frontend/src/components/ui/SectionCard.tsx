@@ -10,9 +10,14 @@ interface SectionCardProps {
 const SectionCard: React.FC<SectionCardProps> = ({ title, children, className = '' }) => {
   return (
     // Combine base classes with any additional classes passed via props
-    <section className={`bg-white p-6 rounded-lg shadow-md mb-6 ${className}`}>
+    <section className={`p-6 rounded-lg mb-6 
+                       bg-white dark:bg-slate-800 
+                       shadow-md dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] 
+                       ${className}`}>
       {/* Card Header */}
-      <h2 className="text-xl font-semibold text-slate-800 border-b border-slate-300 pb-2 mb-4">
+      <h2 className="text-xl font-semibold pb-2 mb-4 
+                     text-slate-800 dark:text-slate-100 
+                     border-b border-slate-300 dark:border-slate-700">
         {title} {/* Display the title passed via props */}
       </h2>
       {/* Card Body */}

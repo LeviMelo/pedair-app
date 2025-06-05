@@ -84,14 +84,14 @@ const Layout: React.FC = () => {
         ref={sidebarRef}
         className={`transition-all duration-300 ease-in-out bg-white dark:bg-slate-800 flex flex-col print:hidden 
                     ${isSidebarCollapsed ? 'w-16' : 'w-64'}
-                    border-r border-slate-200 dark:border-slate-700/80 
+                    border-r border-slate-200 dark:border-slate-700/80 dark:shadow-[2px_0_8px_-1px_rgba(0,0,0,0.1)]
                   `}
       >
         <div className={`h-16 flex items-center shrink-0 px-4 border-b border-slate-200 dark:border-slate-700/80 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isSidebarCollapsed && <span className="text-2xl font-bold text-blue-600 dark:text-blue-500">PedAir</span>}
           <button 
             onClick={toggleSidebar} 
-            className="p-1 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200/70 dark:hover:bg-slate-700/50 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
+            className="p-0.5 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200/70 dark:hover:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
             aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isSidebarCollapsed ? <PiMenuIcon size={22} /> : <PiCaretLeftDuotone size={22} /> }
@@ -114,7 +114,7 @@ const Layout: React.FC = () => {
                               ${location.pathname === item.path ? 'bg-slate-100 dark:bg-slate-700 text-blue-600 dark:text-blue-400 font-semibold' : 'font-medium'}
                             `}
                 >
-                  <item.icon size={isSidebarCollapsed ? 20 : 18} className={`transition-all duration-200 group-hover:scale-105 shrink-0 ${!isSidebarCollapsed ? 'mr-2.5' : 'mr-0'}`} />
+                  <item.icon size={isSidebarCollapsed ? 21 : 18} className={`transition-all duration-200 group-hover:scale-105 shrink-0 ${!isSidebarCollapsed ? 'mr-2.5' : 'mr-0'}`} />
                   <span 
                     className={`whitespace-nowrap transition-all duration-200 overflow-hidden 
                                 ${isSidebarCollapsed ? 'opacity-0 w-0 ml-0' : 'opacity-100 w-auto ml-2.5 delay-100'}`}>
@@ -152,7 +152,7 @@ const Layout: React.FC = () => {
                           ${isSidebarCollapsed ? 'justify-center' : ''}`}
               title={btn.title}
             >
-              <btn.icon size={isSidebarCollapsed ? 20 : 16} className={`group-hover:scale-105 transition-transform shrink-0 ${!isSidebarCollapsed ? 'mr-2.5' : 'mr-0'}`} />
+              <btn.icon size={isSidebarCollapsed ? 18 : 16} className={`transition-all duration-200 group-hover:scale-105 shrink-0 ${!isSidebarCollapsed ? 'mr-2.5' : 'mr-0'}`} />
               <span 
                 className={`whitespace-nowrap transition-all duration-200 overflow-hidden 
                             ${isSidebarCollapsed ? 'opacity-0 w-0 ml-0' : 'opacity-100 w-auto ml-2.5 delay-100'}`}>
@@ -165,7 +165,7 @@ const Layout: React.FC = () => {
 
       {/* Main content area */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 flex items-center justify-between bg-white dark:bg-slate-800 shadow-sm dark:shadow-none p-4 border-b border-slate-200 dark:border-slate-700/80 print:hidden">
+        <header className="h-16 flex items-center justify-between bg-white dark:bg-slate-800 shadow-sm dark:shadow-none dark:border-b dark:border-slate-700/80 dark:shadow-[0_2px_8px_-1px_rgba(0,0,0,0.1)] p-4 print:hidden">
             <h1 className="text-lg font-semibold text-slate-700 dark:text-slate-100 truncate">{pageTitle}</h1>
             <div className="flex items-center space-x-3">
                 <button className="p-1.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="Notifications">

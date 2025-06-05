@@ -27,7 +27,7 @@ const CheckboxGroupField: React.FC<CheckboxGroupFieldProps> = ({
 }) => {
   return (
     <fieldset className={`mb-4 ${className}`}>
-      <legend className="block text-sm font-medium text-slate-700 mb-2">{label}</legend>
+      <legend className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">{label}</legend>
       {/* Use CSS Grid with auto-fit for dynamic columns */}
       {/* Adjust minmax(200px, 1fr) as needed for desired minimum item width */}
       <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-x-4 gap-y-2">
@@ -45,9 +45,9 @@ const CheckboxGroupField: React.FC<CheckboxGroupFieldProps> = ({
                 value={option.value}
                 checked={isChecked}
                 onChange={() => onChange(option.value)}
-                className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 focus:ring-offset-0 flex-shrink-0"
+                className="h-4 w-4 text-blue-600 dark:text-blue-500 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 focus:ring-offset-0 dark:focus:ring-offset-slate-800 flex-shrink-0"
               />
-              <label htmlFor={fieldId} className="ml-2 block text-sm text-slate-900 break-words cursor-pointer">
+              <label htmlFor={fieldId} className="ml-2 block text-sm text-slate-900 dark:text-slate-300 break-words cursor-pointer">
                 {option.label}
               </label>
             </div>

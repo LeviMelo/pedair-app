@@ -81,17 +81,14 @@ const DrugInputField: React.FC<DrugInputFieldProps> = ({
    };
 
    const handleBlur = () => {
-       // Small delay allows click on stepper buttons without triggering blur first
        setTimeout(() => {
-           // Check if focus is still within the component (e.g., on stepper buttons)
-           // This is complex, simpler approach is often just to finish editing on blur
             finishEditing();
-       }, 100); // Adjust delay if needed
+       }, 100);
    };
 
 
   return (
-    <div className={`border rounded-md ${isSelected ? 'bg-blue-50 border-blue-300 shadow-sm' : 'bg-white border-slate-200'} transition-all duration-150 overflow-hidden`}>
+    <div className={`border rounded-md ${isSelected ? 'bg-blue-50 dark:bg-slate-750 border-blue-300 dark:border-blue-500 shadow-sm' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600'} transition-all duration-150 overflow-hidden`}>
        <div className="flex">
             <div className={`w-1.5 flex-shrink-0 ${colorClass}`}></div>
             <div className="p-3 flex-grow min-w-0"> {/* Added min-w-0 for flex constraints */}
@@ -99,17 +96,17 @@ const DrugInputField: React.FC<DrugInputFieldProps> = ({
                      <div className="flex items-center mr-2 min-w-0"> {/* Added min-w-0 */}
                          <input
                              id={checkboxId} type="checkbox" checked={isSelected} onChange={onSelectToggle}
-                             className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 focus:ring-offset-0 mr-2 flex-shrink-0"
+                             className="h-4 w-4 text-blue-600 dark:text-blue-500 border-slate-300 dark:border-slate-500 rounded focus:ring-blue-500 dark:focus:ring-blue-600 focus:ring-offset-0 dark:focus:ring-offset-slate-800 mr-2 flex-shrink-0"
                          />
-                         <label htmlFor={checkboxId} className="font-medium text-sm text-slate-800 cursor-pointer break-words truncate"> {/* Added truncate */}
+                         <label htmlFor={checkboxId} className="font-medium text-sm text-slate-800 dark:text-slate-100 cursor-pointer break-words truncate"> {/* Added truncate */}
                              {drugName}
                          </label>
                      </div>
                      {/* Display Value OR Unit when not editing */}
-                     <div className="text-xs text-slate-600 font-medium flex-shrink-0 ml-2">
+                     <div className="text-xs text-slate-600 dark:text-slate-400 font-medium flex-shrink-0 ml-2">
                         {isSelected && !isEditing && value ? (
                             // Show value when selected, not editing, and value exists
-                            <span className='px-1.5 py-0.5 bg-slate-200 rounded'>{value} {unit}</span>
+                            <span className='px-1.5 py-0.5 bg-slate-200 dark:bg-slate-600 dark:text-slate-200 rounded'>{value} {unit}</span>
                         ) : (
                              // Otherwise show only the unit
                             <span className='italic'>{unit}</span>

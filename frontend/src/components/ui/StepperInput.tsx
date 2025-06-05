@@ -20,7 +20,7 @@ const StepperInput: React.FC<StepperInputProps> = ({
     id,
     label,
     // Default label class, apply prop if provided
-    labelClassName = "block text-sm font-medium text-slate-700 mb-1",
+    labelClassName = "block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1",
     value,
     onChange,
     min = 0,
@@ -62,19 +62,19 @@ const StepperInput: React.FC<StepperInputProps> = ({
             <div className="flex items-center mt-1">
                 <button
                     type="button" onClick={handleDecrement} disabled={value <= min}
-                    className="px-2.5 py-1 border border-slate-300 rounded-l-md bg-slate-50 hover:bg-slate-100 disabled:opacity-50 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="px-2.5 py-1 border border-slate-300 dark:border-slate-500 rounded-l-md bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 disabled:opacity-50 dark:disabled:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-500"
                     aria-label="Diminuir"
                 > - </button>
                 <input
                     type="text" id={id} value={value} onChange={handleInputChange}
                     onKeyDown={onInputKeyDown} // Pass down
                     onBlur={onInputBlur}       // Pass down
-                    className="w-12 px-2 py-1 border-t border-b border-slate-300 text-center text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-12 px-2 py-1 border-t border-b border-slate-300 dark:border-slate-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 text-center text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-500"
                     inputMode="numeric" pattern="[0-9]*"
                 />
                 <button
                     type="button" onClick={handleIncrement} disabled={value >= max}
-                    className="px-2.5 py-1 border border-slate-300 rounded-r-md bg-slate-50 hover:bg-slate-100 disabled:opacity-50 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="px-2.5 py-1 border border-slate-300 dark:border-slate-500 rounded-r-md bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 disabled:opacity-50 dark:disabled:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-500"
                     aria-label="Aumentar"
                 > + </button>
             </div>
