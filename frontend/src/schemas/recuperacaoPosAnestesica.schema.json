@@ -1,0 +1,50 @@
+{
+  "title": "Recuperação Pós-Anestésica",
+  "description": "Schema for the Post-Anesthetic Recovery form.",
+  "type": "object",
+  "properties": {
+    "tempoRecuperacao": {
+      "type": ["string", "null"],
+      "title": "Tempo de Recuperação (Aldrette > 9)",
+      "enum": [null, "ate_30", "ate_45", "entre_45_60", "mais_60"],
+      "enumNames": ["Selecione...", "Até 30 minutos", "Até 45 minutos", "Entre 45-60 minutos", "> 60 minutos"]
+    },
+    "nivelDessaturacaoPos": {
+      "type": ["string", "null"],
+      "title": "Nível de Dessaturação (se ocorrido)",
+      "enum": [null, "dessaturacao_85_92", "dessaturacao_75_85", "dessaturacao_lt_70"],
+      "enumNames": ["Nenhum", "Dessaturação (85-92%)", "Dessaturação (75-85%)", "Dessaturação (<70%)"]
+    },
+    "outrasQueixasPos": {
+      "type": "array",
+      "title": "Outras Ocorrências/Queixas",
+      "items": {
+        "type": "string",
+        "enum": [
+          "broncoespasmo",
+          "laringoespasmo",
+          "sangramento",
+          "tosse",
+          "dor",
+          "vomitos",
+          "prurido",
+          "sialorreia"
+        ],
+        "enumNames": [
+          "Broncoespasmo",
+          "Laringoespasmo",
+          "Sangramento",
+          "Tosse",
+          "Dor",
+          "Vômitos",
+          "Prurido",
+          "Sialorreia"
+        ]
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "tempoRecuperacao"
+  ]
+} 

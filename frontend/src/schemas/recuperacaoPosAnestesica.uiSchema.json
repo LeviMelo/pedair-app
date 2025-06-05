@@ -1,0 +1,14 @@
+{
+  "tempoRecuperacao": {
+    "ui:widget": "RadioButtonGroupField",
+    "ui:options": {
+      "required": true
+    }
+  },
+  "nivelDessaturacaoPos": {
+    "ui:widget": "RadioButtonGroupField"
+  },
+  "outrasQueixasPos": {
+    "ui:widget": "CheckboxGroupField"
+  }
+} 

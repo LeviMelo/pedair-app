@@ -1,0 +1,55 @@
+{
+  "idade": {
+    "ui:widget": "InputFieldWidget",
+    "ui:options": {
+      "inputType": "number",
+      "placeholder": "Ex: 3"
+    }
+  },
+  "peso": {
+    "ui:widget": "InputFieldWidget",
+    "ui:options": {
+      "inputType": "number",
+      "placeholder": "Ex: 14.5"
+    }
+  },
+  "sexo": {
+    "ui:widget": "SelectFieldWidget",
+    "ui:options": {
+      "placeholder": "Selecione..."
+    }
+  },
+  "diagnosticos": {
+    "ui:widget": "AutocompleteTagSelectorWidget",
+    "ui:options": {
+      "placeholder": "Digite nome ou código ICD...",
+      "commonOptionsKey": "commonDiagnoses",
+      "allOptionsKey": "allDiagnosesSample",
+      "quickSelectLabel": "Comuns:",
+      "searchLabel": "Buscar Outro Diagnóstico (Simulado):",
+      "selectedLabel": "Selecionados:"
+    }
+  },
+  "comorbidades": {
+    "ui:widget": "AutocompleteTagSelectorWidget",
+    "ui:options": {
+      "placeholder": "Digite para buscar...",
+      "commonOptionsKey": "commonComorbidades",
+      "allOptionsKey": "allComorbidadesSample",
+      "quickSelectLabel": "Comuns:",
+      "searchLabel": "Buscar Outra Comorbidade (Simulada):",
+      "selectedLabel": "Selecionadas:"
+    }
+  },
+  "queixas": {
+    "ui:widget": "AutocompleteTagSelectorWidget",
+    "ui:options": {
+      "placeholder": "Digite para buscar...",
+      "commonOptionsKey": "commonQueixas",
+      "allOptionsKey": "allQueixasSample",
+      "quickSelectLabel": "Comuns:",
+      "searchLabel": "Buscar Outra Queixa (Simulada):",
+      "selectedLabel": "Selecionadas:"
+    }
+  }
+} 

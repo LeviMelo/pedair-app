@@ -1,0 +1,66 @@
+{
+  "title": "Avaliação Pré-Anestésica",
+  "description": "Schema for the Pre-Anesthetic Assessment form.",
+  "type": "object",
+  "properties": {
+    "idade": {
+      "type": "number",
+      "title": "Idade"
+    },
+    "peso": {
+      "type": "number",
+      "title": "Peso (kg)"
+    },
+    "sexo": {
+      "type": "string",
+      "title": "Sexo",
+      "enum": [null, "F", "M"],
+      "enumNames": ["Selecione...", "Feminino", "Masculino"]
+    },
+    "diagnosticos": {
+      "type": "array",
+      "title": "Diagnóstico(s)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": { "type": "string" },
+          "label": { "type": "string" },
+          "icd10": { "type": "string" }
+        },
+        "required": ["value", "label"]
+      },
+      "uniqueItems": true
+    },
+    "comorbidades": {
+      "type": "array",
+      "title": "Comorbidade(s)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": { "type": "string" },
+          "label": { "type": "string" }
+        },
+        "required": ["value", "label"]
+      },
+      "uniqueItems": true
+    },
+    "queixas": {
+      "type": "array",
+      "title": "Queixa(s)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": { "type": "string" },
+          "label": { "type": "string" }
+        },
+        "required": ["value", "label"]
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "idade",
+    "peso",
+    "sexo"
+  ]
+} 
