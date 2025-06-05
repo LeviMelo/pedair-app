@@ -78,11 +78,11 @@ const Layout: React.FC = () => {
   const isAuthenticated = true; // Replace with actual auth logic later
 
   return (
-    <div className={`flex h-screen bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-300 transition-colors duration-300`}>
+    <div className={`flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-300 transition-colors duration-300`}>
       {/* Sidebar */}
       <aside 
         ref={sidebarRef}
-        className={`transition-all duration-300 ease-in-out bg-white dark:bg-slate-850 flex flex-col print:hidden 
+        className={`transition-all duration-300 ease-in-out bg-white dark:bg-slate-800 flex flex-col print:hidden 
                     ${isSidebarCollapsed ? 'w-16' : 'w-64'}
                     border-r border-slate-200 dark:border-slate-700/80 
                   `}
@@ -105,7 +105,7 @@ const Layout: React.FC = () => {
                 <Link 
                   to={item.path} 
                   title={item.label}
-                  className={`flex items-center h-10 px-2.5 text-sm font-medium rounded-md 
+                  className={`flex items-center h-10 px-2.5 text-sm rounded-md 
                               text-slate-600 dark:text-slate-300 
                               hover:bg-slate-100 dark:hover:bg-slate-700 
                               hover:text-blue-600 dark:hover:text-blue-400 
@@ -115,7 +115,11 @@ const Layout: React.FC = () => {
                             `}
                 >
                   <item.icon size={isSidebarCollapsed ? 20 : 18} className={`transition-all duration-200 group-hover:scale-105 shrink-0 ${!isSidebarCollapsed ? 'mr-2.5' : 'mr-0'}`} />
-                  <span className={`whitespace-nowrap transition-opacity duration-200 ${isSidebarCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 delay-100'}`}>{item.label}</span>
+                  <span 
+                    className={`whitespace-nowrap transition-all duration-200 overflow-hidden 
+                                ${isSidebarCollapsed ? 'opacity-0 w-0 ml-0' : 'opacity-100 w-auto ml-2.5 delay-100'}`}>
+                    {item.label}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -149,7 +153,11 @@ const Layout: React.FC = () => {
               title={btn.title}
             >
               <btn.icon size={isSidebarCollapsed ? 20 : 16} className={`group-hover:scale-105 transition-transform shrink-0 ${!isSidebarCollapsed ? 'mr-2.5' : 'mr-0'}`} />
-              <span className={`whitespace-nowrap transition-opacity duration-200 ${isSidebarCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 delay-100'}`}>{btn.label}</span>
+              <span 
+                className={`whitespace-nowrap transition-all duration-200 overflow-hidden 
+                            ${isSidebarCollapsed ? 'opacity-0 w-0 ml-0' : 'opacity-100 w-auto ml-2.5 delay-100'}`}>
+                {btn.label}
+              </span>
             </button>
           ))}
         </div>
@@ -157,7 +165,7 @@ const Layout: React.FC = () => {
 
       {/* Main content area */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 flex items-center justify-between bg-white dark:bg-slate-850 shadow-sm dark:shadow-none p-4 border-b border-slate-200 dark:border-slate-700/80 print:hidden">
+        <header className="h-16 flex items-center justify-between bg-white dark:bg-slate-800 shadow-sm dark:shadow-none p-4 border-b border-slate-200 dark:border-slate-700/80 print:hidden">
             <h1 className="text-lg font-semibold text-slate-700 dark:text-slate-100 truncate">{pageTitle}</h1>
             <div className="flex items-center space-x-3">
                 <button className="p-1.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="Notifications">
