@@ -3,7 +3,7 @@ import DynamicFormRenderer from '../components/forms/DynamicFormRenderer';
 import InputField from '../components/ui/InputField';
 import SectionCard from '../components/ui/SectionCard';
 import Button from '../components/ui/Button';
-import { FaSpinner, FaExclamationTriangle, FaArrowLeft, FaArrowRight, FaSave, FaPaperPlane, FaUndo, FaPlay, FaRedoAlt, FaUserEdit, FaClipboardCheck, FaEye, FaFileMedical, FaCheckCircle, FaEllipsisH } from 'react-icons/fa';
+import { FaSpinner, FaExclamationTriangle, FaArrowLeft, FaArrowRight, FaSave, FaPaperPlane, FaUndo, FaRedoAlt, FaUserEdit, FaEye, FaFileMedical, FaCheckCircle, FaEllipsisH } from 'react-icons/fa';
 import useSubmissionStore, { PatientInputData, FormDefinition, clearPersistedSubmission } from '../stores/submissionStore';
 
 // --- Interfaces & Mock Data (some might be redundant if store types are comprehensive) ---
@@ -237,7 +237,7 @@ const DataSubmissionPage: React.FC = () => {
       setCurrentFormSchema(loadedSchema);
       setCurrentFormUiSchema(loadedUiSchema);
 
-      let initialDataForCurrentForm = allDataFromStore[formDef.key] || {};
+      const initialDataForCurrentForm = allDataFromStore[formDef.key] || {};
       if (Object.keys(initialDataForCurrentForm).length === 0 && loadedSchema?.properties) {
          Object.keys(loadedSchema.properties).forEach(key => {
           const property = loadedSchema.properties[key];
@@ -303,7 +303,7 @@ const DataSubmissionPage: React.FC = () => {
       setErrorMessage("Failed to load the sequence of forms for submission.");
       setCurrentProcessStep('submissionError');
     }
-  }, [localPatientInput, startNewEncounter, storeFormSequence.length]);
+  }, [localPatientInput, startNewEncounter, storeFormSequence.length, updatePatientData]);
 
 
   // Effect to trigger form loading when the target form index or sequence changes in the store.

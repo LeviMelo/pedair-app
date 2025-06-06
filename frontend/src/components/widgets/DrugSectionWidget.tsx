@@ -39,17 +39,21 @@ const DrugSectionWidget: React.FC<DrugSectionWidgetProps> = ({
   }
 
   const handleDrugSelectToggle = (drugId: string) => {
-    const newSelectedDrugs = { ...currentSelectedDrugs, [drugId]: !currentSelectedDrugs[drugId] };
-    let newDrugValues = { ...currentDrugValues };
+    const newSelectedDrugs = {
+      ...value.selectedDrugs,
+      [drugId]: !value.selectedDrugs[drugId]
+    };
 
-    if (!newSelectedDrugs[drugId]) { // If drug is deselected
-      // delete newDrugValues[drugId]; // Remove value if drug is deselected
-      // It might be better to keep the value but let UI handle display, 
-      // or clear it explicitly: newDrugValues[drugId] = ''; 
-      // For now, let's clear it (or set to null based on schema requirements)
-      newDrugValues[drugId] = ''; 
+    const newDrugValues = { ...value.drugValues };
+    if (!newSelectedDrugs[drugId]) {
+      // Remove value if drug is deselected
+      delete newDrugValues[drugId];
     }
-    onChange({ selectedDrugs: newSelectedDrugs, drugValues: newDrugValues });
+
+    onChange({
+      selectedDrugs: newSelectedDrugs,
+      drugValues: newDrugValues
+    });
   };
 
   const handleDrugValueChange = (drugId: string, newValue: string | number) => {

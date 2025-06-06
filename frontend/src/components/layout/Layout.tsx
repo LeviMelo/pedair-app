@@ -16,14 +16,14 @@ import {
   PiMoonDuotone,
   PiSignOutDuotone,
   PiHouseDuotone,
-  PiUserCircleDuotone,
   PiCompassDuotone,
   PiEyeDuotone,
   PiChartBarDuotone,
   PiChatCircleDuotone,
   PiGearSixDuotone,
   PiEyeSlashDuotone,
-  PiCaretDoubleLeftDuotone
+  PiCaretDoubleLeftDuotone,
+  PiCaretDoubleRightDuotone
 } from 'react-icons/pi';
 import useAuthStore, { mockLogin, mockLogout } from '../../stores/authStore';
 import useProjectStore from '../../stores/projectStore';
@@ -128,17 +128,18 @@ const Layout: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const cycleSidebarState = () => {
+  const toggleSidebar = () => {
     setSidebarState(prev => {
       switch (prev) {
         case 'hidden': return 'collapsed';
         case 'collapsed': return 'full';
-        case 'full': return 'hidden';
+        case 'full': return 'collapsed';
         default: return 'full';
       }
     });
   };
 
+  const expandSidebar = () => setSidebarState('full');
   const collapseSidebar = () => setSidebarState('collapsed');
   const hideSidebar = () => setSidebarState('hidden');
   const showSidebar = () => setSidebarState('full');
@@ -260,7 +261,7 @@ const Layout: React.FC = () => {
     }
   };
 
-  const renderLightSwitchButton = () => {
+  const renderSidebarToggle = () => {
     if (sidebarState === 'full') {
       return (
         <div className="p-4 border-t border-slate-200/60 dark:border-slate-700/60">
@@ -297,13 +298,25 @@ const Layout: React.FC = () => {
       );
     } else if (sidebarState === 'collapsed') {
       return (
-        <div className="p-4 border-t border-slate-200/60 dark:border-slate-700/60">
+        <div className="p-4 border-t border-slate-200/60 dark:border-slate-700/60 space-y-2">
+          {/* Expand Button */}
+          <button
+            onClick={expandSidebar}
+            className="w-full relative group flex items-center justify-center p-3 rounded-xl transition-all duration-300 overflow-hidden"
+            title="Expand sidebar"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <PiCaretDoubleRightDuotone className="w-5 h-5 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
+          </button>
+          
+          {/* Hide Button */}
           <button
             onClick={hideSidebar}
             className="w-full relative group flex items-center justify-center p-3 rounded-xl transition-all duration-300 overflow-hidden"
             title="Hide sidebar"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-red-500 via-pink-500 to-purple-500 opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
             <PiEyeSlashDuotone className="w-5 h-5 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
           </button>
@@ -316,27 +329,51 @@ const Layout: React.FC = () => {
   const sidebarWidth = getSidebarWidth();
   const contentPadding = getContentPadding();
 
+  const getLogoContent = () => {
+    if (window.innerWidth < 640) {
+      // Mobile: Icon only
+      return (
+        <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 shadow-lg">
+          <PiCompassDuotone className="w-6 h-6 text-white" />
+        </div>
+      );
+    } else if (window.innerWidth < 1024) {
+      // Tablet: Icon + Name
+      return (
+        <div className="flex items-center space-x-3">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 shadow-lg">
+            <PiCompassDuotone className="w-6 h-6 text-white" />
+          </div>
+          <h1 className="text-xl font-bold text-gradient">CREST</h1>
+        </div>
+      );
+    } else {
+      // Desktop: Icon + Name + Subtitle
+      return (
+        <div className="flex items-center space-x-3">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 shadow-lg">
+            <PiCompassDuotone className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gradient">CREST</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Clinical Research Tool</p>
+          </div>
+        </div>
+      );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-purple-50/40 dark:from-slate-900 dark:via-indigo-950/50 dark:to-slate-900">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 ${sidebarWidth} transform bg-gradient-to-b from-white via-slate-50/80 to-white dark:from-slate-800 dark:via-slate-900/90 dark:to-slate-800 backdrop-blur-xl border-r-2 border-slate-200/60 dark:border-slate-700/60 shadow-xl dark:shadow-slate-900/20 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : sidebarState === 'hidden' ? '-translate-x-full' : 'translate-x-0'} lg:translate-x-0 ${sidebarState === 'hidden' ? 'lg:-translate-x-full' : ''} overflow-hidden`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 ${sidebarWidth} transform bg-gradient-to-b from-white via-slate-50/80 to-white dark:from-slate-800 dark:via-slate-900/90 dark:to-slate-800 backdrop-blur-xl border-r-2 border-slate-200/60 dark:border-slate-700/60 shadow-xl dark:shadow-slate-900/20 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : sidebarState === 'hidden' ? '-translate-x-full' : 'translate-x-0'} lg:translate-x-0 ${sidebarState === 'hidden' ? 'lg:-translate-x-full' : ''} overflow-hidden`}>
         
-        {/* Logo/Brand Header - Simple, no interaction */}
-        <div className={`flex items-center justify-between p-6 border-b-2 border-slate-200/60 dark:border-slate-700/60 bg-gradient-to-r from-blue-50/50 via-white to-purple-50/50 dark:from-slate-800/50 dark:via-slate-700/50 dark:to-slate-800/50 sidebar-header-height`}>
-          <Link to="/" className={`flex items-center ${sidebarState === 'collapsed' ? 'justify-center' : 'space-x-3'} group`}>
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-              <PiCompassDuotone className="w-7 h-7 text-white" />
-            </div>
-            {sidebarState === 'full' && (
-              <div>
-                <h1 className="text-xl font-bold text-gradient">CREST</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium hidden xl:block">Clinical Research Tool</p>
-              </div>
-            )}
-          </Link>
+        {/* Mobile Header - Close Button */}
+        <div className={`flex items-center justify-between p-4 border-b-2 border-slate-200/60 dark:border-slate-700/60 lg:hidden sidebar-header-height`}>
+          <span className="text-lg font-semibold text-slate-800 dark:text-slate-200">Menu</span>
           <button
             onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
           >
             <PiCaretLeftDuotone className="w-5 h-5 text-slate-600 dark:text-slate-400" />
           </button>
@@ -452,8 +489,8 @@ const Layout: React.FC = () => {
           )}
         </nav>
 
-        {/* Light Switch Toggle Button */}
-        {renderLightSwitchButton()}
+        {/* Sidebar Toggle Controls */}
+        {renderSidebarToggle()}
       </aside>
 
       {/* Floating show button when hidden */}
@@ -471,17 +508,22 @@ const Layout: React.FC = () => {
 
       {/* Main Content */}
       <div className={contentPadding}>
-        {/* Fixed Topbar Structure */}
-        <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-700/60 shadow-sm header-height">
+        {/* Fixed Topbar - Superimposed over sidebar */}
+        <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-700/60 shadow-sm header-height">
           <div className="flex items-center h-full px-6">
-            {/* Left: Mobile menu button */}
-            <div className="flex-shrink-0 lg:hidden">
+            {/* Left: Mobile menu button + Logo */}
+            <div className="flex items-center space-x-4 flex-shrink-0">
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-800/30 hover:shadow-md transition-all duration-200"
+                className="lg:hidden p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-800/30 hover:shadow-md transition-all duration-200"
               >
                 <PiMenuIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               </button>
+              
+              {/* Logo - Responsive */}
+              <Link to="/" className="hidden lg:flex group hover:scale-105 transition-transform duration-200">
+                {getLogoContent()}
+              </Link>
             </div>
 
             {/* Center: Scrollable Context Navigation */}
@@ -502,6 +544,21 @@ const Layout: React.FC = () => {
 
             {/* Right: Fixed User Controls */}
             <div className="flex items-center space-x-2 flex-shrink-0">
+              {/* Sidebar Toggle for Desktop */}
+              <button
+                onClick={toggleSidebar}
+                className="hidden lg:flex p-3 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 border border-slate-200/50 dark:border-slate-700/30 hover:shadow-lg transition-all duration-200 hover:scale-105"
+                title="Toggle sidebar"
+              >
+                {sidebarState === 'full' ? (
+                  <PiCaretDoubleLeftDuotone className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                ) : sidebarState === 'collapsed' ? (
+                  <PiCaretDoubleRightDuotone className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                ) : (
+                  <PiCaretRightDuotone className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                )}
+              </button>
+
               {/* Theme toggle */}
               <button
                 onClick={toggleDarkMode}
@@ -573,8 +630,8 @@ const Layout: React.FC = () => {
           </div>
         </header>
 
-        {/* Main content area */}
-        <main className="min-h-screen bg-gradient-to-br from-slate-50/50 via-blue-50/30 to-purple-50/50 dark:from-slate-900/50 dark:via-indigo-950/30 dark:to-slate-900/50">
+        {/* Main content area - with top padding for fixed header */}
+        <main className="pt-[72px] min-h-screen bg-gradient-to-br from-slate-50/50 via-blue-50/30 to-purple-50/50 dark:from-slate-900/50 dark:via-indigo-950/30 dark:to-slate-900/50">
           <div className="animation-fade-in">
             <Outlet />
           </div>
@@ -584,7 +641,7 @@ const Layout: React.FC = () => {
       {/* Mobile overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-30 bg-slate-900/50 backdrop-blur-sm lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}

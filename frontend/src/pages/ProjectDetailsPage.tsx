@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useProjectStore, { Project } from '../stores/projectStore';
+// import useAuthStore from '../stores/authStore';
 import {
   PiArrowLeftDuotone, PiUsersDuotone, PiUserCirclePlusDuotone, 
   PiFileTextDuotone, PiChartLineUpDuotone, PiChatDotsDuotone, PiGearDuotone,
   PiClipboardTextDuotone, PiArchiveDuotone, PiHourglassDuotone, PiMegaphoneDuotone,
-  PiFlagDuotone
+  PiFlagDuotone, PiBriefcaseDuotone, PiCalendarDuotone
 } from 'react-icons/pi';
 import Button from '../components/ui/Button';
 import DashboardGreetingCard from '../components/ui/DashboardGreetingCard'; // For inspiration, not direct use here yet

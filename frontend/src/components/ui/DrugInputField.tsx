@@ -1,7 +1,5 @@
 // frontend/src/components/ui/DrugInputField.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import InputField from './InputField';
-import StepperInput from './StepperInput'; // Ensure this path is correct
 
 interface DrugInputFieldProps {
   drugName: string;
