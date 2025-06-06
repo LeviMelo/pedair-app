@@ -689,6 +689,7 @@ const DataSubmissionPage: React.FC = () => {
           Clear Persisted Encounter Data (Dev Only)
         </Button>
       </div>
+      </div>
     </div>
   );
 };

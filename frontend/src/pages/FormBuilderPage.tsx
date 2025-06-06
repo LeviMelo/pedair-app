@@ -145,6 +145,8 @@ const FormBuilderPage: React.FC = () => {
         </div>
       </div>
     </div>
+    </div>
+  </div>
   );
 };
 
