@@ -11,25 +11,22 @@ import {
   PiList as PiMenuIcon,
   PiCaretLeftDuotone,
   PiCaretDownDuotone,
+  PiCaretRightDuotone,
   PiSunDuotone,
   PiMoonDuotone,
-  PiSignInDuotone,
   PiSignOutDuotone,
-  PiPlusCircleDuotone,
-  PiFilePlusDuotone,
-  PiArchiveDuotone,
-  PiPlayCircleDuotone,
   PiHouseDuotone,
-  PiFloppyDiskDuotone,
-  PiUserPlusDuotone,
-  PiTextAaDuotone,
   PiUserCircleDuotone,
-  PiCompassDuotone
+  PiCompassDuotone,
+  PiEyeDuotone,
+  PiChartBarDuotone,
+  PiChatCircleDuotone,
+  PiGearSixDuotone,
+  PiEyeSlashDuotone,
+  PiCaretDoubleLeftDuotone
 } from 'react-icons/pi';
 import useAuthStore, { mockLogin, mockLogout } from '../../stores/authStore';
 import useProjectStore from '../../stores/projectStore';
-import useSubmissionStore, { PatientInputData } from '../../stores/submissionStore';
-import Button from '../ui/Button';
 
 const baseNavItems = [
   { id: 'dashboard', path: '/', label: 'Dashboard', icon: PiGaugeDuotone },
@@ -45,36 +42,17 @@ const projectNavItems = [
   { id: "scheduler", path: "/notifications", label: "Notifications", icon: PiBellDuotone, requiredRoles: ["ProjectLead", "Coordinator"] },
 ];
 
-const getPageTitle = (pathname: string, activeProjectName?: string | null, activeProjectId?: string | null) => {
-  if (pathname === '/') return 'Dashboard';
-  if (pathname === '/settings') return 'Settings';
-  if (pathname.startsWith('/dashboard/create-project')) return 'Create New Project';
-  
-  if (activeProjectId && activeProjectName) {
-    if (pathname === `/project/${activeProjectId}`) {
-      return `Project Overview - ${activeProjectName}`;
-    }
-    const projectNavItem = projectNavItems.slice(1).find(item => pathname === `/project/${activeProjectId}${item.path}`);
-    if (projectNavItem) {
-      return `${projectNavItem.label} - ${activeProjectName}`;
-    }
-  }
-
-  if (pathname.startsWith('/test/')) {
-    const testName = pathname.split('/').pop();
-    return `Test: ${testName?.charAt(0).toUpperCase()}${testName?.slice(1).replace(/([A-Z])/g, ' $1').trim() || 'Form'}`;
-  }
-  return activeProjectName ? `Project: ${activeProjectName}` : 'CREST Application';
-};
+// Sidebar state enum
+type SidebarState = 'hidden' | 'collapsed' | 'full';
 
 const Layout: React.FC = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedMode = localStorage.getItem('darkMode');
     return savedMode ? JSON.parse(savedMode) : window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarState, setSidebarState] = useState<SidebarState>('full');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const location = useLocation();
@@ -86,13 +64,9 @@ const Layout: React.FC = () => {
     activeProjectId, 
     activeProjectDetails, 
     fetchAvailableProjects, 
-    setActiveProject,
-    clearActiveProject 
+    setActiveProject
   } = useProjectStore();
-  const { patientData: submissionPatientData, startNewEncounter } = useSubmissionStore();
 
-  const pageTitle = getPageTitle(location.pathname, activeProjectDetails?.name, activeProjectId);
-  const sidebarRef = useRef<HTMLElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -108,7 +82,9 @@ const Layout: React.FC = () => {
   useEffect(() => {
     const checkScreenSize = () => {
       if (window.innerWidth < 768) {
-        setIsSidebarCollapsed(true);
+        setSidebarState('collapsed');
+      } else if (window.innerWidth < 1024) {
+        setSidebarState('collapsed');
       }
     };
     checkScreenSize();
@@ -152,7 +128,21 @@ const Layout: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
+  const cycleSidebarState = () => {
+    setSidebarState(prev => {
+      switch (prev) {
+        case 'hidden': return 'collapsed';
+        case 'collapsed': return 'full';
+        case 'full': return 'hidden';
+        default: return 'full';
+      }
+    });
+  };
+
+  const collapseSidebar = () => setSidebarState('collapsed');
+  const hideSidebar = () => setSidebarState('hidden');
+  const showSidebar = () => setSidebarState('full');
+
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
     if (!isDarkMode) {
@@ -201,182 +191,40 @@ const Layout: React.FC = () => {
     };
   }).filter(item => item.visible) : [];
 
-  const sidebarBottomActions = [
-    {
-      label: isDarkMode ? 'Light Mode' : 'Dark Mode',
-      icon: isDarkMode ? <PiSunDuotone /> : <PiMoonDuotone />,
-      action: toggleDarkMode,
-      title: isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
-    },
-    {
-      label: isAuthenticated ? 'Sign Out' : 'Sign In',
-      icon: isAuthenticated ? <PiSignOutDuotone /> : <PiSignInDuotone />,
-      action: handleAuthAction,
-      title: isAuthenticated ? (user ? `Sign Out ${user.name}` : 'Sign Out') : "Sign In"
-    }
-  ];
-
-  const renderHeaderActions = () => {
-    const { pathname } = useLocation();
+  const getContextNavItems = () => {
+    const { pathname } = location;
     
-    const isEncounterEffectivelyActive = submissionPatientData && submissionPatientData.initials;
-
-    const defaultPatientData: PatientInputData = {
-      initials: '', gender: '', dob: '', projectConsent: false, recontactConsent: false,
-    };
-
-    interface ContextAction {
-      key: string;
-      label: string;
-      icon: React.ReactElement;
-      onClick: () => void;
-      variant: 'primary' | 'secondary' | 'outline-primary' | 'outline-slate';
-      priority?: 'high' | 'medium' | 'low';
-    }
-
-    let contextActions: ContextAction[] = [];
-
     if (pathname === '/' || pathname === '/dashboard') {
-      contextActions.push({
-        key: 'create-project',
-        label: 'New Project',
-        icon: <PiPlusCircleDuotone/>,
-        onClick: () => navigate('/dashboard/create-project'),
-        variant: 'primary',
-        priority: 'high'
-      });
+      return [
+        { key: 'projects', label: 'Projects', icon: PiHouseDuotone, path: '/', active: true },
+        { key: 'analytics', label: 'Analytics', icon: PiChartBarDuotone, path: '/analytics', active: false },
+      ];
     }
 
-    if (pathname.startsWith('/project/') && pathname.endsWith('/submission')) {
-      contextActions.push({
-        key: 'new-encounter',
-        label: 'New Encounter',
-        icon: <PiFilePlusDuotone/>,
-        onClick: () => {
-          if (isEncounterEffectivelyActive) {
-              if (window.confirm('You have an active encounter. Starting a new one will clear the current progress. Continue?')) {
-                  startNewEncounter(defaultPatientData, []); 
-                  navigate(`/project/${activeProjectId}/submission`);
-              }
-          } else {
-               startNewEncounter(defaultPatientData, []);
-               navigate(`/project/${activeProjectId}/submission`);
-          }
-        },
-        variant: 'primary',
-        priority: 'high'
-      });
+    if (pathname.startsWith('/project/') && activeProjectId) {
+      const contextItems = [
+        { key: 'overview', label: 'Overview', icon: PiHouseDuotone, path: `/project/${activeProjectId}`, active: pathname === `/project/${activeProjectId}` },
+        { key: 'data', label: 'Enter Data', icon: PiListChecksDuotone, path: `/project/${activeProjectId}/submission`, active: pathname.includes('/submission') },
+        { key: 'reports', label: 'View Reports', icon: PiEyeDuotone, path: `/project/${activeProjectId}/reports`, active: pathname.includes('/reports') },
+        { key: 'discussions', label: 'Discussions', icon: PiChatCircleDuotone, path: `/project/${activeProjectId}/discussions`, active: pathname.includes('/discussions') },
+        { key: 'settings', label: 'Project Settings', icon: PiGearSixDuotone, path: `/project/${activeProjectId}/settings`, active: pathname.includes('/settings') },
+      ];
       
-      if (isEncounterEffectivelyActive) {
-        contextActions.push({
-          key: 'resume-encounter',
-          label: 'Resume Encounter',
-          icon: <PiPlayCircleDuotone/>,
-          onClick: () => navigate(`/project/${activeProjectId}/submission`),
-          variant: 'outline-primary',
-          priority: 'high'
+      // Add form builder if user has permission
+      if (activeProjectRoles.includes('ProjectLead') || activeProjectRoles.includes('FormDesigner')) {
+        contextItems.splice(2, 0, { 
+          key: 'builder', 
+          label: 'Form Builder', 
+          icon: PiSquaresFourDuotone, 
+          path: `/project/${activeProjectId}/builder`, 
+          active: pathname.includes('/builder') 
         });
       }
-    }
-    
-    if (pathname.startsWith('/project/') && pathname.endsWith('/builder')) {
-      contextActions.push(
-        {
-          key: 'new-form',
-          label: 'New Form',
-          icon: <PiTextAaDuotone />,
-          onClick: () => alert('New Blank Form (TBD)'),
-          variant: 'primary',
-          priority: 'high'
-        },
-        {
-          key: 'load-form',
-          label: 'Load Form',
-          icon: <PiArchiveDuotone />,
-          onClick: () => alert('Load Existing Form (TBD)'),
-          variant: 'outline-slate',
-          priority: 'medium'
-        }
-      );
+      
+      return contextItems;
     }
 
-    if (pathname.startsWith('/project/') && pathname.endsWith('/roles')) {
-       contextActions.push({
-        key: 'new-role',
-        label: 'New Role',
-        icon: <PiUserPlusDuotone />,
-        onClick: () => alert('Create New Role (TBD)'),
-        variant: 'primary',
-        priority: 'high'
-       });
-    }
-    
-    if (pathname.startsWith('/project/') && activeProjectId) {
-        contextActions.push({
-          key: 'quick-save',
-          label: 'Quick Save',
-          icon: <PiFloppyDiskDuotone />,
-          onClick: () => alert('Quick Save Project Details (TBD)'),
-          variant: 'outline-slate',
-          priority: 'low'
-        });
-    }
-
-    if (contextActions.length === 0) return null;
-
-    // Render context action buttons with distinctive styling
-    return contextActions.map((action) => (
-      <div key={action.key} className="group/context-action relative">
-        {/* Context Action Button */}
-        <button
-          onClick={action.onClick}
-          className={`
-            context-action-btn flex items-center justify-center
-            transition-all duration-300 ease-out
-            relative overflow-hidden
-            ${action.variant === 'primary' 
-              ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600 text-white shadow-lg dark:shadow-blue-500/25' 
-              : action.variant === 'outline-primary'
-                ? 'bg-white dark:bg-slate-800 border-2 border-blue-500 dark:border-blue-400 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 shadow-md'
-                : 'bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-md'
-            }
-            
-            /* Responsive sizing */
-            h-10 sm:h-11
-            w-10 sm:w-auto
-            rounded-xl sm:rounded-lg
-            px-0 sm:px-4
-            
-            /* Hover effects */
-            hover:scale-105 hover:shadow-xl
-            active:scale-95
-            
-            /* Focus states */
-            focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800
-          `}
-          title={action.label}
-        >
-          {/* Icon */}
-          <span className="flex items-center justify-center text-lg sm:text-base transition-transform duration-200 group-hover/context-action:scale-110">
-{action.icon}
-          </span>
-          
-          {/* Text - hidden on small screens, visible on larger screens */}
-          <span className="hidden sm:inline-block ml-2 font-medium text-sm whitespace-nowrap">
-            {action.label}
-          </span>
-          
-          {/* Animated background overlay on hover */}
-          <div className="absolute inset-0 bg-white/20 dark:bg-white/10 opacity-0 group-hover/context-action:opacity-100 transition-opacity duration-300 rounded-xl sm:rounded-lg"></div>
-        </button>
-        
-        {/* Tooltip for small screens - appears on hover */}
-        <div className="sm:hidden absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-md opacity-0 group-hover/context-action:opacity-100 transition-all duration-200 delay-500 pointer-events-none whitespace-nowrap z-50">
-          {action.label}
-          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 dark:bg-slate-700 rotate-45"></div>
-        </div>
-      </div>
-    ));
+    return [];
   };
 
   // Auto-initialize mock data for development
@@ -394,21 +242,97 @@ const Layout: React.FC = () => {
     }
   }, [isAuthenticated, availableProjects, activeProjectId, setActiveProject]);
 
+  const getSidebarWidth = () => {
+    switch (sidebarState) {
+      case 'hidden': return 'w-0';
+      case 'collapsed': return 'w-16';
+      case 'full': return 'w-64';
+      default: return 'w-64';
+    }
+  };
+
+  const getContentPadding = () => {
+    switch (sidebarState) {
+      case 'hidden': return 'lg:pl-0';
+      case 'collapsed': return 'lg:pl-16';
+      case 'full': return 'lg:pl-64';
+      default: return 'lg:pl-64';
+    }
+  };
+
+  const renderLightSwitchButton = () => {
+    if (sidebarState === 'full') {
+      return (
+        <div className="p-4 border-t border-slate-200/60 dark:border-slate-700/60">
+          <div className="relative rounded-xl overflow-hidden bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 p-1 shadow-inner">
+            <div className="flex relative">
+              {/* Collapse Button */}
+              <button
+                onClick={collapseSidebar}
+                className="flex-1 relative z-10 flex items-center justify-center px-4 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 group"
+                title="Collapse sidebar"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 via-red-500 to-pink-500 opacity-0 group-hover:opacity-100 rounded-lg transition-all duration-300 shadow-lg"></div>
+                <div className="relative flex items-center space-x-2 text-slate-700 dark:text-slate-300 group-hover:text-white transition-colors duration-300">
+                  <PiCaretDoubleLeftDuotone className="w-4 h-4" />
+                  <span>Collapse</span>
+                </div>
+              </button>
+              
+              {/* Hide Button */}
+              <button
+                onClick={hideSidebar}
+                className="flex-1 relative z-10 flex items-center justify-center px-4 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 group"
+                title="Hide sidebar"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 opacity-0 group-hover:opacity-100 rounded-lg transition-all duration-300 shadow-lg"></div>
+                <div className="relative flex items-center space-x-2 text-slate-700 dark:text-slate-300 group-hover:text-white transition-colors duration-300">
+                  <PiEyeSlashDuotone className="w-4 h-4" />
+                  <span>Hide</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    } else if (sidebarState === 'collapsed') {
+      return (
+        <div className="p-4 border-t border-slate-200/60 dark:border-slate-700/60">
+          <button
+            onClick={hideSidebar}
+            className="w-full relative group flex items-center justify-center p-3 rounded-xl transition-all duration-300 overflow-hidden"
+            title="Hide sidebar"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <PiEyeSlashDuotone className="w-5 h-5 text-white relative z-10 group-hover:scale-110 transition-transform duration-300" />
+          </button>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const sidebarWidth = getSidebarWidth();
+  const contentPadding = getContentPadding();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-purple-50/40 dark:from-slate-900 dark:via-indigo-950/50 dark:to-slate-900">
-      {/* Enhanced Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-gradient-to-b from-white via-slate-50/80 to-white dark:from-slate-800 dark:via-slate-900/90 dark:to-slate-800 backdrop-blur-xl border-r-2 border-slate-200/60 dark:border-slate-700/60 shadow-xl dark:shadow-slate-900/20 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+      {/* Sidebar */}
+      <aside className={`fixed inset-y-0 left-0 z-50 ${sidebarWidth} transform bg-gradient-to-b from-white via-slate-50/80 to-white dark:from-slate-800 dark:via-slate-900/90 dark:to-slate-800 backdrop-blur-xl border-r-2 border-slate-200/60 dark:border-slate-700/60 shadow-xl dark:shadow-slate-900/20 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : sidebarState === 'hidden' ? '-translate-x-full' : 'translate-x-0'} lg:translate-x-0 ${sidebarState === 'hidden' ? 'lg:-translate-x-full' : ''} overflow-hidden`}>
         
-        {/* Enhanced Logo/Brand Header */}
-        <div className="flex items-center justify-between p-6 border-b-2 border-slate-200/60 dark:border-slate-700/60 bg-gradient-to-r from-blue-50/50 via-white to-purple-50/50 dark:from-slate-800/50 dark:via-slate-700/50 dark:to-slate-800/50">
-          <Link to="/" className="flex items-center space-x-3 group">
+        {/* Logo/Brand Header - Simple, no interaction */}
+        <div className={`flex items-center justify-between p-6 border-b-2 border-slate-200/60 dark:border-slate-700/60 bg-gradient-to-r from-blue-50/50 via-white to-purple-50/50 dark:from-slate-800/50 dark:via-slate-700/50 dark:to-slate-800/50 sidebar-header-height`}>
+          <Link to="/" className={`flex items-center ${sidebarState === 'collapsed' ? 'justify-center' : 'space-x-3'} group`}>
             <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
               <PiCompassDuotone className="w-7 h-7 text-white" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-gradient">CREST</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Clinical Research Tool</p>
-            </div>
+            {sidebarState === 'full' && (
+              <div>
+                <h1 className="text-xl font-bold text-gradient">CREST</h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium hidden xl:block">Clinical Research Tool</p>
+              </div>
+            )}
           </Link>
           <button
             onClick={() => setIsSidebarOpen(false)}
@@ -418,8 +342,8 @@ const Layout: React.FC = () => {
           </button>
         </div>
 
-        {/* Enhanced Active Project Display */}
-        {activeProjectDetails && (
+        {/* Active Project Display */}
+        {activeProjectDetails && sidebarState === 'full' && (
           <div className="px-4 py-3 mx-3 mt-4">
             <div className="relative group">
               <button
@@ -459,7 +383,7 @@ const Layout: React.FC = () => {
           </div>
         )}
 
-        {/* Enhanced Navigation */}
+        {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-2">
           {/* Main Navigation */}
           <div className="space-y-1">
@@ -469,18 +393,19 @@ const Layout: React.FC = () => {
                 <Link
                   key={item.id}
                   to={item.path}
-                  className={`group flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  className={`group flex items-center ${sidebarState === 'collapsed' ? 'justify-center px-2' : 'px-3'} py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? 'scale-105 bg-gradient-to-r from-blue-500/20 via-indigo-500/15 to-purple-500/20 dark:from-blue-400/25 dark:via-indigo-400/20 dark:to-purple-400/25 text-blue-700 dark:text-blue-300 shadow-lg dark:shadow-blue-400/20 border border-blue-200/50 dark:border-blue-700/50'
                       : 'hover:scale-[1.02] text-slate-700 dark:text-slate-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 hover:shadow-md'
                   }`}
+                  title={sidebarState === 'collapsed' ? item.label : undefined}
                 >
-                  <item.icon className={`mr-3 flex-shrink-0 transition-colors w-5 h-5 ${
+                  <item.icon className={`${sidebarState === 'collapsed' ? '' : 'mr-3'} flex-shrink-0 transition-colors w-5 h-5 ${
                     isActive
                       ? 'text-blue-700 dark:text-blue-300'
                       : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400'
                   }`} />
-                  {item.label}
+                  {sidebarState === 'full' && item.label}
                 </Link>
               );
             })}
@@ -489,9 +414,11 @@ const Layout: React.FC = () => {
           {/* Project Navigation */}
           {projectContextMenuItems.length > 0 && (
             <div className="pt-3">
-              <div className="px-3 py-2">
-                <h3 className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Project Tools</h3>
-              </div>
+              {sidebarState === 'full' && (
+                <div className="px-3 py-2">
+                  <h3 className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Project Tools</h3>
+                </div>
+              )}
               <div className="space-y-1">
                 {projectContextMenuItems.map((item) => {
                   const isActive = location.pathname === item.path;
@@ -499,24 +426,24 @@ const Layout: React.FC = () => {
                     <Link
                       key={item.id}
                       to={item.path}
-                      className={`group flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      className={`group flex items-center ${sidebarState === 'collapsed' ? 'justify-center px-2' : 'px-3'} py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                         item.disabled
                           ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-50'
                           : isActive
                           ? 'scale-105 bg-gradient-to-r from-purple-500/20 via-pink-500/15 to-orange-500/20 dark:from-purple-400/25 dark:via-pink-400/20 dark:to-orange-400/25 text-purple-700 dark:text-purple-300 shadow-lg dark:shadow-purple-400/20 border border-purple-200/50 dark:border-purple-700/50'
                           : 'hover:scale-[1.02] text-slate-700 dark:text-slate-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/20 dark:hover:to-pink-900/20 hover:shadow-md'
                       }`}
-                      title={item.tooltip}
+                      title={sidebarState === 'collapsed' ? item.label : item.tooltip}
                       onClick={item.disabled ? (e) => e.preventDefault() : undefined}
                     >
-                      <item.icon className={`mr-3 flex-shrink-0 transition-colors w-5 h-5 ${
+                      <item.icon className={`${sidebarState === 'collapsed' ? '' : 'mr-3'} flex-shrink-0 transition-colors w-5 h-5 ${
                         item.disabled
                           ? 'text-slate-400 dark:text-slate-600'
                           : isActive
                           ? 'text-purple-700 dark:text-purple-300'
                           : 'text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400'
                       }`} />
-                      {item.label}
+                      {sidebarState === 'full' && item.label}
                     </Link>
                   );
                 })}
@@ -524,55 +451,75 @@ const Layout: React.FC = () => {
             </div>
           )}
         </nav>
+
+        {/* Light Switch Toggle Button */}
+        {renderLightSwitchButton()}
       </aside>
 
-      {/* Enhanced Main Content */}
-      <div className="lg:pl-64">
-        {/* Enhanced Header */}
-        <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b-2 border-slate-200/60 dark:border-slate-700/60 shadow-lg">
-          <div className="flex items-center justify-between px-6 py-4">
-            {/* Left Section: Mobile menu button + Page title */}
-            <div className="flex items-center space-x-4">
+      {/* Floating show button when hidden */}
+      {sidebarState === 'hidden' && (
+        <div className="fixed top-6 left-6 z-50">
+          <button 
+            onClick={showSidebar}
+            className="p-3 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+            title="Show sidebar"
+          >
+            <PiCaretRightDuotone className="w-5 h-5 text-white" />
+          </button>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className={contentPadding}>
+        {/* Fixed Topbar Structure */}
+        <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-700/60 shadow-sm header-height">
+          <div className="flex items-center h-full px-6">
+            {/* Left: Mobile menu button */}
+            <div className="flex-shrink-0 lg:hidden">
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-800/30 hover:shadow-md transition-all duration-200"
+                className="p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-800/30 hover:shadow-md transition-all duration-200"
               >
                 <PiMenuIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               </button>
-              
-              {/* Page Title - matches sidebar alignment */}
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{pageTitle}</h1>
+            </div>
+
+            {/* Center: Scrollable Context Navigation */}
+            <div className="flex-1 mx-4 min-w-0">
+              <div className="flex items-center space-x-1 overflow-x-auto scrollbar-hide pb-1">
+                {getContextNavItems().map((item) => (
+                  <div
+                    key={item.key}
+                    className={`context-nav-item ${item.active ? 'active' : ''} flex-shrink-0`}
+                    onClick={() => navigate(item.path)}
+                  >
+                    <item.icon className="icon" />
+                    <span className="hidden sm:inline whitespace-nowrap">{item.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Center Section: Context Actions - Mobile-First Horizontal Scroll */}
-            <div className="flex-1 max-w-2xl mx-4">
-              <div className="flex items-center space-x-2 overflow-x-auto scrollbar-hide pb-1">
-                {renderHeaderActions()}
-              </div>
-            </div>
-
-            {/* Right Section: User controls */}
-            <div className="flex items-center space-x-2">
-              {/* Enhanced Theme toggle */}
+            {/* Right: Fixed User Controls */}
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              {/* Theme toggle */}
               <button
                 onClick={toggleDarkMode}
                 className="p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200/50 dark:border-amber-800/30 hover:shadow-lg transition-all duration-200 hover:scale-105"
                 title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {isDarkMode ? (
-                  <PiSunDuotone className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                  <PiSunDuotone className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 ) : (
-                  <PiMoonDuotone className="w-5 h-5 text-slate-600" />
+                  <PiMoonDuotone className="w-4 h-4 text-slate-600" />
                 )}
               </button>
 
-              {/* Enhanced User menu */}
+              {/* User menu */}
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-3 p-2 pr-3 rounded-xl bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-900/30 dark:to-teal-900/30 border border-emerald-200/50 dark:border-emerald-800/50 hover:shadow-lg transition-all duration-200 hover:scale-105"
+                  className="flex items-center space-x-2 p-2 pr-3 rounded-xl bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-900/30 dark:to-teal-900/30 border border-emerald-200/50 dark:border-emerald-800/50 hover:shadow-lg transition-all duration-200 hover:scale-105"
                 >
                   {user && (
                     <>
@@ -585,12 +532,12 @@ const Layout: React.FC = () => {
                         <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate max-w-[120px]">{user.name}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[120px]">{user.email}</p>
                       </div>
+                      <PiCaretDownDuotone className={`w-4 h-4 text-slate-600 dark:text-slate-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                     </>
                   )}
-                  <PiCaretDownDuotone className={`w-4 h-4 text-slate-600 dark:text-slate-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                {/* Enhanced User dropdown */}
+                {/* User dropdown */}
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 backdrop-blur-xl overflow-hidden z-50">
                     <div className="p-4 bg-gradient-to-r from-emerald-50/50 to-teal-50/50 dark:from-emerald-900/20 dark:to-teal-900/20 border-b border-slate-200/60 dark:border-slate-700/60">
@@ -626,7 +573,7 @@ const Layout: React.FC = () => {
           </div>
         </header>
 
-        {/* Enhanced Main content area */}
+        {/* Main content area */}
         <main className="min-h-screen bg-gradient-to-br from-slate-50/50 via-blue-50/30 to-purple-50/50 dark:from-slate-900/50 dark:via-indigo-950/30 dark:to-slate-900/50">
           <div className="animation-fade-in">
             <Outlet />
@@ -634,7 +581,7 @@ const Layout: React.FC = () => {
         </main>
       </div>
 
-      {/* Enhanced Mobile overlay */}
+      {/* Mobile overlay */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"

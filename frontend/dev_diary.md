@@ -329,6 +329,129 @@ This document tracks major development milestones, decisions, challenges, bugs, 
 
 ---
 
+## 2024-01-15 - Major Layout Overhaul & BBC/CNN-Style Topbar Implementation
+
+### Comprehensive Layout Redesign Completed
+
+#### ✅ **Collapsible Sidebar Implementation**
+- **Feature**: Added persistent sidebar with collapse/expand functionality
+- **Trigger**: Toggle button at bottom of sidebar with proper icons (caret left/right)
+- **States**: 
+  - Expanded: `w-64` with full labels and project selector
+  - Collapsed: `w-16` with icons only and tooltips on hover
+- **Responsive**: Auto-collapses on screens < 1024px width
+- **Persistence**: Maintains state across page navigation
+
+#### ✅ **BBC/CNN-Style Header Redesign**
+- **Issue**: Previous header was cluttered with page titles and button-like context actions
+- **Solution**: Implemented clean, minimal topbar inspired by BBC/CNN/Facebook
+- **Features**:
+  - **Center**: Context navigation items (non-button-like, minimal design)
+  - **Right**: User controls (theme toggle, user menu)
+  - **Mobile**: Responsive with horizontal scrolling for context items
+  - **Active States**: Subtle border-bottom indicators for active context
+
+#### ✅ **Header-Sidebar Alignment Fixed**
+- **Issue**: Header and sidebar logo sections had different heights causing misalignment
+- **Solution**: Implemented consistent height classes
+- **CSS Classes**: `.header-height` and `.sidebar-header-height` both set to 72px
+- **Result**: Perfect vertical alignment between header and sidebar sections
+
+#### ✅ **Flexible Icon-Text Styling System**
+- **Issue**: Strict same-color rule was too rigid for different UI contexts
+- **Solution**: Created flexible CSS utility classes
+- **Classes**:
+  - `.icon-text-match`: Icons match text color exactly (for settings-like pages)
+  - `.icon-text-colorful`: Colorful icons with default text colors (for dashboards)
+  - `.variant-{color}`: Different color schemes (purple, emerald, orange, slate)
+- **Implementation**: Applied throughout Dashboard and Settings pages
+
+#### ✅ **Context Navigation System**
+- **Feature**: Dynamic context items based on current page/project
+- **Dashboard**: "Projects", "Analytics" 
+- **Project Pages**: "Overview", "Enter Data", "View Reports", "Discussions", "Project Settings"
+- **Permissions**: Form Builder only appears for users with appropriate roles
+- **Interaction**: Click navigation with active state indicators
+- **Mobile**: Horizontal scrolling with hidden scrollbars
+
+#### ✅ **Improved Mobile Experience**
+- **Sidebar**: Proper overlay behavior on mobile devices
+- **Header**: Responsive context navigation with horizontal scroll
+- **Icons**: Touch-friendly sizing and spacing
+- **Tooltips**: Show on collapsed sidebar for better UX
+
+### Technical Implementation Details
+
+#### Layout Structure
+```typescript
+// Dynamic sidebar width based on collapse state
+const sidebarWidth = isSidebarCollapsed ? 'w-16' : 'w-64';
+const contentPadding = isSidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64';
+```
+
+#### Context Navigation Logic
+```typescript
+const getContextNavItems = () => {
+  // Dynamic context items based on pathname and user permissions
+  // Returns array with: key, label, icon, path, active state
+};
+```
+
+#### CSS Utility System
+```css
+.icon-text-colorful .icon {
+  @apply text-blue-500 dark:text-blue-400;
+}
+.icon-text-colorful.variant-purple .icon {
+  @apply text-purple-500 dark:text-purple-400;
+}
+```
+
+### User Experience Improvements
+
+1. **Clean Interface**: Removed clutter from header, focused on content
+2. **Context Awareness**: Header shows relevant navigation for current page
+3. **Flexible Sidebar**: Users can choose between full or minimal sidebar
+4. **Better Navigation**: Clear visual indicators for current location
+5. **Mobile Optimization**: Proper responsive behavior across all screen sizes
+6. **Visual Consistency**: Flexible but consistent icon-text relationships
+
+### Breaking Changes & Fixes
+
+- **Removed**: Page title from header (was redundant with sidebar)
+- **Removed**: Button-style context actions (replaced with minimal navigation)
+- **Added**: Collapse toggle functionality
+- **Fixed**: Header-sidebar height alignment
+- **Improved**: Mobile responsiveness and touch interactions
+
+### Files Modified in This Session
+
+#### Core Layout
+- `frontend/src/components/layout/Layout.tsx` - Complete redesign with collapsible sidebar and BBC-style header
+
+#### Styling System  
+- `frontend/src/index.css` - Added flexible icon-text utility classes and height alignment
+
+#### Page Updates
+- `frontend/src/pages/DashboardPage.tsx` - Applied new icon-text styling classes
+
+#### Documentation
+- `dev_diary.md` - This comprehensive update
+- `frontend_design_philosophy.md` - Updated with new UI/UX rules (previous session)
+
+### Design Philosophy Adherence
+
+All changes maintain the established design principles:
+- **Vibrant Colors**: Strategic use of colorful icons with flexible text treatment
+- **Mobile-First**: Responsive design with touch-friendly interactions  
+- **Clean Interface**: Minimal, uncluttered design inspired by modern web platforms
+- **Accessibility**: Proper focus states, tooltips, and screen reader support
+- **Performance**: Smooth transitions and animations that respect user preferences
+
+This major overhaul brings the CREST interface to modern web standards while maintaining medical professional usability and the colorful, engaging aesthetic that defines the platform.
+
+---
+
 ## 2024-01-15 - UI/UX Refinement & Design Philosophy Implementation
 
 ### Major UI/UX Improvements Completed

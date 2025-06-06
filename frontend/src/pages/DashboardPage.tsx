@@ -71,8 +71,8 @@ const DashboardPage: React.FC = () => {
       <div className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Column 1: My Projects (Scrollable) */}
         <section className="lg:col-span-2 flex flex-col card-enhanced rounded-xl p-0 overflow-hidden shadow-xl">
-          <h2 className="text-2xl font-semibold text-gradient flex items-center p-5 pb-3 border-b border-slate-200 dark:border-slate-700/80 shrink-0">
-            <PiBriefcaseDuotone className="mr-3 text-3xl text-blue-500 dark:text-blue-400 animate-pulse-glow" /> My Projects
+          <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-200 icon-text-colorful flex items-center p-5 pb-3 border-b border-slate-200 dark:border-slate-700/80 shrink-0">
+            <PiBriefcaseDuotone className="icon mr-3 text-3xl animate-pulse-glow" /> My Projects
           </h2>
           {availableProjects.filter(p => p.members.some(m => m.userId === user?.id)).length > 0 ? (
             <div className="overflow-y-auto flex-grow p-5 space-y-3">
@@ -105,12 +105,12 @@ const DashboardPage: React.FC = () => {
                           )}
                         </div>
                         <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-xs">
-                          <div className="flex items-center text-amber-600 dark:text-amber-400">
-                            <PiFileTextDuotone className="mr-1.5 text-sm" />
+                          <div className="flex items-center text-slate-600 dark:text-slate-300 icon-text-colorful variant-orange">
+                            <PiFileTextDuotone className="icon mr-1.5 text-sm" />
                             <span>3 Formulários Pendentes (Placeholder)</span>
                           </div>
-                          <div className="flex items-center text-teal-600 dark:text-teal-400">
-                            <PiCalendarCheckDuotone className="mr-1.5 text-sm" />
+                          <div className="flex items-center text-slate-600 dark:text-slate-300 icon-text-colorful variant-emerald">
+                            <PiCalendarCheckDuotone className="icon mr-1.5 text-sm" />
                             <span>2 Próximos Follow-ups (Placeholder)</span>
                           </div>
                         </div>
@@ -141,8 +141,8 @@ const DashboardPage: React.FC = () => {
         {/* Column 2: News & Updates, then Quick Tasks */}
         <div className="lg:col-span-1 flex flex-col gap-6">
           <section className="card-colorful p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-semibold text-gradient-warm flex items-center mb-4 relative z-10">
-              <PiBellSimpleRingingDuotone className="mr-3 text-2xl text-purple-500 dark:text-purple-400" /> News & Updates
+            <h2 className="text-xl font-semibold text-purple-600 dark:text-purple-400 icon-text-colorful variant-purple flex items-center mb-4 relative z-10">
+              <PiBellSimpleRingingDuotone className="icon mr-3 text-2xl" /> News & Updates
             </h2>
             <ul className="space-y-3 text-sm relative z-10">
               <li className="text-slate-600 dark:text-slate-300">Platform Update v1.2 Released! <span className="text-xs text-slate-400 dark:text-slate-500">(Placeholder)</span></li>
@@ -151,8 +151,8 @@ const DashboardPage: React.FC = () => {
           </section>
 
           <section className="card-colorful p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-semibold text-gradient-cool flex items-center mb-4 relative z-10">
-              <PiListChecksDuotone className="mr-3 text-2xl text-green-500 dark:text-green-400" /> Quick Tasks
+            <h2 className="text-xl font-semibold text-emerald-600 dark:text-emerald-400 icon-text-colorful variant-emerald flex items-center mb-4 relative z-10">
+              <PiListChecksDuotone className="icon mr-3 text-2xl" /> Quick Tasks
             </h2>
             <ul className="space-y-2 text-sm relative z-10">
               <li className="text-slate-600 dark:text-slate-300">No urgent tasks at the moment. (Placeholder)</li>
