@@ -1,24 +1,24 @@
+// src/pages/CreateProjectPage.tsx
 import React, { useState } from 'react';
-import SectionCard from '../components/ui/SectionCard';
+import { SectionCard } from '../components/ui/SectionCard'; // <-- Corrected import
 import { Link, useNavigate } from 'react-router-dom';
-import Button from '../components/ui/Button';
+import { Button } from '../components/ui/Button'; // <-- Corrected import
 import { FaArrowLeft, FaPlus } from 'react-icons/fa';
-import InputField from '../components/ui/InputField';
+import { InputField } from '../components/ui/InputField'; // <-- Corrected import
 import TextareaField from '../components/ui/TextareaField';
 import useProjectStore from '../stores/projectStore';
 import useAuthStore from '../stores/authStore';
 
+// ... rest of the file is correct
 const CreateProjectPage: React.FC = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [goals, setGoals] = useState('');
   const [error, setError] = useState('');
-
   const addProject = useProjectStore(state => state.addProject);
   const setActiveProject = useProjectStore(state => state.setActiveProject);
   const user = useAuthStore(state => state.user);
-
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!name) {
@@ -30,7 +30,6 @@ const CreateProjectPage: React.FC = () => {
       return;
     }
     setError('');
-
     const newProject = {
       id: `proj_${new Date().getTime()}`,
       name,
@@ -38,12 +37,10 @@ const CreateProjectPage: React.FC = () => {
       goals,
       members: [{ userId: user.id, roles: ['ProjectLead', 'Researcher'] }],
     };
-
     addProject(newProject);
     setActiveProject(newProject.id);
     navigate(`/project/${newProject.id}`);
   };
-
   return (
     <div className="p-4 sm:p-6 max-w-3xl mx-auto">
       <div className="mb-4">
@@ -53,7 +50,7 @@ const CreateProjectPage: React.FC = () => {
           asChild
           className="text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
         >
-          <Link to="/dashboard">
+          <Link to="/">
             <FaArrowLeft className="mr-2" />
             Back to Dashboard
           </Link>
@@ -101,5 +98,4 @@ const CreateProjectPage: React.FC = () => {
     </div>
   );
 };
-
-export default CreateProjectPage; 
+export default CreateProjectPage;

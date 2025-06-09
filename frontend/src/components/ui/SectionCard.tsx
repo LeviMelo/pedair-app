@@ -1,38 +1,30 @@
 // src/components/ui/SectionCard.tsx
 import React from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from './Card';
+import { cn } from '@/lib/utils';
 
 interface SectionCardProps {
-  title: string; // The title to display in the card's header
-  children: React.ReactNode; // Content to render inside the card body
-  className?: string; // Optional additional CSS classes for the outer section element
-  headerClassName?: string; // For the header div
-  titleClassName?: string; // For the h2 title
-  bodyClassName?: string; // For the body div
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+  contentClassName?: string;
 }
 
-const SectionCard: React.FC<SectionCardProps> = ({
+// Use a named export
+export const SectionCard: React.FC<SectionCardProps> = ({
   title,
   children,
-  className = '',
-  headerClassName = '',
-  titleClassName = '',
-  bodyClassName = '',
+  className,
+  contentClassName,
 }) => {
-  const finalCardClassName = ['card-base', className].filter(Boolean).join(' ');
-  const finalHeaderClassName = ['card-header', headerClassName].filter(Boolean).join(' ');
-  const finalTitleClassName = ['card-title', titleClassName].filter(Boolean).join(' ');
-  const finalBodyClassName = ['card-body', bodyClassName].filter(Boolean).join(' '); // .card-body includes padding
-
   return (
-    <section className={`${finalCardClassName} mb-6`}> {/* Retaining mb-6 for now as it was an outer style */}
-      <div className={finalHeaderClassName}>
-        <h2 className={finalTitleClassName}>{title}</h2>
-      </div>
-      <div className={finalBodyClassName}>
+    <Card className={cn("w-full", className)}>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent className={contentClassName}>
         {children}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 };
-
-export default SectionCard;

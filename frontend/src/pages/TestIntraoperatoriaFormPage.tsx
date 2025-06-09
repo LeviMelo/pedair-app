@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import DynamicFormRenderer from '../components/forms/DynamicFormRenderer';
-import SectionCard from '../components/ui/SectionCard'; // Assuming SectionCard can be used for layout
+import { SectionCard } from '../components/ui/SectionCard'; // Assuming SectionCard can be used for layout
 
 // Import the schemas
 import intraoperatoriaSchema from '../schemas/intraoperatoria.schema.json';

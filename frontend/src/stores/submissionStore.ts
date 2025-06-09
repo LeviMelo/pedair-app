@@ -1,7 +1,10 @@
+// src/stores/submissionStore.ts
+// FIX: Corrected logic in updatePatientData to handle initial null state gracefully.
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-// --- Interfaces (should match those in DataSubmissionPage.tsx or be imported) ---
+// --- Interfaces ---
 export interface PatientInputData {
   initials: string;
   gender: string;
@@ -19,73 +22,65 @@ export interface FormDefinition {
 }
 
 interface SubmissionState {
-  // State of an active or paused submission encounter
   isEncounterActive: boolean;
   patientData: PatientInputData | null;
   formSequence: FormDefinition[];
-  currentFormIndex: number; // Index in the formSequence
-  allFormsData: { [formKey: string]: any }; // Data for all forms in the sequence, keyed by formDef.key
+  currentFormIndex: number; // -1: patient input, 0 to n-1: forms, n: review
+  allFormsData: { [formKey: string]: any };
   lastUpdateTimestamp: number | null;
 }
 
 interface SubmissionActions {
   startNewEncounter: (patientData: PatientInputData, sequence: FormDefinition[]) => void;
-  savePartialFormProgress: (formKey: string, data: any) => void;
+  saveCurrentForm: (formKey: string, data: any) => void;
   setCurrentFormIndex: (index: number) => void;
   updatePatientData: (patientData: Partial<PatientInputData>) => void;
-  completeAndClearEncounter: () => void; // Called after successful backend submission
-  resumeEncounter: (encounterState: SubmissionState) => void; // To load a paused encounter
-  // Could add actions for updating a specific form's data, etc.
+  completeAndClearEncounter: () => void;
 }
 
-const initialPatientData: PatientInputData = {
-  initials: '',
-  gender: '',
-  dob: '',
-  projectConsent: false,
-  recontactConsent: false,
-};
+const initialPatientState: PatientInputData = {
+    initials: '',
+    gender: '',
+    dob: '',
+    projectConsent: false,
+    recontactConsent: false,
+}
 
-const initialSubmissionState: SubmissionState = {
+const initialState: SubmissionState = {
   isEncounterActive: false,
-  patientData: null, 
+  patientData: null,
   formSequence: [],
-  currentFormIndex: 0,
+  currentFormIndex: -1, // -1 means we are at the patient input stage
   allFormsData: {},
   lastUpdateTimestamp: null,
 };
 
-// Create the store with persistence middleware
 const useSubmissionStore = create<SubmissionState & SubmissionActions>()(
   persist(
     (set, get) => ({
-      ...initialSubmissionState,
+      ...initialState,
 
       startNewEncounter: (patientData, sequence) => {
         set({
           isEncounterActive: true,
-          patientData: { ...patientData }, 
+          patientData: { ...patientData },
           formSequence: [...sequence],
           currentFormIndex: 0,
-          allFormsData: {}, // Reset data for new encounter
+          allFormsData: {},
           lastUpdateTimestamp: Date.now(),
         });
-        console.log('New submission encounter started:', get());
       },
 
-      savePartialFormProgress: (formKey, data) => {
+      saveCurrentForm: (formKey, data) => {
         set(state => ({
-          allFormsData: {
-            ...state.allFormsData,
-            [formKey]: data,
-          },
+          allFormsData: { ...state.allFormsData, [formKey]: data },
           lastUpdateTimestamp: Date.now(),
         }));
-        console.log('Form progress saved:', formKey, data, get().allFormsData);
       },
 
       setCurrentFormIndex: (index) => {
-        if (index >= 0 && index < get().formSequence.length) {
+        const sequenceLength = get().formSequence.length;
+        if (index >= -1 && index <= sequenceLength) {
           set({ currentFormIndex: index, lastUpdateTimestamp: Date.now() });
         } else {
           console.warn('Attempted to set invalid form index:', index);
@@ -94,43 +89,30 @@ const useSubmissionStore = create<SubmissionState & SubmissionActions>()(
       
       updatePatientData: (updatedPatientData) => {
         set(state => ({
-            patientData: state.patientData ? { ...state.patientData, ...updatedPatientData } : null,
+            // This logic correctly handles merging with a null or existing state
+            patientData: {
+                ...(state.patientData || initialPatientState),
+                ...updatedPatientData
+            },
             lastUpdateTimestamp: Date.now(),
         }));
       },
 
       completeAndClearEncounter: () => {
-        set({ ...initialSubmissionState }); // Reset to initial empty state
-        console.log('Submission encounter completed and cleared.');
-      },
-      
-      resumeEncounter: (encounterState) => {
-        set({ ...encounterState, isEncounterActive: true }); // Ensure it's marked active
-        console.log('Submission encounter resumed:', encounterState);
+        set({ ...initialState });
       },
     }),
     {
-      name: 'crest-submission-storage', // name of the item in storage (must be unique)
-      storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
-      partialize: (state) => ({
-        // Persist only these parts of the state to avoid storing functions or very large non-serializable objects
-        isEncounterActive: state.isEncounterActive,
-        patientData: state.patientData,
-        formSequence: state.formSequence,
-        currentFormIndex: state.currentFormIndex,
-        allFormsData: state.allFormsData,
-        lastUpdateTimestamp: state.lastUpdateTimestamp,
-      }),
+      name: 'crest-submission-storage',
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );
 
 export const clearPersistedSubmission = () => {
-    useSubmissionStore.persist.clearStorage(); // Clears from localStorage
-    // Reset the in-memory state to initial values. 
-    // Actions are part of the store definition and remain.
-    useSubmissionStore.setState(initialSubmissionState);
-    console.log('Persisted submission data cleared and store reset to initial values.');
+    useSubmissionStore.persist.clearStorage();
+    useSubmissionStore.setState(initialState);
+    console.log('Persisted submission data cleared.');
 }
 
-export default useSubmissionStore; 
+export default useSubmissionStore;

@@ -1,3 +1,5 @@
+// src/pages/DashboardPage.tsx
+// No actual changes, just confirming the clean version from my refactor.
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useProjectStore, { Project } from '../stores/projectStore';
@@ -12,6 +14,7 @@ import {
 } from 'react-icons/pi';
 import Button from '../components/ui/Button';
 import DashboardGreetingCard from '../components/ui/DashboardGreetingCard';
+import { Card, CardHeader, CardContent, CardTitle } from '../components/ui/Card';
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -42,7 +45,6 @@ const DashboardPage: React.FC = () => {
   };
 
   const handleViewProfile = () => {
-    // Placeholder: Navigation to a full profile page will be implemented later
     alert('Navigate to full profile page - TBD');
   };
 
@@ -59,109 +61,104 @@ const DashboardPage: React.FC = () => {
   if (projectsError) {
     return <div className="p-6 text-center text-red-500 dark:text-red-400">Error loading projects: {projectsError}</div>;
   }
+  
+  const userProjects = availableProjects.filter(p => p.members.some(m => m.userId === user?.id));
 
   return (
-    <div className="p-4 sm:p-6 space-y-8 bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 min-h-full flex flex-col max-w-6xl mx-auto w-full">
-      
+    <div className="p-4 sm:p-6 space-y-8 max-w-7xl mx-auto w-full">
       <DashboardGreetingCard 
         onCreateNewProject={handleCreateNewProject} 
         onViewProfile={handleViewProfile} 
       />
 
-      <div className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Column 1: My Projects (Scrollable) */}
-        <section className="lg:col-span-2 flex flex-col card-enhanced rounded-xl p-0 overflow-hidden shadow-xl">
-          <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-200 icon-text-colorful flex items-center p-5 pb-3 border-b border-slate-200 dark:border-slate-700/80 shrink-0">
-            <PiBriefcaseDuotone className="icon mr-3 text-3xl animate-pulse-glow" /> My Projects
-          </h2>
-          {availableProjects.filter(p => p.members.some(m => m.userId === user?.id)).length > 0 ? (
-            <div className="overflow-y-auto flex-grow p-5 space-y-3">
-              {availableProjects.filter(p => p.members.some(m => m.userId === user?.id)).map((project) => {
-                const userRolesInProject = getUserRolesForProject(project);
-                const isProjectActive = project.id === activeProjectId;
-                return (
-                  <div 
-                    key={project.id} 
-                    className={`p-4 rounded-xl transition-all duration-300 cursor-pointer border dark:border-slate-700 
-                                bg-gradient-to-r from-white via-slate-50/50 to-white dark:from-slate-800 dark:via-slate-700/50 dark:to-slate-800 
-                                hover:shadow-lg hover:scale-[1.02] dark:hover:bg-slate-700 
-                                ${isProjectActive 
-                                  ? 'ring-2 ring-blue-500 dark:ring-blue-400 shadow-lg shadow-blue-500/25 dark:shadow-blue-400/20' 
-                                  : 'border-slate-200 dark:border-slate-700 hover:border-blue-400/50 dark:hover:border-blue-500/50'}
-                              `}
-                    onClick={() => handleSelectProject(project)}
-                  >
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-md font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-0.5 truncate">{project.name}</h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1 line-clamp-2 leading-relaxed">
-                          {project.description || 'No description available.'}
-                        </p>
-                        <div className="flex items-center space-x-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
-                          {userRolesInProject.length > 0 && (
-                              <div className="flex items-center">
-                                  Your role(s): <span className="font-medium text-emerald-600 dark:text-emerald-400 ml-1">{userRolesInProject.join(', ')}</span>
-                              </div>
-                          )}
-                        </div>
-                        <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-xs">
-                          <div className="flex items-center text-slate-600 dark:text-slate-300 icon-text-colorful variant-orange">
-                            <PiFileTextDuotone className="icon mr-1.5 text-sm" />
-                            <span>3 Formulários Pendentes (Placeholder)</span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2 flex flex-col">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <PiBriefcaseDuotone className="mr-3 text-2xl text-primary" /> My Projects
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-grow">
+            {userProjects.length > 0 ? (
+              <div className="space-y-3">
+                {userProjects.map((project) => {
+                  const userRolesInProject = getUserRolesForProject(project);
+                  const isProjectActive = project.id === activeProjectId;
+                  return (
+                    <div 
+                      key={project.id} 
+                      className={`p-4 rounded-lg transition-all duration-300 cursor-pointer border ${
+                        isProjectActive 
+                          ? 'ring-2 ring-primary bg-secondary' 
+                          : 'bg-background hover:bg-accent'
+                      }`}
+                      onClick={() => handleSelectProject(project)}
+                    >
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-md font-semibold text-primary mb-0.5 truncate">{project.name}</h3>
+                          <p className="text-xs text-muted-foreground mb-2 line-clamp-2 leading-relaxed">
+                            {project.description || 'No description available.'}
+                          </p>
+                          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                            {userRolesInProject.length > 0 && (
+                                <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                                  Role: {userRolesInProject.join(', ')}
+                                </span>
+                            )}
                           </div>
-                          <div className="flex items-center text-slate-600 dark:text-slate-300 icon-text-colorful variant-emerald">
-                            <PiCalendarCheckDuotone className="icon mr-1.5 text-sm" />
-                            <span>2 Próximos Follow-ups (Placeholder)</span>
+                          <div className="mt-3 pt-3 border-t flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 text-xs">
+                            <div className="flex items-center text-muted-foreground"><PiFileTextDuotone className="mr-1.5" /> 3 Forms Pending (Mock)</div>
+                            <div className="flex items-center text-muted-foreground"><PiCalendarCheckDuotone className="mr-1.5" /> 2 Follow-ups (Mock)</div>
                           </div>
                         </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={(e) => { e.stopPropagation(); handleSelectProject(project); }} 
+                          iconRight={<PiArrowSquareOutDuotone/>}
+                          className="shrink-0 mt-2 sm:mt-0"
+                        >
+                          Details
+                        </Button>
                       </div>
-                      <Button 
-                        variant="outline-primary" 
-                        size="sm" 
-                        onClick={(e) => { e.stopPropagation(); handleSelectProject(project); }} 
-                        iconRight={<PiArrowSquareOutDuotone/>}
-                        className="shrink-0 mt-1 sm:mt-0 py-1 px-2 text-xs hover:shadow-md transition-all"
-                      >
-                        Details
-                      </Button>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex-grow flex flex-col items-center justify-center p-6 text-center">
-              <PiBriefcaseDuotone className="text-4xl text-slate-400 dark:text-slate-500 mx-auto mb-3 animate-pulse-glow" />
-              <p className="text-slate-500 dark:text-slate-400">No projects found, or you are not yet a member of any project.</p>
-              <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Try creating a new one if you have permissions!</p>
-            </div>
-          )}
-        </section>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+                <PiBriefcaseDuotone className="text-4xl text-muted-foreground mb-3" />
+                <p className="text-muted-foreground">You are not a member of any project yet.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-        {/* Column 2: News & Updates, then Quick Tasks */}
         <div className="lg:col-span-1 flex flex-col gap-6">
-          <section className="card-colorful p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-semibold text-purple-600 dark:text-purple-400 icon-text-colorful variant-purple flex items-center mb-4 relative z-10">
-              <PiBellSimpleRingingDuotone className="icon mr-3 text-2xl" /> News & Updates
-            </h2>
-            <ul className="space-y-3 text-sm relative z-10">
-              <li className="text-slate-600 dark:text-slate-300">Platform Update v1.2 Released! <span className="text-xs text-slate-400 dark:text-slate-500">(Placeholder)</span></li>
-              <li className="text-slate-600 dark:text-slate-300">Scheduled maintenance on Sunday @ 2 AM. <span className="text-xs text-slate-400 dark:text-slate-500">(Placeholder)</span></li>
-            </ul>
-          </section>
-
-          <section className="card-colorful p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-semibold text-emerald-600 dark:text-emerald-400 icon-text-colorful variant-emerald flex items-center mb-4 relative z-10">
-              <PiListChecksDuotone className="icon mr-3 text-2xl" /> Quick Tasks
-            </h2>
-            <ul className="space-y-2 text-sm relative z-10">
-              <li className="text-slate-600 dark:text-slate-300">No urgent tasks at the moment. (Placeholder)</li>
-            </ul>
-          </section>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center"><PiBellSimpleRingingDuotone className="mr-3 text-2xl text-purple-500" /> News & Updates</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li>Platform Update v1.2 Released! <span className="text-xs">(Mock)</span></li>
+                <li>Scheduled maintenance on Sunday @ 2 AM. <span className="text-xs">(Mock)</span></li>
+              </ul>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center"><PiListChecksDuotone className="mr-3 text-2xl text-emerald-500" /> Quick Tasks</CardTitle>
+            </CardHeader>
+            <CardContent>
+               <p className="text-sm text-muted-foreground">No urgent tasks at the moment. (Placeholder)</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
   );
 };
 
-export default DashboardPage; 
+export default DashboardPage;

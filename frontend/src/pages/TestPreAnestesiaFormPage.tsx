@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import DynamicFormRenderer from '../components/forms/DynamicFormRenderer';
 import schema from '../schemas/preAnestesia.schema.json';
 import uiSchema from '../schemas/preAnestesia.uiSchema.json';
-import SectionCard from '../components/ui/SectionCard';
+import { SectionCard } from '../components/ui/SectionCard';
 
 // formData for PreAnestesia is largely handled by AutocompleteTagSelectorWidget 
 // which imports options directly based on uiSchema's 'ui:options': { optionsKey: '...' }

@@ -1,218 +1,121 @@
+// src/components/forms/DynamicFormRenderer.tsx
 import React from 'react';
+
+// Import all possible widgets
 import RadioButtonGroupField from '../ui/RadioButtonGroupField';
 import CheckboxGroupField from '../ui/CheckboxGroupField';
-import InputField from '../ui/InputField';
+import { InputField } from '../ui/InputField'; // <-- Corrected import
 import SelectField from '../ui/SelectField';
-import AutocompleteTagSelectorWidget, { SelectedItemType } from '../widgets/AutocompleteTagSelectorWidget';
-import DrugSectionWidget, { DrugSectionValue } from '../widgets/DrugSectionWidget';
-// Import the data source for IntraOp options
-import { intraOpDataSources, OptionInfo as IntraOpOptionInfo } from '../../data/intraoperatoriaOptions';
-// We will import schema types and UI components later
+import AutocompleteTagSelectorWidget from '../widgets/AutocompleteTagSelectorWidget';
+import DrugSectionWidget from '../widgets/DrugSectionWidget';
 
-// Define expected prop types (will expand later)
+// Import data sources that widgets might need
+import { intraOpDataSources } from '../../data/intraoperatoriaOptions';
+import { dataOptionSources as preAnestesiaDataSources } from '../../data/preAnestesiaOptions';
+
+// ... rest of the file is correct
 interface DynamicFormRendererProps {
-  schema: any; // Replace 'any' with a proper JSON Schema type definition later
-  uiSchema: any; // Replace 'any' with a proper UI Schema type definition later
+  schema: any;
+  uiSchema: any;
   formData: any;
   onFormDataChange: (updatedData: any) => void;
-  // We can add a widget registry prop later if we go that route
-  // widgets?: { [widgetName: string]: React.ComponentType<any> };
 }
-
-// Helper type for widget options
-interface WidgetOption {
-  value: string | number;
-  label: string;
-}
-
-interface CheckboxWidgetOption {
-  value: string;
-  label: string;
-}
-
-const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
-  schema,
-  uiSchema,
-  formData,
-  onFormDataChange,
-}) => {
+const widgetRegistry = {
+  InputFieldWidget: InputField,
+  SelectFieldWidget: SelectField,
+  RadioButtonGroupField,
+  CheckboxGroupField,
+  AutocompleteTagSelectorWidget,
+  DrugSectionWidget,
+};
+const UnhandledWidget = ({ propertyName, widgetName, schemaType, value }: any) => (
+  <div className="mb-4 p-2 border border-dashed border-red-300 dark:border-red-600 text-sm text-red-600 dark:text-red-300 rounded-md bg-red-50 dark:bg-red-900/20">
+    <p><strong>Unhandled Widget</strong></p>
+    <p><strong>Field:</strong> <code>{propertyName}</code></p>
+    <p><strong>Widget Type:</strong> <code>{widgetName || 'Default'}</code></p>
+    <p><strong>Schema Type:</strong> <code>{schemaType}</code></p>
+    <p><strong>Current Value:</strong> {JSON.stringify(value)}</p>
+  </div>
+);
+const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({ schema, uiSchema, formData, onFormDataChange, }) => {
   if (!schema || !schema.properties) {
-    return <p className="text-red-500 dark:text-red-400">Schema not provided or is invalid.</p>;
+    return <p className="text-red-500">Schema not provided or is invalid.</p>;
   }
-
   const renderField = (propertyName: string, propertySchema: any) => {
-    const widgetName = uiSchema[propertyName]?.['ui:widget'];
-    const fieldTitle = propertySchema.title || propertyName;
-    const fieldUiOptions = uiSchema[propertyName]?.['ui:options'] || {};
-    const isRequired = schema.required?.includes(propertyName) || fieldUiOptions.required || false;
-
-    const baseProps = {
+    const uiOptions = uiSchema[propertyName] || {};
+    const widgetName = uiOptions['ui:widget'];
+    const WidgetComponent = widgetName ? (widgetRegistry as any)[widgetName] : null;
+    if (!WidgetComponent) {
+      return (
+        <UnhandledWidget
+          key={propertyName}
+          propertyName={propertyName}
+          widgetName={widgetName}
+          schemaType={propertySchema.type}
+          value={formData[propertyName]}
+        />
+      );
+    }
+    const fieldUiOptions = uiOptions['ui:options'] || {};
+    const commonProps = {
       id: propertyName,
-      label: fieldTitle,
-      required: isRequired,
+      label: propertySchema.title || propertyName,
+      required: schema.required?.includes(propertyName) || fieldUiOptions.required,
+      value: formData[propertyName],
+      onChange: (valueOrEvent: any) => {
+        const newValue = valueOrEvent?.target ? valueOrEvent.target.value : valueOrEvent;
+        onFormDataChange({ ...formData, [propertyName]: newValue });
+      },
     };
-
-    if (widgetName === 'DrugSectionWidget') {
-      const currentDrugSectionValue = formData[propertyName] || { selectedDrugs: {}, drugValues: {} };
-      return (
-        <DrugSectionWidget
-          id={propertyName}
-          value={currentDrugSectionValue as DrugSectionValue}
-          onChange={(newValue: DrugSectionValue) =>
-            onFormDataChange({ ...formData, [propertyName]: newValue })
-          }
-          uiOptions={fieldUiOptions}
-          required={isRequired}
-        />
-      );
-    }
-
-    if (widgetName === 'AutocompleteTagSelectorWidget') {
-      return (
-        <AutocompleteTagSelectorWidget
-          {...baseProps}
-          value={formData[propertyName] as SelectedItemType[] || []}
-          onChange={(newValue: SelectedItemType[]) => 
-            onFormDataChange({ ...formData, [propertyName]: newValue })
-          }
-          uiOptions={fieldUiOptions}
-        />
-      );
-    }
-
-    if (widgetName === 'InputFieldWidget') {
-      const inputType = fieldUiOptions.inputType || 'text';
-      return (
-        <InputField
-          {...baseProps}
-          type={inputType as 'text' | 'number' | 'email' | 'password' | 'date'}
-          placeholder={fieldUiOptions.placeholder || ''}
-          value={formData[propertyName] || ''}
-          onChange={(event) => {
-            let newValue: string | number = event.target.value;
-            if (inputType === 'number') {
-              newValue = event.target.value === '' ? '' : parseFloat(event.target.value);
-              if (isNaN(newValue as number) && event.target.value !== '') newValue = formData[propertyName];
-            }
-            onFormDataChange({ ...formData, [propertyName]: newValue });
-          }}
-        />
-      );
-    }
-
+    let specificProps: any = {
+        ...fieldUiOptions
+    };
     if (widgetName === 'SelectFieldWidget') {
-      let selectOptions: WidgetOption[] = [];
-      if (fieldUiOptions.optionsSourceKey && intraOpDataSources[fieldUiOptions.optionsSourceKey as keyof typeof intraOpDataSources]) {
-        selectOptions = (intraOpDataSources[fieldUiOptions.optionsSourceKey as keyof typeof intraOpDataSources] as IntraOpOptionInfo[]).map(opt => ({...opt}));
-      } else if (propertySchema.enum && propertySchema.enumNames) {
-        selectOptions = propertySchema.enum.map((enumValue: string | number, index: number) => ({
-          value: enumValue,
-          label: propertySchema.enumNames[index] || String(enumValue),
-        }));
+      let options = [];
+      if (propertySchema.enum && propertySchema.enumNames) {
+        options = propertySchema.enum.map((val: any, i: number) => ({ value: val, label: propertySchema.enumNames[i] }));
       }
-      return (
-        <SelectField
-          {...baseProps}
-          options={selectOptions}
-          value={formData[propertyName] || ''}
-          onChange={(event) => onFormDataChange({ ...formData, [propertyName]: event.target.value })}
-          placeholder={fieldUiOptions.placeholder}
-        />
-      );
+      specificProps.options = options;
     }
-
-    if (widgetName === 'RadioButtonGroupField') {
-      let radioOptions: WidgetOption[] | undefined = undefined;
-      if (fieldUiOptions.optionsSourceKey && intraOpDataSources[fieldUiOptions.optionsSourceKey as keyof typeof intraOpDataSources]) {
-        radioOptions = (intraOpDataSources[fieldUiOptions.optionsSourceKey as keyof typeof intraOpDataSources] as IntraOpOptionInfo[]).map(opt => ({...opt}));
-      } else if (propertySchema.enum && propertySchema.enumNames) {
-        radioOptions = propertySchema.enum.map((enumValue: string | number, index: number) => ({
-          value: enumValue,
-          label: propertySchema.enumNames[index] || String(enumValue),
-        }));
-      }
-      if (radioOptions) {
-        return (
-          <RadioButtonGroupField
-            idPrefix={propertyName}
-            label={fieldTitle}
-            required={isRequired}
-            options={radioOptions}
-            selectedValue={formData[propertyName] || null}
-            onChange={(value) => onFormDataChange({ ...formData, [propertyName]: value })}
-          />
-        );
-      }
-    }
-
-    if (widgetName === 'CheckboxGroupField') {
-      let checkboxOptions: CheckboxWidgetOption[] | undefined = undefined;
-      if (fieldUiOptions.optionsSourceKey && intraOpDataSources[fieldUiOptions.optionsSourceKey as keyof typeof intraOpDataSources]) {
-        checkboxOptions = (intraOpDataSources[fieldUiOptions.optionsSourceKey as keyof typeof intraOpDataSources] as IntraOpOptionInfo[]).map(opt => ({ value: String(opt.value), label: opt.label }));
-      } else if (propertySchema.items?.enum && propertySchema.items?.enumNames) {
-        checkboxOptions = propertySchema.items.enum.map((enumValue: any, index: number) => ({
-          value: String(enumValue),
-          label: propertySchema.items.enumNames[index] || String(enumValue),
-        }));
-      }
-      if (checkboxOptions) {
-        return (
-          <CheckboxGroupField
-            idPrefix={propertyName}
-            label={fieldTitle}
-            options={checkboxOptions}
-            selectedValues={formData[propertyName] || []}
-            onChange={(toggledValue) => {
-              const currentArray = formData[propertyName] || [];
-              const newArray = currentArray.includes(toggledValue)
-                ? currentArray.filter((item: string) => item !== toggledValue)
-                : [...currentArray, toggledValue];
-              onFormDataChange({ ...formData, [propertyName]: newArray });
-            }}
-          />
-        );
-      }
-    }
-
-    // Fallback for unhandled widget types
-    return (
-      <div className="mb-4 p-2 border border-dashed border-slate-300 dark:border-slate-600 text-sm text-slate-600 dark:text-slate-300 rounded-md">
-        <p><strong>Field:</strong> {fieldTitle} (<code>{propertyName}</code>)</p>
-        <p><strong>Widget:</strong> {widgetName || 'Default (Unhandled)'}</p>
-        <p><strong>Schema Type:</strong> {propertySchema.type}</p>
-        <p><strong>Current Value:</strong> {JSON.stringify(formData[propertyName])}</p>
-      </div>
-    );
-  };
-
-  const sectionKeys = Object.keys(schema.properties);
-
-  return (
-    <form className="space-y-6">
-      {/* Overall Form Title and Description - always show */}
-      {schema.title && (
-        <h2 className="card-title mb-2">
-          {schema.title}
-        </h2>
-      )}
-      {schema.description && (
-        <p className="form-description">
-          {schema.description}
-        </p>
-      )}
-
-      {/* Always render all fields */}
-      {sectionKeys.map((propertyName) => {
-        const propertySchema = schema.properties[propertyName];
-        if (!propertySchema) {
-          console.warn(`DynamicFormRenderer: Schema definition missing for property: ${propertyName}`);
-          return <p key={propertyName} className="text-red-500 dark:text-red-400">Error: Missing schema for {propertyName}</p>;
+    if (widgetName === 'RadioButtonGroupField' || widgetName === 'CheckboxGroupField') {
+        let options = [];
+        if (fieldUiOptions.optionsSourceKey) {
+            const allDataSources = {...intraOpDataSources, ...preAnestesiaDataSources};
+            options = (allDataSources as any)[fieldUiOptions.optionsSourceKey] || [];
+        } else if (propertySchema.enum && propertySchema.enumNames) {
+            options = propertySchema.enum.map((val: any, i: number) => ({ value: val, label: propertySchema.enumNames[i] }));
+        } else if (propertySchema.items?.enum) {
+            options = propertySchema.items.enum.map((val: any, i: number) => ({ value: val, label: propertySchema.items.enumNames[i] }));
         }
-        return <div key={propertyName}>{renderField(propertyName, propertySchema)}</div>;
-      })}
-      {/* We might add a submit button or other form-level actions here later */}
+        specificProps.options = options;
+        specificProps.selectedValue = commonProps.value;
+        specificProps.selectedValues = commonProps.value || [];
+        specificProps.onChange = (toggledValue: any) => {
+            if (widgetName === 'CheckboxGroupField') {
+                const currentArray = formData[propertyName] || [];
+                const newArray = currentArray.includes(toggledValue)
+                    ? currentArray.filter((item: string) => item !== toggledValue)
+                    : [...currentArray, toggledValue];
+                onFormDataChange({ ...formData, [propertyName]: newArray });
+            } else {
+                 onFormDataChange({ ...formData, [propertyName]: toggledValue });
+            }
+        };
+    }
+    if (widgetName === 'InputFieldWidget') {
+        specificProps.type = fieldUiOptions.inputType || 'text';
+    }
+    if(widgetName === 'AutocompleteTagSelectorWidget' || widgetName === 'DrugSectionWidget'){
+        specificProps.uiOptions = fieldUiOptions;
+    }
+    return <WidgetComponent key={propertyName} {...commonProps} {...specificProps} />;
+  };
+  return (
+    <form className="space-y-8">
+      {Object.keys(schema.properties).map((propertyName) => 
+        renderField(propertyName, schema.properties[propertyName])
+      )}
     </form>
   );
 };
-
-export default DynamicFormRenderer; 
+export default DynamicFormRenderer;

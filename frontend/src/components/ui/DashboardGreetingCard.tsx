@@ -1,19 +1,16 @@
+// src/components/ui/DashboardGreetingCard.tsx
 import React from 'react';
 import { PiPlusCircleDuotone, PiIdentificationCardDuotone, PiArrowSquareOutDuotone } from 'react-icons/pi';
-import Button from './Button'; // Assuming Button is in the same ui directory
-import useAuthStore from '../../stores/authStore'; // To get user info
+import { Button } from './Button'; // <-- Corrected import
+import useAuthStore from '../../stores/authStore';
 
+// ... rest of the file is correct
 interface DashboardGreetingCardProps {
   onCreateNewProject: () => void;
-  onViewProfile: () => void; // Placeholder for now
+  onViewProfile: () => void;
 }
-
-const DashboardGreetingCard: React.FC<DashboardGreetingCardProps> = ({
-  onCreateNewProject,
-  onViewProfile,
-}) => {
+const DashboardGreetingCard: React.FC<DashboardGreetingCardProps> = ({ onCreateNewProject, onViewProfile, }) => {
   const { user } = useAuthStore();
-
   return (
     <section
       className="relative card-base p-6 sm:p-8 rounded-xl shadow-xl 
@@ -25,7 +22,6 @@ const DashboardGreetingCard: React.FC<DashboardGreetingCardProps> = ({
     >
       <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-blue-400/30 dark:bg-blue-500/20 rounded-full filter blur-3xl opacity-50 animate-pulse"></div>
       <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-purple-400/30 dark:bg-purple-500/20 rounded-full filter blur-3xl opacity-50 animation-delay-2000 animate-pulse"></div>
-
       <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex-1">
           <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-100">
@@ -47,11 +43,10 @@ const DashboardGreetingCard: React.FC<DashboardGreetingCardProps> = ({
           </Button>
         </div>
       </div>
-
       <div className="relative z-10 mt-8 p-6 bg-white/60 dark:bg-slate-700/50 backdrop-blur-md rounded-lg shadow-inner border border-slate-200 dark:border-slate-700/60">
         <div className="flex items-center">
           <PiIdentificationCardDuotone className="text-5xl text-blue-500 dark:text-blue-400 mr-5 shrink-0" />
-          <div className="flex-1 min-w-0"> {/* Added min-w-0 for potential truncation */}
+          <div className="flex-1 min-w-0">
             <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200">Profile Snapshot</h2>
             {user ? (
               <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
@@ -69,5 +64,4 @@ const DashboardGreetingCard: React.FC<DashboardGreetingCardProps> = ({
     </section>
   );
 };
-
-export default DashboardGreetingCard; 
+export default DashboardGreetingCard;

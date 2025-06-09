@@ -1,6 +1,7 @@
+// src/pages/RoleEditorPage.tsx
 import React, { useState } from 'react';
-import SectionCard from '../components/ui/SectionCard';
-import InputField from '../components/ui/InputField';
+import { SectionCard } from '../components/ui/SectionCard'; // <-- Corrected import
+import { InputField } from '../components/ui/InputField'; // <-- Corrected import
 
 // --- Mock Data & Types ---
 type Permission = 'can_submit_forms' | 'can_view_submissions' | 'can_edit_project_settings' | 'can_manage_users' | 'can_build_forms';
@@ -30,11 +31,9 @@ const initialRoles: Role[] = [
 const RoleEditorPage: React.FC = () => {
   const [roles, setRoles] = useState<Role[]>(initialRoles);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  
   const [newRoleName, setNewRoleName] = useState('');
   const [newRoleDescription, setNewRoleDescription] = useState('');
   const [newRolePermissions, setNewRolePermissions] = useState<Permission[]>([]);
-
   const [isCreatingNewRole, setIsCreatingNewRole] = useState(false);
 
   const handleSelectRole = (role: Role) => {
@@ -46,11 +45,7 @@ const RoleEditorPage: React.FC = () => {
   };
 
   const handlePermissionToggle = (permissionId: Permission) => {
-    setNewRolePermissions(prev => 
-      prev.includes(permissionId) 
-        ? prev.filter(p => p !== permissionId)
-        : [...prev, permissionId]
-    );
+    setNewRolePermissions(prev => prev.includes(permissionId) ? prev.filter(p => p !== permissionId) : [...prev, permissionId]);
   };
 
   const handleSaveRole = () => {
@@ -60,7 +55,7 @@ const RoleEditorPage: React.FC = () => {
     }
     if (isCreatingNewRole) {
       const newRole: Role = {
-        id: String(Date.now()), // Simple unique ID for mock
+        id: String(Date.now()),
         name: newRoleName,
         description: newRoleDescription,
         permissions: [...newRolePermissions],
@@ -68,14 +63,9 @@ const RoleEditorPage: React.FC = () => {
       setRoles(prev => [...prev, newRole]);
       alert(`Role '${newRole.name}' created successfully!`);
     } else if (selectedRole) {
-      setRoles(prev => prev.map(r => 
-        r.id === selectedRole.id 
-          ? { ...r, name: newRoleName, description: newRoleDescription, permissions: [...newRolePermissions] } 
-          : r
-      ));
+      setRoles(prev => prev.map(r => r.id === selectedRole.id ? { ...r, name: newRoleName, description: newRoleDescription, permissions: [...newRolePermissions] } : r));
       alert(`Role '${newRoleName}' updated successfully!`);
     }
-    // Reset form
     setSelectedRole(null);
     setNewRoleName('');
     setNewRoleDescription('');
@@ -100,91 +90,45 @@ const RoleEditorPage: React.FC = () => {
   };
 
   return (
-    <div className="p-1">
-      <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-4">Role Editor (MVP 1)</h1>
-      
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto">
+      <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-4">Role Editor</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Column 1: Role List */} 
         <SectionCard title="Project Roles" className="md:col-span-1">
-          <button 
-            onClick={handleStartCreateNewRole}
-            className="w-full mb-3 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm"
-          >
-            + Create New Role
-          </button>
+          <button onClick={handleStartCreateNewRole} className="w-full mb-3 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">+ Create New Role</button>
           {roles.length === 0 && <p className="text-sm text-slate-500 dark:text-slate-400">No roles defined yet.</p>}
           <ul className="space-y-2">
             {roles.map(role => (
               <li key={role.id}>
-                <button 
-                  onClick={() => handleSelectRole(role)}
-                  className={`w-full text-left p-2.5 rounded-md transition-colors text-sm 
-                              ${selectedRole?.id === role.id 
-                                ? 'bg-blue-100 dark:bg-blue-700/50 text-blue-700 dark:text-blue-300 font-semibold' 
-                                : 'bg-slate-50 dark:bg-slate-700/30 hover:bg-slate-100 dark:hover:bg-slate-600/50'}`}
-                >
-                  {role.name}
-                </button>
+                <button onClick={() => handleSelectRole(role)} className={`w-full text-left p-2.5 rounded-md transition-colors text-sm ${selectedRole?.id === role.id ? 'bg-blue-100 dark:bg-blue-700/50 text-blue-700 dark:text-blue-300 font-semibold' : 'bg-slate-50 dark:bg-slate-700/30 hover:bg-slate-100 dark:hover:bg-slate-600/50'}`}>{role.name}</button>
               </li>
             ))}
           </ul>
         </SectionCard>
-
-        {/* Column 2: Role Editor/Creator Form */} 
         {(selectedRole || isCreatingNewRole) && (
           <SectionCard title={isCreatingNewRole ? "Create New Role" : `Edit Role: ${selectedRole?.name}`} className="md:col-span-2">
             <div className="space-y-4">
-              <InputField
-                id="roleName"
-                label="Role Name"
-                type="text"
-                value={newRoleName}
-                onChange={(e) => setNewRoleName(e.target.value)}
-                required
-                className="mb-0"
-              />
+              <InputField id="roleName" label="Role Name" type="text" value={newRoleName} onChange={(e) => setNewRoleName(e.target.value)} required />
               <div>
                 <label htmlFor="roleDescription" className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Description</label>
-                <textarea 
-                  id="roleDescription"
-                  value={newRoleDescription}
-                  onChange={(e) => setNewRoleDescription(e.target.value)}
-                  rows={3}
-                  className="mt-1 block w-full px-3 py-2 border rounded-md text-sm shadow-sm bg-white dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="Briefly describe this role..."
-                />
+                <textarea id="roleDescription" value={newRoleDescription} 
+                  // FIX: Typed the event parameter
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNewRoleDescription(e.target.value)}
+                  rows={3} className="mt-1 block w-full px-3 py-2 border rounded-md text-sm shadow-sm bg-white dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Briefly describe this role..." />
               </div>
-              
               <div>
                 <h4 className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Permissions:</h4>
                 <div className="space-y-1.5">
                   {MOCK_PERMISSIONS_LIST.map(perm => (
                     <label key={perm.id} className="flex items-center space-x-2 cursor-pointer">
-                      <input 
-                        type="checkbox"
-                        checked={newRolePermissions.includes(perm.id)}
-                        onChange={() => handlePermissionToggle(perm.id)}
-                        className="h-4 w-4 rounded text-blue-600 dark:text-blue-500 border-slate-300 dark:border-slate-500 focus:ring-blue-500 dark:focus:ring-offset-slate-800"
-                      />
+                      <input type="checkbox" checked={newRolePermissions.includes(perm.id)} onChange={() => handlePermissionToggle(perm.id)} className="h-4 w-4 rounded text-blue-600 dark:text-blue-500 border-slate-300 dark:border-slate-500 focus:ring-blue-500 dark:focus:ring-offset-slate-800" />
                       <span className="text-sm text-slate-700 dark:text-slate-300">{perm.label}</span>
                     </label>
                   ))}
                 </div>
               </div>
-
               <div className="flex justify-end space-x-3 pt-3 border-t border-slate-200 dark:border-slate-600/50">
-                <button 
-                  onClick={handleCancelEdit}
-                  className="px-4 py-2 text-sm bg-slate-200 hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-500 text-slate-700 dark:text-slate-200 font-medium rounded-md shadow-sm transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleSaveRole}
-                  className="px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm transition-colors"
-                >
-                  {isCreatingNewRole ? "Create Role" : "Save Changes"}
-                </button>
+                <button onClick={handleCancelEdit} className="px-4 py-2 text-sm bg-slate-200 hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-500 text-slate-700 dark:text-slate-200 font-medium rounded-md shadow-sm transition-colors">Cancel</button>
+                <button onClick={handleSaveRole} className="px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm transition-colors">{isCreatingNewRole ? "Create Role" : "Save Changes"}</button>
               </div>
             </div>
           </SectionCard>
@@ -199,4 +143,4 @@ const RoleEditorPage: React.FC = () => {
   );
 };
 
-export default RoleEditorPage; 
+export default RoleEditorPage;

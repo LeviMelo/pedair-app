@@ -1,135 +1,84 @@
-import React from 'react';
-import { PiSpinnerGap } from 'react-icons/pi'; // Using a spinner icon
+// src/components/ui/Button.tsx
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+import { PiSpinnerGap } from 'react-icons/pi';
+import { cn } from "@/lib/utils"
 
-type ButtonVariant = 
-  | 'primary' 
-  | 'secondary' 
-  | 'success' 
-  | 'danger' 
-  | 'warning' 
-  | 'outline-primary' 
-  | 'outline-slate' 
-  | 'ghost' 
-  | 'link';
-
-type ButtonSize = 'sm' | 'md' | 'lg';
-
-// Define an interface for icon props that we expect (className and size)
-interface IconProps {
-  className?: string;
-  size?: string | number;
-  // Add other common icon props if necessary
-}
-
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  isLoading?: boolean;
-  iconLeft?: React.ReactElement<IconProps>; // Specify that iconLeft/Right accept IconProps
-  iconRight?: React.ReactElement<IconProps>;
-  fullWidth?: boolean;
-  children: React.ReactNode;
-  asChild?: boolean; // Add asChild prop
-}
-
-const Button: React.FC<ButtonProps> = React.forwardRef<
-  HTMLButtonElement,
-  ButtonProps
->(
-  (
-    {
-      children,
-      variant = 'primary',
-      size = 'md',
-      isLoading = false,
-      iconLeft,
-      iconRight,
-      fullWidth = false,
-      asChild = false, // Default asChild to false
-      className = '',
-      disabled,
-      ...props
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        primary: "bg-gradient-to-r from-blue-600 to-indigo-600 text-primary-foreground hover:from-blue-600/90 hover:to-indigo-600/90 shadow-md",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        // FIX: Re-aliasing 'danger' to 'destructive' for backward compatibility
+        danger: "bg-destructive text-destructive-foreground hover:bg-destructive/90", 
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        // FIX: Re-adding specific outline variants
+        "outline-primary": "border border-primary text-primary bg-background hover:bg-primary hover:text-primary-foreground",
+        "outline-slate": "border border-slate-300 dark:border-slate-700 bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+        success: "bg-emerald-600 text-primary-foreground hover:bg-emerald-600/90",
+        warning: "bg-amber-500 text-primary-foreground hover:bg-amber-500/90"
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        // FIX: Re-aliasing 'md' to 'default'
+        md: "h-10 px-4 py-2", 
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
     },
-    ref
-  ) => {
-    const baseClasses = 'btn'; // From index.css
-    const variantClasses = {
-      primary: 'btn-primary',
-      secondary: 'btn-secondary',
-      success: 'btn-success',
-      danger: 'btn-danger',
-      warning: 'btn-warning',
-      'outline-primary': 'btn-outline-primary',
-      'outline-slate': 'btn-outline-slate',
-      ghost: 'btn-ghost',
-      link: 'btn-link',
-    };
-    const sizeClasses = {
-      sm: 'btn-sm',
-      md: '', // Base .btn already has medium padding
-      lg: 'btn-lg',
-    };
+    defaultVariants: {
+      variant: "primary",
+      size: "default",
+    },
+  }
+)
 
-    const combinedClassName = [
-      baseClasses,
-      variantClasses[variant],
-      sizeClasses[size],
-      fullWidth ? 'w-full' : '',
-      isLoading ? 'cursor-wait' : '',
-      className, // Allow additional custom classes
-    ].filter(Boolean).join(' ');
+interface IconProps {
+  size?: string | number;
+  className?: string;
+}
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+  isLoading?: boolean;
+  iconLeft?: React.ReactElement<IconProps>;
+  iconRight?: React.ReactElement<IconProps>;
+  fullWidth?: boolean; // FIX: Re-adding fullWidth prop
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, isLoading = false, iconLeft, iconRight, fullWidth, children, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
 
     const iconSize = size === 'sm' ? 16 : 18;
-    const iconMarginClass = children && size === 'sm' ? 'mr-1.5' : children ? 'mr-2' : '';
-    const iconMarginClassRight = children && size === 'sm' ? 'ml-1.5' : children ? 'ml-2' : '';
-
-    const buttonContent = (
-      <>
-        {isLoading && (
-          <PiSpinnerGap className={`animate-spin ${iconLeft || iconRight || children ? (size === 'sm' ? 'mr-1.5' : 'mr-2') : ''}`} size={size === 'sm' ? 16 : 20} />
-        )}
-        {!isLoading && iconLeft && React.cloneElement(iconLeft, {
-           className: `${iconMarginClass} ${iconLeft.props.className || ''}`.trim(),
-           size: iconLeft.props.size || iconSize 
-        })}
-        {!isLoading && children}
-        {!isLoading && iconRight && React.cloneElement(iconRight, {
-            className: `${iconMarginClassRight} ${iconRight.props.className || ''}`.trim(),
-            size: iconRight.props.size || iconSize
-        })}
-      </>
-    );
-
-    if (asChild && React.isValidElement<React.HTMLAttributes<HTMLElement>>(children)) {
-      // Type assertion for children to ensure props like className are recognized.
-      const childProps = children.props as React.HTMLAttributes<HTMLElement>;
-
-      return React.cloneElement(
-        children as React.ReactElement<React.HTMLAttributes<HTMLElement>>,
-        {
-          className: `${combinedClassName} ${childProps.className || ''}`.trim(),
-          // `disabled` is not a standard HTML attribute for all elements (e.g. `a` tag from Link).
-          // Visual disabled state is handled by classes. True non-interactivity for Link
-          // would require event.preventDefault() or not rendering it as a Link.
-          // We pass other ...props which might include aria-disabled if set by parent.
-          ...props, 
-        }
-      );
-    }
-
+    const iconMarginClass = children ? (size === 'sm' ? 'mr-1.5' : 'mr-2') : '';
+    const iconMarginClassRight = children ? (size === 'sm' ? 'ml-1.5' : 'ml-2') : '';
+    
     return (
-      <button
+      <Comp
+        // FIX: Conditionally add 'w-full' class if fullWidth is true
+        className={cn(buttonVariants({ variant, size, className }), { "w-full": fullWidth })}
         ref={ref}
-        className={combinedClassName}
-        disabled={disabled || isLoading}
+        disabled={isLoading || props.disabled}
         {...props}
       >
-        {buttonContent}
-      </button>
-    );
+        {isLoading && <PiSpinnerGap className={`animate-spin ${iconMarginClass}`} size={iconSize} />}
+        {!isLoading && iconLeft && React.cloneElement(iconLeft, { size: iconLeft.props.size || iconSize, className: cn(iconMarginClass, iconLeft.props.className) })}
+        {children}
+        {!isLoading && iconRight && React.cloneElement(iconRight, { size: iconRight.props.size || iconSize, className: cn(iconMarginClassRight, iconRight.props.className) })}
+      </Comp>
+    )
   }
-);
+)
+Button.displayName = "Button"
 
-Button.displayName = 'Button';
-
-export default Button; 
+export { Button, buttonVariants }
