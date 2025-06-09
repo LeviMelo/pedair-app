@@ -1,5 +1,4 @@
 // src/pages/DashboardPage.tsx
-// No actual changes, just confirming the clean version from my refactor.
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useProjectStore, { Project } from '../stores/projectStore';
@@ -12,9 +11,11 @@ import {
   PiFileTextDuotone,
   PiCalendarCheckDuotone
 } from 'react-icons/pi';
-import Button from '../components/ui/Button';
+import { Button } from '../components/ui/Button'; // <-- THE CRITICAL FIX
 import DashboardGreetingCard from '../components/ui/DashboardGreetingCard';
 import { Card, CardHeader, CardContent, CardTitle } from '../components/ui/Card';
+import { cn } from '@/lib/utils';
+
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -55,11 +56,11 @@ const DashboardPage: React.FC = () => {
   };
 
   if (projectsLoading && !availableProjects.length) {
-    return <div className="p-6 text-center"><p className="text-slate-600 dark:text-slate-400">Loading dashboard...</p></div>;
+    return <div className="p-6 text-center"><p className="text-muted-foreground">Loading dashboard...</p></div>;
   }
 
   if (projectsError) {
-    return <div className="p-6 text-center text-red-500 dark:text-red-400">Error loading projects: {projectsError}</div>;
+    return <div className="p-6 text-center text-destructive">Error loading projects: {projectsError}</div>;
   }
   
   const userProjects = availableProjects.filter(p => p.members.some(m => m.userId === user?.id));
@@ -87,16 +88,16 @@ const DashboardPage: React.FC = () => {
                   return (
                     <div 
                       key={project.id} 
-                      className={`p-4 rounded-lg transition-all duration-300 cursor-pointer border ${
+                      className={cn(`p-4 rounded-lg transition-all duration-300 cursor-pointer border`, 
                         isProjectActive 
                           ? 'ring-2 ring-primary bg-secondary' 
                           : 'bg-background hover:bg-accent'
-                      }`}
+                      )}
                       onClick={() => handleSelectProject(project)}
                     >
                       <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-md font-semibold text-primary mb-0.5 truncate">{project.name}</h3>
+                          <h3 className="text-md font-semibold text-foreground mb-0.5 truncate">{project.name}</h3>
                           <p className="text-xs text-muted-foreground mb-2 line-clamp-2 leading-relaxed">
                             {project.description || 'No description available.'}
                           </p>

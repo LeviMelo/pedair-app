@@ -1,4 +1,4 @@
-import React from 'react';
+// src/App.tsx
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import DashboardPage from './pages/DashboardPage';
@@ -10,19 +10,15 @@ import NotificationSchedulerPage from './pages/NotificationSchedulerPage';
 import SettingsPage from './pages/SettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
-// Import the actual ProjectDetailsPage
 import ProjectDetailsPage from './pages/ProjectDetailsPage'; 
 import CreateProjectPage from './pages/CreateProjectPage';
 
-// Test pages (can be kept for development or removed later)
+// Test pages
 import TestRecuperacaoFormPage from './pages/TestRecuperacaoFormPage';
 import TestPreAnestesiaFormPage from './pages/TestPreAnestesiaFormPage';
 import TestIntraoperatoriaFormPage from './pages/TestIntraoperatoriaFormPage';
 
-// Placeholder for ProjectDetailsPage - User will create this file manually
-// import ProjectDetailsPage from './pages/ProjectDetailsPage'; 
-
-import './index.css'; // Ensure global styles are loaded
+import './index.css';
 
 function App() {
   return (
@@ -43,7 +39,7 @@ function App() {
         
         <Route path="settings" element={<SettingsPage />} />
         
-        {/* Routes for existing test form pages - can be integrated or kept separate */}
+        {/* Test Routes */}
         <Route path="test/recuperacao" element={<TestRecuperacaoFormPage />} />
         <Route path="test/preanestesia" element={<TestPreAnestesiaFormPage />} />
         <Route path="test/intraoperatoria" element={<TestIntraoperatoriaFormPage />} />
